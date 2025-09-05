@@ -91,13 +91,17 @@ export function ContactFormModal({ open, onOpenChange, contact }: ContactFormMod
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nome *</Label>
+            <Label htmlFor="name" className="mb-2 block">
+              Nome *
+            </Label>
             <Input id="name" {...register("name")} placeholder="Nome do contato" />
             {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
-            <Label htmlFor="type">Tipo *</Label>
+            <Label htmlFor="type" className="mb-2 block">
+              Tipo *
+            </Label>
             <Select
               value={watch("type")}
               onValueChange={(value) => setValue("type", value as "customer" | "supplier", { shouldDirty: true })}
@@ -114,18 +118,24 @@ export function ContactFormModal({ open, onOpenChange, contact }: ContactFormMod
           </div>
 
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="mb-2 block">
+              Email
+            </Label>
             <Input id="email" type="email" {...register("email")} placeholder="email@exemplo.com" />
             {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
-            <Label htmlFor="phone">Telefone</Label>
+            <Label htmlFor="phone" className="mb-2 block">
+              Telefone
+            </Label>
             <Input id="phone" {...register("phone")} placeholder="(11) 99999-9999" />
           </div>
 
           <div>
-            <Label htmlFor="document">Documento</Label>
+            <Label htmlFor="document" className="mb-2 block">
+              Documento
+            </Label>
             <Input id="document" {...register("document")} placeholder="CPF/CNPJ" />
           </div>
 

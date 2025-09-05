@@ -118,7 +118,9 @@ export function PaymentModal({ open, onOpenChange, entry }: PaymentModalProps) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="amount">Valor do Pagamento *</Label>
+            <Label htmlFor="amount" className="mb-2 block">
+              Valor do Pagamento *
+            </Label>
             <Input
               id="amount"
               type="number"
@@ -141,13 +143,17 @@ export function PaymentModal({ open, onOpenChange, entry }: PaymentModalProps) {
           </div>
 
           <div>
-            <Label htmlFor="paidAt">Data do Pagamento *</Label>
+            <Label htmlFor="paidAt" className="mb-2 block">
+              Data do Pagamento *
+            </Label>
             <Input id="paidAt" type="date" {...register("paidAt")} />
             {errors.paidAt && <p className="text-sm text-red-600 mt-1">{errors.paidAt.message}</p>}
           </div>
 
           <div>
-            <Label htmlFor="method">Método de Pagamento *</Label>
+            <Label htmlFor="method" className="mb-2 block">
+              Método de Pagamento *
+            </Label>
             <Select value={watch("method")} onValueChange={(value) => setValue("method", value as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o método" />
@@ -163,7 +169,9 @@ export function PaymentModal({ open, onOpenChange, entry }: PaymentModalProps) {
           </div>
 
           <div>
-            <Label htmlFor="note">Observações</Label>
+            <Label htmlFor="note" className="mb-2 block">
+              Observações
+            </Label>
             <Textarea id="note" {...register("note")} placeholder="Observações sobre o pagamento (opcional)" rows={3} />
           </div>
 

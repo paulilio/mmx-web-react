@@ -89,13 +89,17 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nome *</Label>
+            <Label htmlFor="name" className="mb-2 block">
+              Nome *
+            </Label>
             <Input id="name" {...register("name")} placeholder="Nome da categoria" />
             {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
-            <Label htmlFor="type">Tipo *</Label>
+            <Label htmlFor="type" className="mb-2 block">
+              Tipo *
+            </Label>
             <Select
               value={watch("type")}
               onValueChange={(v) => setValue("type", v as "income" | "expense", { shouldDirty: true })}
@@ -112,7 +116,9 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
           </div>
 
           <div>
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description" className="mb-2 block">
+              Descrição
+            </Label>
             <Textarea
               id="description"
               {...register("description")}

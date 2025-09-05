@@ -90,7 +90,9 @@ export function EntryFormModal({ open, onOpenChange, entry }: EntryFormModalProp
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="type">Tipo</Label>
+              <Label htmlFor="type" className="mb-2 block">
+                Tipo
+              </Label>
               <Select
                 value={watch("type")}
                 onValueChange={(value) => setValue("type", value as "payable" | "receivable")}
@@ -107,7 +109,9 @@ export function EntryFormModal({ open, onOpenChange, entry }: EntryFormModalProp
             </div>
 
             <div>
-              <Label htmlFor="contactId">Contato</Label>
+              <Label htmlFor="contactId" className="mb-2 block">
+                Contato
+              </Label>
               <Select value={watch("contactId")} onValueChange={(value) => setValue("contactId", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o contato" />
@@ -126,7 +130,9 @@ export function EntryFormModal({ open, onOpenChange, entry }: EntryFormModalProp
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="categoryId">Categoria</Label>
+              <Label htmlFor="categoryId" className="mb-2 block">
+                Categoria
+              </Label>
               <Select value={watch("categoryId")} onValueChange={(value) => setValue("categoryId", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a categoria" />
@@ -143,7 +149,9 @@ export function EntryFormModal({ open, onOpenChange, entry }: EntryFormModalProp
             </div>
 
             <div>
-              <Label htmlFor="amount">Valor</Label>
+              <Label htmlFor="amount" className="mb-2 block">
+                Valor
+              </Label>
               <Input
                 id="amount"
                 type="number"
@@ -156,27 +164,35 @@ export function EntryFormModal({ open, onOpenChange, entry }: EntryFormModalProp
           </div>
 
           <div>
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description" className="mb-2 block">
+              Descrição
+            </Label>
             <Input id="description" {...register("description")} placeholder="Descrição do lançamento" />
             {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="issueDate">Data de Emissão</Label>
+              <Label htmlFor="issueDate" className="mb-2 block">
+                Data de Emissão
+              </Label>
               <Input id="issueDate" type="date" {...register("issueDate")} />
               {errors.issueDate && <p className="text-sm text-red-600 mt-1">{errors.issueDate.message}</p>}
             </div>
 
             <div>
-              <Label htmlFor="dueDate">Data de Vencimento</Label>
+              <Label htmlFor="dueDate" className="mb-2 block">
+                Data de Vencimento
+              </Label>
               <Input id="dueDate" type="date" {...register("dueDate")} />
               {errors.dueDate && <p className="text-sm text-red-600 mt-1">{errors.dueDate.message}</p>}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="notes">Observações</Label>
+            <Label htmlFor="notes" className="mb-2 block">
+              Observações
+            </Label>
             <Textarea id="notes" {...register("notes")} placeholder="Observações adicionais (opcional)" rows={3} />
           </div>
 
