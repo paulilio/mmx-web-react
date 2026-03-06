@@ -19,7 +19,7 @@ MoedaMix is a personal finance dashboard built with Next.js 14 (App Router). Per
 
 ## Frontend Layers
 
-```
+\`\`\`
 UI (pages + components)
         ↓
 Custom Hooks  (use-transactions, use-budget, use-auth …)
@@ -29,7 +29,7 @@ Service Layer (lib/persistence-service, lib/storage, lib/user-data-service)
 Repository / Adapter  (lib/api.ts  ← swap this for real API calls)
         ↓
 localStorage (mock) | REST API (production)
-```
+\`\`\`
 
 ## Data Flow
 
@@ -44,7 +44,7 @@ All stored records carry a `userId` field. `UserDataService` filters every read/
 
 ## Folder Structure
 
-```
+\`\`\`
 app/                  # Next.js App Router pages & layouts
 components/
   auth/               # AuthGuard, SessionMonitor
@@ -63,7 +63,7 @@ data/                 # JSON seed files (mock mode)
 config/               # app-config.json (version, env, feature flags)
 scripts/              # Migration validators & test utilities
 docs/                 # This folder
-```
+\`\`\`
 
 ## Integration Points
 

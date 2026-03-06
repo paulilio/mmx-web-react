@@ -32,7 +32,7 @@ CI com **GitHub Actions** e deploy contínuo na **Vercel** (pré-visualizações
 ---
 
 ## Run locally
-```bash
+\`\`\`bash
 corepack enable
 pnpm install
 pnpm dev

@@ -52,6 +52,18 @@
 | Upgrade Next.js para 14.2.35 | Concluido |
 | Configuracao Node.js 22 | Concluido |
 
+### Melhorias de Codigo (Recente)
+
+| Funcionalidade | Status |
+|----------------|--------|
+| Constantes centralizadas (lib/constants.ts) | Concluido |
+| Logger com niveis (lib/logger.ts) | Concluido |
+| TypeScript mais rigoroso (noUncheckedIndexedAccess) | Concluido |
+| ESLint configurado (.eslintrc.json) | Concluido |
+| Prettier configurado (.prettierrc) | Concluido |
+| Security headers no next.config.mjs | Concluido |
+| Scripts npm adicionais (type-check, lint:fix, clean) | Concluido |
+
 ### Modulos de Negocio (Pre-existentes)
 
 - Dashboard com resumo financeiro e grafico de fluxo de caixa
@@ -120,13 +132,13 @@
 
 ### Cronograma Sugerido
 
-```
+\`\`\`
 Semana 1-2: Fase 1 (Backend e Seguranca)
 Semana 3-4: Fase 2 (Funcionalidades)
 Semana 5:   Fase 3 (Qualidade)
 Semana 6:   Fase 4 (DevOps) + Fase 5 (Monetizacao)
 Semana 7:   Testes finais e lancamento
-```
+\`\`\`
 
 ### Checklist Pre-Producao
 

@@ -4,8 +4,8 @@ import { MainLayout } from "@/components/layout/main-layout"
 import { SummaryCard } from "@/components/dashboard/summary-card"
 import { CashflowChart } from "@/components/dashboard/cashflow-chart"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
-import { DollarSign, AlertTriangle, Clock, Calendar, TrendingUp, TrendingDown } from "lucide-react"
-import { Loader2 } from "lucide-react"
+import { DollarSign, AlertTriangle, Clock, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
+import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/constants"
 
 export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
@@ -21,8 +21,8 @@ export default function DashboardPage() {
     )
   }
 
-  const receivablesTarget = 200000 // R$ 200k meta
-  const payablesTarget = 80000 // R$ 80k meta
+  const receivablesTarget = DEFAULT_RECEIVABLES_TARGET
+  const payablesTarget = DEFAULT_PAYABLES_TARGET
 
   const receivablesCurrent = (() => {
     const value = Number(summary?.totalReceivables)

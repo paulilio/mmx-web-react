@@ -9,7 +9,7 @@
 
 ### Component template
 
-```tsx
+\`\`\`tsx
 // components/feature/my-component.tsx
 "use client"
 
@@ -25,7 +25,7 @@ const MyComponent: FC<MyComponentProps> = ({ title, onAction }) => {
 }
 
 export default MyComponent
-```
+\`\`\`
 
 ## Naming Conventions
 
@@ -45,7 +45,7 @@ export default MyComponent
 - **UI state**: local `useState` inside the component — do not lift unless shared
 - **Forms**: React Hook Form + Zod schema; define schemas in `lib/validations.ts`
 
-```ts
+\`\`\`ts
 // lib/validations.ts
 import { z } from "zod"
 
@@ -54,7 +54,7 @@ export const transactionSchema = z.object({
   amount: z.number().positive(),
   date: z.string(),
 })
-```
+\`\`\`
 
 ## Hooks Guidelines
 
@@ -77,7 +77,7 @@ export const transactionSchema = z.object({
 - Test user interactions, not implementation details
 - E2E: Playwright (optional) in `/e2e` folder
 
-```ts
+\`\`\`ts
 // components/dashboard/summary-card.test.tsx
 import { render, screen } from "@testing-library/react"
 import SummaryCard from "./summary-card"
@@ -86,7 +86,7 @@ test("renders title", () => {
   render(<SummaryCard title="Saldo" value={1000} />)
   expect(screen.getByText("Saldo")).toBeInTheDocument()
 })
-```
+\`\`\`
 
 ## Lint & Formatting
 

@@ -4,7 +4,7 @@
 
 All API calls are routed through `lib/api.ts`. In mock mode this file reads/writes localStorage. To switch to a real backend, replace the implementations in `lib/api.ts` — no other files need to change.
 
-```ts
+\`\`\`ts
 // lib/api.ts (pattern)
 export async function getTransactions(userId: string): Promise<Transaction[]> {
   // Mock: read from localStorage
@@ -12,7 +12,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
   const raw = localStorage.getItem("mmx_transactions") ?? "[]"
   return (JSON.parse(raw) as Transaction[]).filter(t => t.userId === userId)
 }
-```
+\`\`\`
 
 ## localStorage Keys
 
@@ -30,7 +30,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
 
 ## TypeScript Interfaces
 
-```ts
+\`\`\`ts
 // types/auth.ts
 interface User {
   id: string
@@ -56,11 +56,11 @@ interface Transaction {
   createdAt: string
   updatedAt: string
 }
-```
+\`\`\`
 
 ## Expected REST Endpoints (production)
 
-```
+\`\`\`
 GET    /api/transactions          → Transaction[]
 POST   /api/transactions          → Transaction
 PUT    /api/transactions/:id      → Transaction
@@ -74,21 +74,21 @@ POST   /api/auth/register         → { user: User }
 POST   /api/auth/confirm-email    → { success: boolean }
 POST   /api/auth/forgot-password  → { success: boolean }
 POST   /api/auth/reset-password   → { success: boolean }
-```
+\`\`\`
 
 ## Standard Response Shape
 
-```ts
+\`\`\`ts
 // Success
 { data: T, error: null }
 
 // Error
 { data: null, error: { code: string, message: string } }
-```
+\`\`\`
 
 ## Error Handling Pattern
 
-```ts
+\`\`\`ts
 // hooks/use-transactions.ts
 try {
   const data = await getTransactions(userId)
@@ -97,7 +97,7 @@ try {
   toast.error("Erro ao carregar transações")
   console.error("[transactions]", err)
 }
-```
+\`\`\`
 
 - Never expose raw error messages in the UI
 - Always show a Portuguese user-facing message via `toast.error()`

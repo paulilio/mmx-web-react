@@ -4,7 +4,7 @@
 
 **Requirements:** Node.js 22, pnpm
 
-```bash
+\`\`\`bash
 # Install dependencies
 pnpm install
 
@@ -19,7 +19,7 @@ pnpm lint
 
 # Build (validate before pushing)
 pnpm build
-```
+\`\`\`
 
 **Direct login shortcut** (mock only): On `/auth`, use the "Login Direto" button to authenticate as `paulilio.ferreira@gmail.com`. Remove this button before production.
 
@@ -32,16 +32,16 @@ pnpm build
 
 Create a `.env.local` for local overrides (never commit this file):
 
-```bash
+\`\`\`bash
 NEXT_PUBLIC_API_BASE=http://localhost:4000
 NEXT_PUBLIC_USE_API=false
-```
+\`\`\`
 
 On Vercel, set these under **Project Settings → Environment Variables** per environment.
 
 ## CI Pipeline (GitHub Actions)
 
-```yaml
+\`\`\`yaml
 # .github/workflows/ci.yml (recommended setup)
 on: [push, pull_request]
 jobs:
@@ -56,7 +56,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm tsc --noEmit
       - run: pnpm build
-```
+\`\`\`
 
 ## Vercel Deployment
 
@@ -74,10 +74,10 @@ jobs:
 
 ## Mock vs Production Mode
 
-```
+\`\`\`
 NEXT_PUBLIC_USE_API=false  → localStorage (mock, default)
 NEXT_PUBLIC_USE_API=true   → lib/api.ts hits real endpoints
-```
+\`\`\`
 
 To switch to production API:
 1. Set `NEXT_PUBLIC_USE_API=true` and `NEXT_PUBLIC_API_BASE=<url>` in Vercel env vars

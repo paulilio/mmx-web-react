@@ -38,7 +38,7 @@
 - State transitions for loading and completion.
 
 ## Example Structure
-```text
+\`\`\`text
 feature/
   transaction-form-modal.tsx
   transaction-form-modal.test.tsx
@@ -48,7 +48,7 @@ hooks/
 lib/
   validations.ts
   validations.test.ts
-```
+\`\`\`
 
 ## CI Recommendations
 - Validate at least: `pnpm lint`, `pnpm tsc --noEmit`, `pnpm build`.
