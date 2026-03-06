@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ContactFormModal } from "@/components/contacts/contact-form-modal"
-import { useContacts, deleteContact } from "@/hooks/use-contacts"
+import { useContacts } from "@/hooks/use-contacts"
 import type { Contact } from "@/lib/types"
 import { Plus, Edit, Trash2, Loader2, Users } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -18,7 +18,7 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [showModal, setShowModal] = useState(false)
 
-  const { data: contacts, isLoading } = useContacts()
+  const { contacts, isLoading, deleteContact } = useContacts()
 
   const filteredContacts = contacts?.filter(
     (contact) =>

@@ -3,13 +3,16 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Users, FolderOpen, CreditCard } from "lucide-react"
+import { LayoutDashboard, Users, FolderOpen, CreditCard, PiggyBank, ArrowRightLeft, Settings } from "lucide-react"
+import { UserProfileButton } from "@/components/profile/user-profile-button"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Lançamentos", href: "/entries", icon: FileText },
+  { name: "Transações", href: "/transactions", icon: ArrowRightLeft },
   { name: "Contatos", href: "/contacts", icon: Users },
   { name: "Categorias", href: "/categories", icon: FolderOpen },
+  { name: "Orçamento", href: "/budget", icon: PiggyBank },
+  { name: "Configurações", href: "/settings", icon: Settings },
 ]
 
 export function Sidebar() {
@@ -45,6 +48,10 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
+
+      <div className="p-4 border-t border-slate-200">
+        <UserProfileButton />
+      </div>
     </div>
   )
 }

@@ -1,21 +1,36 @@
 "use client"
 
 import useSWR from "swr"
-import { getJSON, postJSON, putJSON, deleteJSON } from "@/lib/api"
+import { api } from "@/lib/api"
 import type { Contact } from "@/lib/types"
 
 export function useContacts() {
-  return useSWR<Contact[]>("/contacts", getJSON)
-}
+  const { data, error, mutate } = useSWR<Contact[]>("/contacts", api.get)
 
-export async function createContact(data: Omit<Contact, "id">) {
-  return postJSON<Contact>("/contacts", data)
-}
+  const createContact = async (data: Omit<Contact, "id">) => {
+    const result = await api.post<Contact>("/contacts", data)
+    mutate()
+    return result
+  }
 
-export async function updateContact(id: string, data: Partial<Contact>) {
-  return putJSON<Contact>(`/contacts/${id}`, data)
-}
+  const updateContact = async (id: string, data: Partial<Contact>) => {
+    const result = await api.put<Contact>(`/contacts/${id}`, data)
+    mutate()
+    return result
+  }
 
-export async function deleteContact(id: string) {
-  return deleteJSON(`/contacts/${id}`)
+  const deleteContact = async (id: string) => {
+    await api.delete(`/contacts/${id}`)
+    mutate()
+  }
+
+  return {
+    contacts: data || [],
+    isLoading: !error && !data,
+    error,
+    createContact,
+    updateContact,
+    deleteContact,
+    mutate,
+  }
 }

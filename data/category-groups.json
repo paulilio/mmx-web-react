@@ -1,0 +1,57 @@
+[
+  {
+    "id": "group-1",
+    "name": "Salários",
+    "icon": "briefcase",
+    "color": "#10b981",
+    "areaId": "area-1",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "group-2",
+    "name": "Renda Extra",
+    "icon": "plus-circle",
+    "color": "#059669",
+    "areaId": "area-1",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "group-3",
+    "name": "Contas Básicas",
+    "icon": "home",
+    "color": "#3b82f6",
+    "areaId": "area-2",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "group-4",
+    "name": "Supermercado",
+    "icon": "shopping-cart",
+    "color": "#f59e0b",
+    "areaId": "area-3",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "group-5",
+    "name": "Combustível",
+    "icon": "fuel",
+    "color": "#8b5cf6",
+    "areaId": "area-4",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]

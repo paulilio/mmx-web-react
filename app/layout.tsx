@@ -1,10 +1,18 @@
-import type React from "react"
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
+import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "sonner"
 import { Suspense } from "react"
+import type React from "react"
 import "./globals.css"
+import ClientLayout from "./client-layout"
+import { AuthProvider } from "@/hooks/use-auth"
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "MoedaMix - Dashboard Financeiro",
@@ -19,8 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={null}>{children}</Suspense>
+      <body className={`font-sans ${inter.variable}`}>
+        <Suspense fallback={null}>
+          <AuthProvider>
+            <ClientLayout>{children}</ClientLayout>
+          </AuthProvider>
+        </Suspense>
+        <Toaster position="top-right" />
         <Analytics />
       </body>
     </html>

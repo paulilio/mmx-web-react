@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "White Castle",
+    "version": "1.0.0",
+    "environment": "mock"
+  },
+  "footer": {
+    "companyName": "White Castle",
+    "showHelpLink": true,
+    "helpUrl": "/help",
+    "supportUrl": "/support"
+  }
+}

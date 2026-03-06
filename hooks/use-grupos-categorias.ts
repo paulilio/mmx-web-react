@@ -1,0 +1,52 @@
+import useSWR, { mutate as globalMutate } from "swr"
+import type { GrupoCategoria, GrupoCategoriaFormData } from "@/lib/types"
+import { api } from "@/lib/api"
+
+export function useGruposCategorias() {
+  const { data, error, mutate } = useSWR<GrupoCategoria[]>("/grupos-categorias", api.get)
+
+  const createGrupoCategoria = async (data: GrupoCategoriaFormData) => {
+    const result = await api.post("/grupos-categorias", data)
+    mutate()
+    return result
+  }
+
+  const updateGrupoCategoria = async (id: string, data: GrupoCategoriaFormData) => {
+    const result = await api.put(`/grupos-categorias/${id}`, data)
+    mutate()
+    return result
+  }
+
+  const deleteGrupoCategoria = async (id: string) => {
+    // Remove grupoCategoriaId from associated categories
+    const categories = await api.get("/categories")
+    const associatedCategories = categories.filter((cat: any) => cat.grupoCategoriaId === id)
+
+    for (const category of associatedCategories) {
+      try {
+        await api.put(`/categories/${category.id}`, { ...category, grupoCategoriaId: undefined })
+      } catch (error) {
+        console.error("[v0] Error removing grupoCategoriaId from category:", category.id, error)
+      }
+    }
+
+    await api.delete(`/grupos-categorias/${id}`)
+
+    await globalMutate("/categories")
+
+    mutate()
+  }
+
+  return {
+    gruposCategorias: data || [],
+    isLoading: !error && !data,
+    error,
+    createGrupoCategoria,
+    updateGrupoCategoria,
+    deleteGrupoCategoria,
+    mutate,
+  }
+}
+
+// Backward compatibility alias
+export const useBudgetGroups = useGruposCategorias
