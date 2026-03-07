@@ -3,7 +3,12 @@
 ## System Purpose
 - Product: MoedaMix web frontend for personal finance management.
 - Main areas: auth, dashboard, transactions, budget, categories, contacts, settings, admin audit logs.
-- Current mode: mock-first persistence in browser (`localStorage`) with API adapter boundary in `lib/api.ts`.
+- Current mode: hybrid mock-first + first-party backend routes.
+
+## Current Backend Coverage
+- Implemented first-party domains: `transactions`, `categories`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`.
+- OAuth providers implemented: Google and Microsoft.
+- API hardening implemented: rate limiting on auth endpoints, CORS by environment, security headers, secure auth cookies.
 
 ## Business Terms
 - `Area`: top-level financial grouping.
@@ -15,10 +20,10 @@
 - `User` + `Session`: authenticated scope used for data isolation.
 
 ## Key Goals
-- Keep feature behavior consistent while backend is evolving.
-- Preserve multi-user isolation via `userId` in stored entities.
-- Allow migration from mock storage to REST API with minimal UI changes.
-- Maintain clear domain hooks and typed contracts.
+- Keep feature behavior consistent while backend evolves.
+- Preserve multi-user isolation via `userId` in data operations.
+- Keep UI isolated from transport mode (mock vs API) via hooks + adapter boundary.
+- Maintain typed contracts and envelope responses `{ data, error }`.
 
 ## Core Technologies
 - Framework: Next.js 14 App Router.
@@ -30,11 +35,18 @@
 - Runtime/tooling: Node.js 22+, pnpm.
 
 ## Runtime Modes
-- Mock mode (default): `NEXT_PUBLIC_USE_API=false`.
+- Mock mode: `NEXT_PUBLIC_USE_API=false`.
 - API mode: `NEXT_PUBLIC_USE_API=true` + `NEXT_PUBLIC_API_BASE`.
-- Rule: feature code should not care about mode; use hooks + `lib/api.ts`.
+- Rule: feature code should not branch by mode directly; use hooks + `lib/client/api.ts`.
 
-## Current Quality Reality
-- Repo docs define Vitest/Testing Library and Playwright strategy.
-- Test files are currently sparse/absent; new feature work should include tests.
-- Build/lint/type checks exist via scripts (`dev`, `build`, `lint`).
+## Environment Variables (Important)
+- Mode and routing: `NEXT_PUBLIC_USE_API`, `NEXT_PUBLIC_API_BASE`, `MMX_APP_ENV`.
+- CORS policy: `CORS_ORIGINS_DEV`, `CORS_ORIGINS_STAGING`, `CORS_ORIGINS_PROD`.
+- OAuth Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
+- OAuth Microsoft: `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI`, `MICROSOFT_TENANT_ID`.
+
+## AI Contribution Rules (Practical)
+- Prefer extending existing hook/service/repository patterns instead of parallel flows.
+- Keep auth/security cross-cutting logic under `lib/server/security/**`.
+- When updating docs, keep `.ai/*`, `README.md`, and `docs/*` consistent with each other.
+- Before finalizing: run `pnpm test:unit`, `pnpm tsc --noEmit`, `pnpm build`, `pnpm lint`, and `pnpm validate:env` as needed.

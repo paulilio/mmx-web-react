@@ -4,7 +4,7 @@
 - `app/`: Next.js App Router pages, route layouts, loading boundaries.
 - `components/`: feature UI + shared UI primitives.
 - `hooks/`: domain hooks (`use-auth`, `use-transactions`, etc).
-- `lib/`: API adapter, storage, migration, validation, utilities.
+- `lib/`: client adapter, server layers, domain logic, shared utilities.
 - `types/`: shared auth-related types.
 - `data/`: mock seed JSON files.
 - `config/`: app-level config JSON.
@@ -12,17 +12,17 @@
 - `scripts/`: local validation/migration utility scripts.
 
 ## Important Files
-- `lib/api.ts`: canonical data adapter boundary.
+- `lib/client/api.ts`: canonical data adapter boundary.
 - `hooks/use-auth.tsx`: auth context and login/register flows.
 - `hooks/use-session.ts`: session validity and extension behavior.
-- `lib/storage.ts`: mock storage helpers and cache behavior.
-- `lib/migration-service.ts`: legacy key migration and user-scoped storage helpers.
-- `middleware.ts`: route matcher + security headers.
+- `lib/server/storage.ts`: mock storage helpers and cache behavior.
+- `lib/server/migration-service.ts`: legacy key migration and user-scoped storage helpers.
+- `middleware.ts`: `/api` CORS handling (including preflight), origin enforcement, and security headers.
 - `app/layout.tsx`: root providers and app shell wiring.
 - `.github/copilot-instructions.md`: AI generation constraints.
 
 ## API Endpoint Usage (Current)
-- Implemented in `lib/api.ts` mock adapter:
+- Implemented in `lib/client/api.ts` mock adapter when `NEXT_PUBLIC_USE_API=false`:
   - `GET/POST/PUT/DELETE /areas`
   - `GET/POST/PUT/DELETE /category-groups`
   - `GET/POST/PUT/DELETE /categories`
@@ -31,22 +31,43 @@
   - `GET /reports/summary`
   - `GET /reports/aging`
   - `GET /reports/cashflow?days=&status=`
-- Used by hooks but not fully implemented in current adapter:
-  - `/budget/*`, `/budget-allocations*`, `/budget-groups*`, `/grupos-categorias*`
+- Resolved to first-party Next.js routes by `resolveApiUrl` in `lib/client/api.ts` when `NEXT_PUBLIC_USE_API=true`:
+  - `/transactions`, `/categories`, `/contacts`, `/auth`, `/areas`, `/budget`, `/budget-allocations`
+
+## First-Party API Routes (Active)
+- Transactions: `app/api/transactions/**`
+- Categories: `app/api/categories/**`
+- Contacts: `app/api/contacts/**`
+- Budget: `app/api/budget/**`, `app/api/budget-allocations/**`
+- Areas: `app/api/areas/**`
+- Auth:
+  - `app/api/auth/login/route.ts`
+  - `app/api/auth/register/route.ts`
+  - `app/api/auth/refresh/route.ts`
+  - `app/api/auth/oauth/google/**`
+  - `app/api/auth/oauth/microsoft/**`
 
 ## Shared Utilities
-- `lib/utils.ts`: class merge (`cn`), format helpers, audit wrappers.
-- `lib/date-utils.ts`: date parsing/formatting helpers.
-- `lib/validations.ts`: Zod schemas and form data types.
-- `lib/audit-logger.ts`: audit event persistence and filtering.
+- `lib/shared/utils.ts`: class merge (`cn`), format helpers, audit wrappers.
+- `lib/shared/date-utils.ts`: date parsing/formatting helpers.
+- `lib/shared/validations.ts`: Zod schemas and form data types.
+- `lib/shared/audit-logger.ts`: audit event persistence and filtering.
 
 ## Service Layer
-- `lib/persistence-service.ts`: transaction persistence abstraction.
-- `lib/user-data-service.ts`: user-context data operations.
-- `lib/migration-service.ts`: key migration + user data isolation helper.
+- `lib/server/persistence-service.ts`: transaction persistence abstraction.
+- `lib/server/user-data-service.ts`: user-context data operations.
+- `lib/server/migration-service.ts`: key migration + user data isolation helper.
+- `lib/server/security/rate-limit.ts`: auth rate limiting.
+- `lib/server/security/cors.ts`: CORS by environment.
+- `lib/server/security/auth-cookies.ts`: secure auth cookie helpers.
 
 ## Build and Deployment References
 - `package.json`: scripts (`dev`, `build`, `lint`) and dependencies.
 - `next.config.mjs`: Next.js build/lint behavior.
 - `docs/deployment.md`: Vercel and environment guidance.
-- Environment flags: `NEXT_PUBLIC_USE_API`, `NEXT_PUBLIC_API_BASE`.
+- `scripts/validate-env.mjs`: environment and secret validation.
+- Environment flags:
+  - `NEXT_PUBLIC_USE_API`, `NEXT_PUBLIC_API_BASE`
+  - `MMX_APP_ENV`, `CORS_ORIGINS_DEV`, `CORS_ORIGINS_STAGING`, `CORS_ORIGINS_PROD`
+  - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+  - `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI`, `MICROSOFT_TENANT_ID`

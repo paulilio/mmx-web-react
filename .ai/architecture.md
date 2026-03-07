@@ -1,42 +1,51 @@
 # Architecture
 
 ## High-Level Architecture
-- Pattern: layered frontend architecture.
-- Flow: Page/UI -> Feature Component -> Domain Hook -> `lib/api.ts` -> storage/API adapter.
-- Data source today: localStorage-backed repositories and migration services.
+- Pattern: layered app + backend slices.
+- Client flow: Page/UI -> Feature Component -> Domain Hook -> `lib/client/api.ts`.
+- Server flow (first-party routes): `app/api/**` -> `lib/server/services/**` -> `lib/domain/**` -> `lib/server/repositories/**` -> Prisma.
 
 ## Module Boundaries
-- `app/`: routing, pages, route-level layouts, loading states.
+- `app/`: routing, pages, route-level layouts, loading states, API routes.
 - `components/`: feature UI and interaction surfaces.
 - `hooks/`: domain orchestration and side effects; no JSX.
-- `lib/`: adapters, persistence, migration, validation, utilities.
+- `lib/client/`: client adapter boundary.
+- `lib/server/`: server services, repositories, DB, HTTP helpers, security.
+- `lib/domain/`: domain entities and business rules.
 - `types/`: cross-module contracts, especially auth-related types.
 
 ## Auth and Session Boundary
-- Context owner: `hooks/use-auth.tsx`.
+- Client context owner: `hooks/use-auth.tsx`.
 - Session behavior: `hooks/use-session.ts`.
 - Route protection: `middleware.ts` + `components/auth/auth-guard.tsx` + `components/auth/session-monitor.tsx`.
+- Auth routes currently active: login/register/refresh and OAuth (Google + Microsoft).
 
 ## Data and Persistence Boundary
-- Adapter entrypoint: `lib/api.ts`.
-- Storage support: `lib/storage.ts`, `lib/persistence-service.ts`.
-- Migration support: `lib/migration-service.ts`.
-- User-scope service: `lib/user-data-service.ts`.
+- Adapter entrypoint for UI/hook calls: `lib/client/api.ts`.
+- Storage support (mock mode and migration): `lib/server/storage.ts`, `lib/server/persistence-service.ts`, `lib/server/migration-service.ts`, `lib/server/user-data-service.ts`.
+- First-party API domains already migrated:
+  - transactions
+  - categories
+  - contacts
+  - budget
+  - budget-allocations
+  - areas
+  - auth
 
-## Folder Responsibilities
-- `components/ui/`: design-system primitives (treat as stable shared layer).
-- `components/<feature>/`: feature-specific modals/forms/panels.
-- `hooks/use-*.ts`: feature API and state contract for pages/components.
-- `lib/validations.ts`: Zod schemas used by forms and domain constraints.
-- `lib/types.ts`, `types/auth.ts`: canonical type contracts.
+## Security Architecture
+- CORS policy: `lib/server/security/cors.ts` wired in `middleware.ts` for `/api`.
+- Rate limiting: `lib/server/security/rate-limit.ts` on auth endpoints.
+- Auth cookies: `lib/server/security/auth-cookies.ts`.
+- Global security headers: set in `middleware.ts` (plus HSTS in production).
 
 ## Data Flow Rules
-- Keep fetch/mutation inside hooks, not page components.
-- Keep storage/API branching inside `lib/api.ts` and lower layers.
+- Keep fetch/mutation in hooks or dedicated services, not in page components.
+- Keep storage/API branching inside `lib/client/api.ts` and lower server/client boundaries.
 - Keep entities user-scoped (`userId`) for read/write operations.
-- Use SWR cache keys that are stable and domain-driven.
+- Keep API response envelope consistent: `{ data, error }`.
 
 ## Architecture Constraints for AI
-- Extend existing hook/service first; avoid parallel patterns.
-- Prefer localized feature changes over global cross-cutting edits.
-- Do not bypass adapter boundaries from UI code.
+- Extend existing hook/service/repository first; avoid parallel abstractions.
+- Do not bypass `lib/client/api.ts` from UI code.
+- Do not move business rules from domain/service to page components.
+- Prefer reusing `lib/server/security/*` for cross-cutting concerns rather than route-local duplication.
