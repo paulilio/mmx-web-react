@@ -1,6 +1,6 @@
 import useSWR, { mutate as globalMutate } from "swr"
-import type { GrupoCategoria, GrupoCategoriaFormData } from "@/lib/types"
-import { api } from "@/lib/api"
+import type { GrupoCategoria, GrupoCategoriaFormData } from "@/lib/shared/types"
+import { api } from "@/lib/client/api"
 
 export function useGruposCategorias() {
   const { data, error, mutate } = useSWR<GrupoCategoria[]>("/grupos-categorias", api.get)

@@ -5,7 +5,7 @@ import { SummaryCard } from "@/components/dashboard/summary-card"
 import { CashflowChart } from "@/components/dashboard/cashflow-chart"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
 import { DollarSign, AlertTriangle, Clock, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
-import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/constants"
+import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/shared/constants"
 
 export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()

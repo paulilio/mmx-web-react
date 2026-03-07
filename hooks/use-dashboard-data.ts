@@ -1,8 +1,8 @@
 "use client"
 
 import useSWR from "swr"
-import { getJSON } from "@/lib/api"
-import type { AgingReport, CashflowData } from "@/lib/types"
+import { getJSON } from "@/lib/client/api"
+import type { AgingReport, CashflowData } from "@/lib/shared/types"
 
 interface DashboardSummary {
   totalOpen: number

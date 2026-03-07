@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { logAuditEvent } from "@/lib/utils"
+import { logAuditEvent } from "@/lib/shared/utils"
 
 interface SessionData {
   token: string

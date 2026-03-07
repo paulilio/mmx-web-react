@@ -6,10 +6,10 @@ import { useState } from "react"
 import type { ReactNode } from "react"
 import { toast } from "react-toastify"
 import type { User, SessionData, RegisterData } from "@/types/auth"
-import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEvent } from "@/lib/utils"
-import { validateRegistrationForm } from "@/lib/auth-validations"
-import { userDataService } from "@/lib/user-data-service"
-import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/migration-service"
+import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEvent } from "@/lib/shared/utils"
+import { validateRegistrationForm } from "@/lib/shared/auth-validations"
+import { userDataService } from "@/lib/server/user-data-service"
+import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/server/migration-service"
 
 interface AuthContextType {
   user: User | null

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useBudgetAllocations } from "@/hooks/use-budget-allocations"
-import type { BudgetGroup } from "@/lib/types"
+import type { BudgetGroup } from "@/lib/shared/types"
 import { Loader2, Plus } from "lucide-react"
 
 const addFundsSchema = z.object({

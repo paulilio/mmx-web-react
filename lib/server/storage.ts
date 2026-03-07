@@ -1,4 +1,4 @@
-import type { Category, Transaction, Contact, Area, CategoryGroup } from "./types"
+import type { Category, Transaction, Contact, Area, CategoryGroup } from "../shared/types"
 import { transactionPersistence } from "./persistence-service"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
 

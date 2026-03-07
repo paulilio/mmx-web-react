@@ -14,10 +14,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useBudgetGroups } from "@/hooks/use-budget-groups"
 import { useCategories } from "@/hooks/use-categories"
-import { budgetGroupSchema, type BudgetGroupFormData } from "@/lib/validations"
-import type { BudgetGroup } from "@/lib/types"
+import { budgetGroupSchema, type BudgetGroupFormData } from "@/lib/shared/validations"
+import type { BudgetGroup } from "@/lib/shared/types"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
-import { PRESET_ICONS, ICON_DISPLAY_NAMES } from "@/lib/icon-mapping"
+import { PRESET_ICONS, ICON_DISPLAY_NAMES } from "@/lib/shared/icon-mapping"
 import { Loader2, Palette } from "lucide-react"
 
 interface BudgetGroupFormModalProps {

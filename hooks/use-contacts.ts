@@ -1,8 +1,8 @@
 "use client"
 
 import useSWR from "swr"
-import { api } from "@/lib/api"
-import type { Contact } from "@/lib/types"
+import { api } from "@/lib/client/api"
+import type { Contact } from "@/lib/shared/types"
 
 export function useContacts() {
   const { data, error, mutate } = useSWR<Contact[]>("/contacts", api.get)

@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useBudgetAllocations } from "@/hooks/use-budget-allocations"
-import { fundTransferSchema, type FundTransferFormData } from "@/lib/validations"
-import type { BudgetGroup } from "@/lib/types"
+import { fundTransferSchema, type FundTransferFormData } from "@/lib/shared/validations"
+import type { BudgetGroup } from "@/lib/shared/types"
 import { Loader2, ArrowRightLeft } from "lucide-react"
 
 interface TransferFundsModalProps {

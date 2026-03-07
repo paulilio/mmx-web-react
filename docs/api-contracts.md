@@ -1,104 +1,125 @@
-# API Contracts
+# Contratos de API
 
-## Current Mode: Mock (localStorage)
+## Modo Atual: Hibrido (mock-first + backend parcial)
 
-All API calls are routed through `lib/api.ts`. In mock mode this file reads/writes localStorage. To switch to a real backend, replace the implementations in `lib/api.ts` — no other files need to change.
+Todas as chamadas de API passam por `lib/client/api.ts`.
 
-\`\`\`ts
-// lib/api.ts (pattern)
+- Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
+- Transacoes ja possuem rotas Next.js de primeira parte em `app/api/transactions/**`.
+- Outros dominios ainda estao em mock-first e serao migrados incrementalmente.
+
+```ts
+// lib/client/api.ts (pattern)
 export async function getTransactions(userId: string): Promise<Transaction[]> {
-  // Mock: read from localStorage
-  // Production: return fetch(`/api/transactions?userId=${userId}`).then(r => r.json())
-  const raw = localStorage.getItem("mmx_transactions") ?? "[]"
-  return (JSON.parse(raw) as Transaction[]).filter(t => t.userId === userId)
+  const response = await fetch(`/api/transactions?userId=${userId}`)
+  const payload = (await response.json()) as {
+    data: { data: Transaction[] }
+    error: { code: string; message: string } | null
+  }
+
+  if (payload.error) {
+    throw new Error(payload.error.message)
+  }
+
+  return payload.data.data
 }
-\`\`\`
+```
 
-## localStorage Keys
+## Chaves de localStorage
 
-| Key | Entity | Scoped by |
+| Chave | Entidade | Escopo |
 |---|---|---|
-| `mmx_users` | Users | — |
-| `mmx_transactions` | Transactions | `userId` |
-| `mmx_categories` | Categories | `userId` |
-| `mmx_category_groups` | Category groups | `userId` |
+| `mmx_users` | Usuarios | - |
+| `mmx_transactions` | Transacoes | `userId` |
+| `mmx_categories` | Categorias | `userId` |
+| `mmx_category_groups` | Grupos de categoria | `userId` |
 | `mmx_areas` | Areas | `userId` |
-| `mmx_budget_allocations` | Budget | `userId` |
-| `mmx_contacts` | Contacts | `userId` |
-| `mmx_sessions` | Sessions | `userId` |
-| `mmx_audit_logs` | Audit logs | `userId` |
+| `mmx_budget_allocations` | Orcamento | `userId` |
+| `mmx_contacts` | Contatos | `userId` |
+| `mmx_sessions` | Sessoes | `userId` |
+| `mmx_audit_logs` | Logs de auditoria | `userId` |
 
-## TypeScript Interfaces
+## Interfaces TypeScript (referencia)
 
-\`\`\`ts
+```ts
 // types/auth.ts
 interface User {
   id: string
+  email: string
   firstName: string
   lastName: string
-  email: string
-  planType: "free" | "premium" | "pro"
+  phone?: string
+  cpfCnpj?: string
   isEmailConfirmed: boolean
-  status: "active" | "inactive" | "blocked"
+  defaultOrganizationId?: string
   createdAt: string
-  updatedAt: string
+  lastLogin?: string
+  planType: "free" | "premium" | "pro"
 }
 
-// lib/types.ts
+// lib/shared/types.ts
 interface Transaction {
   id: string
-  userId: string
   description: string
   amount: number
   type: "income" | "expense"
   categoryId: string
   date: string
+  status: "completed" | "pending" | "cancelled"
+  notes?: string
   createdAt: string
   updatedAt: string
 }
-\`\`\`
+```
 
-## Expected REST Endpoints (production)
+## Endpoints Implementados (atual)
 
-\`\`\`
-GET    /api/transactions          → Transaction[]
-POST   /api/transactions          → Transaction
-PUT    /api/transactions/:id      → Transaction
-DELETE /api/transactions/:id      → { success: boolean }
+```text
+GET    /api/transactions      -> { data: { data: Transaction[]; total; page; pageSize }, error: null } | { data: null, error }
+POST   /api/transactions      -> { data: Transaction, error: null } | { data: null, error }
+GET    /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
+PUT    /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
+DELETE /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
+```
 
-GET    /api/categories            → Category[]
-POST   /api/categories            → Category
+## Endpoints Planejados (proximas fases)
 
-POST   /api/auth/login            → { user: User, token: string }
-POST   /api/auth/register         → { user: User }
-POST   /api/auth/confirm-email    → { success: boolean }
-POST   /api/auth/forgot-password  → { success: boolean }
-POST   /api/auth/reset-password   → { success: boolean }
-\`\`\`
+```text
+GET/POST /api/categories
+GET/POST /api/contacts
+GET/POST /api/category-groups
+GET/POST /api/budget
+GET/POST /api/areas
 
-## Standard Response Shape
+POST     /api/auth/login
+POST     /api/auth/register
+POST     /api/auth/refresh
+POST     /api/auth/logout
+```
 
-\`\`\`ts
-// Success
+## Formato Padrao de Resposta
+
+```ts
+// Sucesso
 { data: T, error: null }
 
-// Error
+// Erro
 { data: null, error: { code: string, message: string } }
-\`\`\`
+```
 
-## Error Handling Pattern
+## Padrao de Tratamento de Erros
 
-\`\`\`ts
+```ts
 // hooks/use-transactions.ts
 try {
   const data = await getTransactions(userId)
   setTransactions(data)
 } catch (err) {
-  toast.error("Erro ao carregar transações")
+  toast.error("Erro ao carregar transacoes")
   console.error("[transactions]", err)
 }
-\`\`\`
+```
 
-- Never expose raw error messages in the UI
-- Always show a Portuguese user-facing message via `toast.error()`
-- Log technical details with a namespaced prefix: `[module-name]`
+- Nunca expor mensagens tecnicas brutas na UI
+- Sempre mostrar mensagem amigavel em portugues via `toast.error()`
+- Registrar detalhes tecnicos com prefixo de namespace: `[module-name]`

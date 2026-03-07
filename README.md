@@ -1,38 +1,85 @@
 # mmx-web-react
 
-Frontend web do projeto **MMX**, feito com **Next.js + TypeScript**.
+Frontend web do projeto **MMX**, construido com **Next.js + TypeScript**.
 
-CI com **GitHub Actions** e deploy contínuo na **Vercel** (pré-visualizações por PR).
+O repositorio esta em modo **mock-first com migracao incremental para backend real**.
+Atualmente, transacoes ja possuem rotas backend em `app/api/transactions/**`.
 
 ---
 
 ## Stack
-- **Next.js 14+** (App Router), **React 18**, **TypeScript**
-- **pnpm** (gerenciador de pacotes)
-- **ESLint + Prettier** (padrões de código)
-- **Vitest + Testing Library** (testes unitários)
+
+- **Next.js 14.2** (App Router)
+- **React 19**
+- **TypeScript 5**
+- **pnpm**
+- **Prisma + PostgreSQL**
+- **ESLint + Prettier**
+- **Vitest** (testes unitarios)
 - (Opcional) **Playwright** (E2E)
 - Deploy: **Vercel**
 
 ---
 
-## Conectar à Vercel
-- No painel da **Vercel**, **Import Git Repository** → selecione `mmx-web-react`.
-- Build command: auto (Next), Output: auto.
-- Configure as **Environment Variables** (Preview/Production).
-- Cada PR vira **Preview**; merge na `main` vai para **Production**.
+## Desenvolvimento local
 
----
-
-## Convenções
-- **Conventional Commits** (`feat:`, `fix:`, `chore:`…)  
-- **Husky + lint-staged** (opcional) para rodar `lint`/`test` no commit.
-- Labels úteis: `feat`, `bug`, `tech-debt`, `docs`, `blocked`.
-
----
-
-## Run locally
-\`\`\`bash
+```bash
 corepack enable
 pnpm install
 pnpm dev
+```
+
+Aplicacao local: `http://localhost:3000`
+
+Comandos principais:
+
+```bash
+pnpm lint
+pnpm type-check
+pnpm test:unit
+pnpm build
+```
+
+---
+
+## Variaveis de ambiente
+
+Crie um `.env.local` na raiz do projeto:
+
+```bash
+NEXT_PUBLIC_API_BASE=http://localhost:4000
+NEXT_PUBLIC_USE_API=false
+```
+
+- `NEXT_PUBLIC_USE_API=false`: usa modo mock/local
+- `NEXT_PUBLIC_USE_API=true`: usa chamadas de API
+
+---
+
+## Documentacao
+
+- Arquitetura geral: `docs/architecture.md`
+- Contratos de API: `docs/api-contracts.md`
+- Deploy e CI: `docs/deployment.md`
+- Desenvolvimento local: `docs/local-development.md`
+- Estrutura do projeto: `docs/project-structure.md`
+- Diretrizes de frontend: `docs/frontend-guidelines.md`
+- ADRs (decisoes arquiteturais): `docs/adr/README.md`
+- Mapa explicativo de ADRs: `docs/adr/review.md`
+
+---
+
+## Convencoes
+
+- Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)
+- Estilo: TypeScript estrito, sem `any` quando possivel
+- UI base: `components/ui/**` (evitar alteracoes sem necessidade)
+- Mensagens para usuario: preferencialmente em portugues
+
+---
+
+## Status atual (resumo)
+
+- Fluxo completo em transacoes: `API -> Service -> Domain -> Repository -> Prisma`
+- Contrato HTTP padronizado com envelope `{ data, error }`
+- Auth backend (bcrypt/JWT), rate limiting e OAuth: em andamento no plano

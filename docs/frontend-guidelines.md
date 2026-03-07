@@ -1,13 +1,13 @@
-# Frontend Guidelines
+# Diretrizes de Frontend
 
-## Component Conventions
+## Convencoes de Componentes
 
-- One component per file; filename matches export name in `kebab-case`
-- Pages live in `app/`; reusable UI in `components/`
-- Modals are co-located with their feature folder (e.g. `components/budget/add-funds-modal.tsx`)
-- Primitive/design-system components live in `components/ui/` — do not edit directly
+- Um componente por arquivo; o nome do arquivo deve seguir `kebab-case`
+- Paginas ficam em `app/`; UI reutilizavel em `components/`
+- Modais ficam co-localizados por feature (ex.: `components/budget/add-funds-modal.tsx`)
+- Componentes primitivos/design-system ficam em `components/ui/` e nao devem ser editados diretamente
 
-### Component template
+### Template de componente
 
 \`\`\`tsx
 // components/feature/my-component.tsx
@@ -27,26 +27,26 @@ const MyComponent: FC<MyComponentProps> = ({ title, onAction }) => {
 export default MyComponent
 \`\`\`
 
-## Naming Conventions
+## Convencoes de Nomenclatura
 
-| Thing | Convention | Example |
+| Item | Convencao | Exemplo |
 |---|---|---|
-| Files | kebab-case | `transaction-form-modal.tsx` |
-| Components | PascalCase | `TransactionFormModal` |
-| Hooks | camelCase + `use` prefix | `useTransactions` |
-| Types/Interfaces | PascalCase | `Transaction`, `AuthUser` |
-| Constants | SCREAMING_SNAKE | `MAX_RETRY_COUNT` |
+| Arquivos | kebab-case | `transaction-form-modal.tsx` |
+| Componentes | PascalCase | `TransactionFormModal` |
+| Hooks | camelCase + prefixo `use` | `useTransactions` |
+| Tipos/Interfaces | PascalCase | `Transaction`, `AuthUser` |
+| Constantes | SCREAMING_SNAKE | `MAX_RETRY_COUNT` |
 | localStorage keys | `mmx_` prefix | `mmx_transactions` |
 
-## State Management
+## Gerenciamento de Estado
 
-- **Server / async state**: SWR (`swr`) for data that will hit an API
-- **Auth state**: React Context via `AuthProvider` (`hooks/use-auth.tsx`)
-- **UI state**: local `useState` inside the component — do not lift unless shared
-- **Forms**: React Hook Form + Zod schema; define schemas in `lib/validations.ts`
+- **Estado server/assinc**: SWR (`swr`) para dados que vao para API
+- **Estado de auth**: React Context via `AuthProvider` (`hooks/use-auth.tsx`)
+- **Estado de UI**: `useState` local no componente; nao elevar sem necessidade
+- **Formularios**: React Hook Form + Zod; definir schemas em `lib/shared/validations.ts`
 
 \`\`\`ts
-// lib/validations.ts
+// lib/shared/validations.ts
 import { z } from "zod"
 
 export const transactionSchema = z.object({
@@ -56,26 +56,26 @@ export const transactionSchema = z.object({
 })
 \`\`\`
 
-## Hooks Guidelines
+## Diretrizes de Hooks
 
-- One hook per domain entity: `use-transactions.ts`, `use-budget.ts`, etc.
-- Hooks must never contain JSX
-- Expose typed return: `{ data, isLoading, error, create, update, remove }`
-- Always handle loading and error states
+- Um hook por entidade de dominio: `use-transactions.ts`, `use-budget.ts`, etc.
+- Hooks nunca devem conter JSX
+- Expor retorno tipado: `{ data, isLoading, error, create, update, remove }`
+- Sempre tratar estados de loading e erro
 
-## Styling
+## Estilizacao
 
-- Tailwind CSS v4 utility classes only — no inline `style` props
-- Use `cn()` from `lib/utils.ts` for conditional classes
-- Design tokens defined in `app/globals.css` under `@theme`
-- Dark mode via `next-themes`; use semantic tokens (`bg-background`, `text-foreground`)
+- Usar classes utilitarias do Tailwind CSS v4; evitar `style` inline
+- Usar `cn()` de `lib/shared/utils.ts` para classes condicionais
+- Design tokens em `app/globals.css` sob `@theme`
+- Dark mode via `next-themes`; usar tokens semanticos (`bg-background`, `text-foreground`)
 
-## Testing Guidelines
+## Diretrizes de Testes
 
-- Unit tests: Vitest + Testing Library
-- File convention: `*.test.tsx` co-located with the component
-- Test user interactions, not implementation details
-- E2E: Playwright (optional) in `/e2e` folder
+- Testes unitarios: Vitest + Testing Library
+- Convencao de arquivo: `*.test.tsx` co-localizado com o componente
+- Testar interacoes do usuario, nao detalhes de implementacao
+- E2E: Playwright (opcional) na pasta `/e2e`
 
 \`\`\`ts
 // components/dashboard/summary-card.test.tsx
@@ -88,9 +88,9 @@ test("renders title", () => {
 })
 \`\`\`
 
-## Lint & Formatting
+## Lint e Formatacao
 
 - ESLint: `next lint` (extends `next/core-web-vitals`)
-- Prettier: single quotes, 2-space indent, trailing commas
-- Run before commit: `pnpm lint && pnpm format`
-- No `console.log` in production code; use `lib/audit-logger.ts` for tracing
+- Prettier: aspas duplas, indentacao de 2 espacos, trailing commas
+- Rodar antes do commit: `pnpm lint && pnpm type-check`
+- Evitar `console.log` em codigo de producao; usar `lib/shared/audit-logger.ts` para rastreio

@@ -12,10 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useAreas } from "@/hooks/use-areas"
-import { categoryGroupSchema, type CategoryGroupFormData } from "@/lib/validations"
-import type { CategoryGroup } from "@/lib/types"
+import { categoryGroupSchema, type CategoryGroupFormData } from "@/lib/shared/validations"
+import type { CategoryGroup } from "@/lib/shared/types"
 import { Loader2, Palette } from "lucide-react"
-import { PRESET_ICONS, ICON_DISPLAY_NAMES } from "@/lib/icon-mapping"
+import { PRESET_ICONS, ICON_DISPLAY_NAMES } from "@/lib/shared/icon-mapping"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
 
 interface CategoryGroupFormModalProps {

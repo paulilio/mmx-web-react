@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, TrendingUp, Key } from "lucide-react"
-import { validatePassword } from "@/lib/auth-validations"
+import { validatePassword } from "@/lib/shared/auth-validations"
 import { toast } from "sonner"
 
 export default function ResetPasswordPage() {

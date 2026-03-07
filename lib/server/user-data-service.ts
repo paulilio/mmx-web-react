@@ -1,5 +1,5 @@
 import type { User } from "@/types/auth"
-import { logAuditEvent } from "./utils"
+import { logAuditEvent } from "../shared/utils"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
 
 interface UserDataContext {

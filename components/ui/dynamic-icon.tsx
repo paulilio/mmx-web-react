@@ -1,5 +1,5 @@
-import { getIconComponent } from "@/lib/icon-mapping"
-import { cn } from "@/lib/utils"
+import { getIconComponent } from "@/lib/shared/icon-mapping"
+import { cn } from "@/lib/shared/utils"
 
 interface DynamicIconProps {
   iconName: string

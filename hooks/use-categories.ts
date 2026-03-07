@@ -1,8 +1,8 @@
 "use client"
 
 import useSWR, { mutate as globalMutate } from "swr"
-import { api } from "@/lib/api"
-import type { Category } from "@/lib/types"
+import { api } from "@/lib/client/api"
+import type { Category } from "@/lib/shared/types"
 
 export function useCategories(onCategoryGroupsChange?: () => void) {
   const { data, error, mutate } = useSWR<Category[]>("/categories", api.get)

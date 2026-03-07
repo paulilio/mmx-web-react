@@ -1,48 +1,48 @@
-# Deployment
+# Deploy
 
-## Local Development
+## Desenvolvimento Local
 
-**Requirements:** Node.js 22, pnpm
+**Requisitos:** Node.js 22, pnpm
 
 \`\`\`bash
-# Install dependencies
+# Instalar dependencias
 pnpm install
 
-# Start dev server (http://localhost:3000)
+# Iniciar servidor de desenvolvimento (http://localhost:3000)
 pnpm dev
 
-# Type check
+# Verificacao de tipos
 pnpm tsc --noEmit
 
 # Lint
 pnpm lint
 
-# Build (validate before pushing)
+# Build (validar antes de enviar)
 pnpm build
 \`\`\`
 
-**Direct login shortcut** (mock only): On `/auth`, use the "Login Direto" button to authenticate as `paulilio.ferreira@gmail.com`. Remove this button before production.
+**Atalho de login direto** (somente mock): em `/auth`, use o botao "Login Direto" para autenticar como `paulilio.ferreira@gmail.com`. Remova esse botao antes de producao.
 
-## Environment Variables
+## Variaveis de Ambiente
 
-| Variable | Required | Description |
+| Variavel | Obrigatoria | Descricao |
 |---|---|---|
-| `NEXT_PUBLIC_API_BASE` | No | Base URL for API calls (empty = mock mode) |
-| `NEXT_PUBLIC_USE_API` | No | `"true"` switches from localStorage to real API |
+| `NEXT_PUBLIC_API_BASE` | Nao | URL base para chamadas de API (vazio = modo mock) |
+| `NEXT_PUBLIC_USE_API` | Nao | `"true"` troca de localStorage para API real |
 
-Create a `.env.local` for local overrides (never commit this file):
+Crie um `.env.local` para overrides locais (nunca commitar este arquivo):
 
 \`\`\`bash
 NEXT_PUBLIC_API_BASE=http://localhost:4000
 NEXT_PUBLIC_USE_API=false
 \`\`\`
 
-On Vercel, set these under **Project Settings → Environment Variables** per environment.
+Na Vercel, configure em **Project Settings -> Environment Variables** por ambiente.
 
-## CI Pipeline (GitHub Actions)
+## Pipeline de CI (GitHub Actions)
 
 \`\`\`yaml
-# .github/workflows/ci.yml (recommended setup)
+# .github/workflows/ci.yml (setup recomendado)
 on: [push, pull_request]
 jobs:
   ci:
@@ -58,33 +58,33 @@ jobs:
       - run: pnpm build
 \`\`\`
 
-## Vercel Deployment
+## Deploy na Vercel
 
-| Event | Environment | URL |
+| Evento | Ambiente | URL |
 |---|---|---|
-| PR opened / push to branch | Preview | `*.vercel.app` (unique per PR) |
-| Merge to `main` | Production | Custom domain |
+| PR aberto / push em branch | Preview | `*.vercel.app` (unico por PR) |
+| Merge em `main` | Producao | Dominio customizado |
 
-**Deploy flow:**
-1. Push to any branch → Vercel builds preview automatically
-2. Share preview URL with team for review
-3. Merge PR to `main` → production deploy triggers
+**Fluxo de deploy:**
+1. Push para qualquer branch -> Vercel gera preview automaticamente
+2. Compartilhe a URL de preview com o time para revisao
+3. Merge do PR em `main` -> deploy de producao e disparado
 
-**Node.js version:** Set to **22** in Vercel Project Settings → General → Node.js Version (matches `engines` in `package.json`).
+**Versao do Node.js:** defina **22** em Vercel Project Settings -> General -> Node.js Version (igual ao `engines` do `package.json`).
 
-## Mock vs Production Mode
+## Modo Mock vs Producao
 
 \`\`\`
-NEXT_PUBLIC_USE_API=false  → localStorage (mock, default)
-NEXT_PUBLIC_USE_API=true   → lib/api.ts hits real endpoints
+NEXT_PUBLIC_USE_API=false  -> localStorage (mock, padrao)
+NEXT_PUBLIC_USE_API=true   -> lib/client/api.ts chama endpoints reais
 \`\`\`
 
-To switch to production API:
-1. Set `NEXT_PUBLIC_USE_API=true` and `NEXT_PUBLIC_API_BASE=<url>` in Vercel env vars
-2. Implement the fetch calls in `lib/api.ts` (stubs are already in place)
-3. Remove the "Login Direto" button from `app/auth/page.tsx`
-4. Remove `lib/migration-service.ts` logic after data is fully migrated to the database
+Para trocar para API de producao:
+1. Definir `NEXT_PUBLIC_USE_API=true` e `NEXT_PUBLIC_API_BASE=<url>` nas variaveis de ambiente da Vercel
+2. Implementar/expandir chamadas `fetch` em `lib/client/api.ts`
+3. Remover o botao "Login Direto" de `app/auth/page.tsx`
+4. Remover a logica de `lib/server/migration-service.ts` apos migracao completa dos dados para o banco
 
-## App Version
+## Versao da Aplicacao
 
-Version is tracked in `package.json` and read at runtime via `lib/config.ts`. Update `package.json` version on every release — the footer picks it up automatically.
+A versao e controlada em `package.json` e lida em runtime via `lib/shared/config.ts`. Atualize a versao no `package.json` a cada release; o footer exibe automaticamente.

@@ -1,6 +1,6 @@
 import useSWR, { mutate as globalMutate } from "swr"
-import { api } from "@/lib/api"
-import type { Area, AreaFormData } from "@/lib/types"
+import { api } from "@/lib/client/api"
+import type { Area, AreaFormData } from "@/lib/shared/types"
 
 export function useAreas() {
   const { data: areas = [], error, isLoading, mutate } = useSWR<Area[]>("/areas", api.get)

@@ -1,4 +1,4 @@
-import type { Transaction } from "./types"
+import type { Transaction } from "../shared/types"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
 
 interface PersistenceConfig {

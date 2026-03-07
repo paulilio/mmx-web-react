@@ -1,8 +1,8 @@
 "use client"
 
 import useSWR from "swr"
-import { api } from "@/lib/api"
-import type { BudgetAllocation, BudgetAllocationFormData } from "@/lib/types"
+import { api } from "@/lib/client/api"
+import type { BudgetAllocation, BudgetAllocationFormData } from "@/lib/shared/types"
 
 export function useBudgetAllocations(month?: string) {
   const endpoint = month ? `/budget-allocations?month=${month}` : "/budget-allocations"

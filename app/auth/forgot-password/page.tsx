@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, TrendingUp } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { validateEmail } from "@/lib/auth-validations"
+import { validateEmail } from "@/lib/shared/auth-validations"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")

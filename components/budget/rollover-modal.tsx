@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useBudgetAllocations } from "@/hooks/use-budget-allocations"
-import type { BudgetGroup } from "@/lib/types"
+import type { BudgetGroup } from "@/lib/shared/types"
 import { Loader2, Settings } from "lucide-react"
 
 const rolloverSchema = z.object({

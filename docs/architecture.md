@@ -1,48 +1,48 @@
-# Architecture
+# Arquitetura
 
-## System Overview
+## Visao Geral do Sistema
 
-MoedaMix is a personal finance dashboard built with Next.js 14 (App Router). Persistence is currently localStorage (JSON mock) with a repository layer designed for API replacement without UI changes.
+MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e baseada em localStorage (JSON mock), com uma camada de adapter preparada para substituicao por API sem mudancas de UI.
 
 ## Stack
 
-| Layer | Technology |
+| Camada | Tecnologia |
 |---|---|
-| Framework | Next.js 14.2 — App Router |
-| Language | TypeScript 5 |
+| Framework | Next.js 14.2 - App Router |
+| Linguagem | TypeScript 5 |
 | UI | React 19 + shadcn/ui + Radix UI |
-| Styling | Tailwind CSS v4 |
-| Forms | React Hook Form + Zod |
-| Charts | Recharts |
-| State | React Context + SWR |
+| Estilizacao | Tailwind CSS v4 |
+| Formularios | React Hook Form + Zod |
+| Graficos | Recharts |
+| Estado | React Context + SWR |
 | Runtime | Node.js 22 |
 
-## Frontend Layers
+## Camadas de Frontend
 
 \`\`\`
-UI (pages + components)
+UI (paginas + componentes)
         ↓
-Custom Hooks  (use-transactions, use-budget, use-auth …)
+Hooks customizados (use-transactions, use-budget, use-auth ...)
         ↓
-Service Layer (lib/persistence-service, lib/storage, lib/user-data-service)
+Camada de servicos (lib/server/persistence-service, lib/server/storage, lib/server/user-data-service)
         ↓
-Repository / Adapter  (lib/api.ts  ← swap this for real API calls)
+Repositorio / adapter (lib/client/api.ts  <- substituir mock adapters progressivamente)
         ↓
 localStorage (mock) | REST API (production)
 \`\`\`
 
-## Data Flow
+## Fluxo de Dados
 
-1. Page renders → calls domain hook (e.g. `useTransactions`)
-2. Hook calls persistence service, which calls `lib/api.ts`
-3. `lib/api.ts` reads/writes localStorage; in production, replace with `fetch`
-4. Hook returns typed data; component re-renders
+1. A pagina renderiza e chama o hook de dominio (ex.: `useTransactions`)
+2. O hook chama o servico de persistencia, que chama `lib/client/api.ts`
+3. `lib/client/api.ts` le/escreve adapters locais; transacoes ja usam `/api/transactions`
+4. O hook retorna dados tipados e o componente re-renderiza
 
-## User Isolation
+## Isolamento por Usuario
 
-All stored records carry a `userId` field. `UserDataService` filters every read/write by the authenticated user. `MigrationService` upgrades legacy keys on first login.
+Todos os registros armazenados possuem campo `userId`. `UserDataService` filtra toda leitura/escrita pelo usuario autenticado. `MigrationService` atualiza chaves legadas no primeiro login.
 
-## Folder Structure
+## Estrutura de Pastas
 
 \`\`\`
 app/                  # Next.js App Router pages & layouts
@@ -65,13 +65,13 @@ scripts/              # Migration validators & test utilities
 docs/                 # This folder
 \`\`\`
 
-## Integration Points
+## Pontos de Integracao
 
-| Concern | File |
+| Tema | Arquivo |
 |---|---|
 | Auth context | `hooks/use-auth.tsx` |
 | Session | `hooks/use-session.ts` |
-| Storage adapter | `lib/api.ts` |
-| Multi-user migration | `lib/migration-service.ts` |
-| Audit log | `lib/audit-logger.ts` |
+| Storage adapter | `lib/client/api.ts` |
+| Multi-user migration | `lib/server/migration-service.ts` |
+| Audit log | `lib/shared/audit-logger.ts` |
 | Route protection | `middleware.ts` + `components/auth/auth-guard.tsx` |

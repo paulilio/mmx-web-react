@@ -1,8 +1,8 @@
 "use client"
 
 import useSWR from "swr"
-import { api } from "@/lib/api"
-import type { Transaction, TransactionFormData, DayOfWeek, Category, CategoryGroup } from "@/lib/types"
+import { api } from "@/lib/client/api"
+import type { Transaction, TransactionFormData, DayOfWeek, Category, CategoryGroup } from "@/lib/shared/types"
 
 interface TransactionsParams {
   categoryId?: string

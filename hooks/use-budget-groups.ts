@@ -1,6 +1,6 @@
 import useSWR, { mutate as globalMutate } from "swr"
-import type { BudgetGroup, BudgetGroupFormData } from "@/lib/types"
-import { api } from "@/lib/api"
+import type { BudgetGroup, BudgetGroupFormData } from "@/lib/shared/types"
+import { api } from "@/lib/client/api"
 
 export function useBudgetGroups() {
   const { data, error, mutate } = useSWR<BudgetGroup[]>("/budget-groups", api.get)

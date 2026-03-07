@@ -15,8 +15,8 @@ import { AddFundsModal } from "@/components/budget/add-funds-modal"
 import { TransferFundsModal } from "@/components/budget/transfer-funds-modal"
 import { RolloverModal } from "@/components/budget/rollover-modal"
 import { CategoryDetailPanel } from "@/components/budget/category-detail-panel"
-import { formatCurrency } from "@/lib/utils"
-import type { CategoryGroup, Area } from "@/lib/types"
+import { formatCurrency } from "@/lib/shared/utils"
+import type { CategoryGroup, Area } from "@/lib/shared/types"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
 import {
   PiggyBank,

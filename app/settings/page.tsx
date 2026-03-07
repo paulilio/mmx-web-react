@@ -29,7 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useAreas } from "@/hooks/use-areas"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useActionButton } from "@/hooks/use-action-button"
-import { bulkLoadData, clearAllData } from "@/lib/storage"
+import { bulkLoadData, clearAllData } from "@/lib/server/storage"
 import {
   Settings,
   Link2,

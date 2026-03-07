@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useGruposCategorias } from "@/hooks/use-grupos-categorias"
 import { useAreas } from "@/hooks/use-areas"
-import { grupoCategoriaSchema, type GrupoCategoriaFormData } from "@/lib/validations"
-import type { GrupoCategoria } from "@/lib/types"
+import { grupoCategoriaSchema, type GrupoCategoriaFormData } from "@/lib/shared/validations"
+import type { GrupoCategoria } from "@/lib/shared/types"
 import { Loader2, Palette } from "lucide-react"
 
 interface GrupoCategoriaFormModalProps {

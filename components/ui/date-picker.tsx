@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CalendarIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/shared/utils"
 
 interface DatePickerProps {
   value: string

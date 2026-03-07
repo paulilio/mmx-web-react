@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanType {
+  FREE
+  PREMIUM
+  PRO
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  COMPLETED
+  PENDING
+  CANCELLED
+}
+
+model User {
+  id                    String        @id @default(cuid())
+  email                 String        @unique
+  passwordHash          String?
+  firstName             String
+  lastName              String
+  phone                 String?
+  cpfCnpj               String?
+  isEmailConfirmed      Boolean       @default(false)
+  defaultOrganizationId String?
+  planType              PlanType      @default(FREE)
+  profilePhoto          String?
+  preferences           Json?
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  transactions          Transaction[]
+
+  @@index([email])
+}
+
+model Transaction {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description     String            @default("")
+  amount          Decimal           @db.Decimal(14, 2)
+  type            TransactionType
+  categoryId      String
+  contactId       String?
+  date            DateTime          @db.Date
+  status          TransactionStatus @default(PENDING)
+  notes           String?
+  recurrence      Json?
+  areaId          String?
+  categoryGroupId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, status])
+  @@index([userId, categoryId])
+}

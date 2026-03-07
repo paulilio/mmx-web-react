@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/shared/utils"
 
 export interface InputMaskProps extends React.InputHTMLAttributes<HTMLInputElement> {
   mask?: "phone" | "cpf-cnpj"

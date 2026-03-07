@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { formatCurrency } from "@/lib/utils"
-import type { BudgetSummary } from "@/lib/types"
+import { formatCurrency } from "@/lib/shared/utils"
+import type { BudgetSummary } from "@/lib/shared/types"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
 import { TrendingDown, Target } from "lucide-react"
 

@@ -28,7 +28,7 @@ import {
   Zap,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { validateRegistrationForm, validateEmail, validatePassword } from "@/lib/auth-validations"
+import { validateRegistrationForm, validateEmail, validatePassword } from "@/lib/shared/auth-validations"
 import { toast } from "sonner"
 
 export default function AuthPage() {

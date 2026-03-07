@@ -1,5 +1,5 @@
-import { USE_API, API_BASE } from "./config"
-import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "./storage"
+import { USE_API, API_BASE } from "../shared/config"
+import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../server/storage"
 
 class ApiError extends Error {
   constructor(
@@ -21,6 +21,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 // Mock delay to simulate API calls
 const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 100))
+
+function resolveApiUrl(endpoint: string): string {
+  // Transactions already have first-party Next.js handlers in app/api.
+  if (endpoint.startsWith("/transactions")) {
+    return `/api${endpoint}`
+  }
+
+  return `${API_BASE}${endpoint}`
+}
 
 export async function getJSON<T>(endpoint: string): Promise<T> {
   if (!USE_API) {
@@ -222,7 +231,7 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${endpoint}`)
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(resolveApiUrl(endpoint), {
     headers: {
       "Content-Type": "application/json",
     },
@@ -253,7 +262,7 @@ export async function postJSON<T>(endpoint: string, data: any): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${endpoint}`)
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(resolveApiUrl(endpoint), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -305,7 +314,7 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${endpoint}`)
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(resolveApiUrl(endpoint), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -345,7 +354,7 @@ export async function deleteJSON<T>(endpoint: string): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${endpoint}`)
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(resolveApiUrl(endpoint), {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",

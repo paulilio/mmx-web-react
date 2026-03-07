@@ -1,6 +1,6 @@
 import useSWR from "swr"
-import type { BudgetSummary, BudgetFormData, FundTransferFormData } from "@/lib/types"
-import { api } from "@/lib/api"
+import type { BudgetSummary, BudgetFormData, FundTransferFormData } from "@/lib/shared/types"
+import { api } from "@/lib/client/api"
 
 export function useBudget(month: number, year: number) {
   const { data, error, mutate } = useSWR<BudgetSummary[]>(`/budget/${year}/${month}`, api.get)
