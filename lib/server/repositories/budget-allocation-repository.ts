@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/server/db/prisma"
-import { BaseRepository, type PaginatedResult } from "./base-repository"
+import { prisma } from "../db/prisma"
+import { BaseRepository } from "./base-repository"
 
 export interface BudgetAllocationRecord {
   id: string

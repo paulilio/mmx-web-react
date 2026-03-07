@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
-import { budgetService } from "../../../../../../lib/server/services"
-import { fail, ok } from "../../../../../../lib/server/http/api-response"
-import { resolveUserId, mapBudget } from "../../../../../../lib/server/http/budgets-mapper"
+import { budgetService } from "@/lib/server/services"
+import { fail, ok } from "@/lib/server/http/api-response"
+import { resolveUserId, mapBudget } from "@/lib/server/http/budgets-mapper"
 
 export const runtime = "nodejs"
 

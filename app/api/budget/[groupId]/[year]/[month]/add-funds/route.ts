@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
-import { budgetService } from "../../../../../../lib/server/services"
-import { fail, ok } from "../../../../../../lib/server/http/api-response"
-import { resolveUserId, mapBudgetAllocation } from "../../../../../../lib/server/http/budgets-mapper"
+import { budgetService } from "@/lib/server/services"
+import { fail, ok } from "@/lib/server/http/api-response"
+import { resolveUserId, mapBudgetAllocation } from "@/lib/server/http/budgets-mapper"
 
 export const runtime = "nodejs"
 
@@ -19,8 +19,9 @@ export async function POST(request: NextRequest, { params }: { params: { groupId
     // find allocation for this group and month
     const list = await budgetService.listAllocations({ userId, month: monthString, budgetGroupId: params.groupId })
 
-    if (list.data && list.data.length > 0) {
-      const alloc = list.data[0]
+    const alloc = list.data?.[0]
+
+    if (alloc) {
       const updated = await budgetService.addFunds(alloc.id, amount, userId)
       return ok(mapBudgetAllocation(updated))
     }

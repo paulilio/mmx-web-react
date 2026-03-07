@@ -21,6 +21,8 @@ export interface DbClient {
   transaction: Delegate
   category: Delegate
   contact: Delegate
+  budget: Delegate
+  budgetAllocation: Delegate
 }
 
 declare global {

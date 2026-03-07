@@ -24,7 +24,13 @@ const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 100))
 
 function resolveApiUrl(endpoint: string): string {
   // Migrated domains already have first-party Next.js handlers in app/api.
-  if (endpoint.startsWith("/transactions") || endpoint.startsWith("/categories") || endpoint.startsWith("/contacts")) {
+  if (
+    endpoint.startsWith("/transactions") ||
+    endpoint.startsWith("/categories") ||
+    endpoint.startsWith("/contacts") ||
+    endpoint.startsWith("/budget") ||
+    endpoint.startsWith("/budget-allocations")
+  ) {
     return `/api${endpoint}`
   }
 

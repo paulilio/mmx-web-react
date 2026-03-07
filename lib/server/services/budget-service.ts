@@ -1,7 +1,7 @@
-import { BudgetEntity, type CreateBudgetInput, type UpdateBudgetInput } from "@/lib/domain/budgets/budget-entity"
-import type { PaginatedResult } from "@/lib/server/repositories/base-repository"
-import { BudgetRepository } from "@/lib/server/repositories/budget-repository"
-import { BudgetAllocationRepository } from "@/lib/server/repositories/budget-allocation-repository"
+import { BudgetEntity, type CreateBudgetInput, type UpdateBudgetInput } from "../../domain/budgets/budget-entity"
+import type { PaginatedResult } from "../repositories/base-repository"
+import { BudgetRepository } from "../repositories/budget-repository"
+import { BudgetAllocationRepository } from "../repositories/budget-allocation-repository"
 
 export class BudgetService {
   constructor(private readonly repository = new BudgetRepository(), private readonly allocationRepo = new BudgetAllocationRepository()) {}

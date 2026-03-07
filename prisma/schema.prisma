@@ -63,6 +63,8 @@ model User {
   transactions          Transaction[]
   categories            Category[]
   contacts              Contact[]
+  budgets               Budget[]
+  budgetAllocations     BudgetAllocation[]
 
   @@index([email])
 }
