@@ -80,7 +80,7 @@ describe("/api/categories/[id] route", () => {
     expect(payload.data.status).toBe("active")
   })
 
-  it("PUT retorna 400 quando userId nao e informado", async () => {
+  it("PUT retorna 401 quando autenticacao nao e informada", async () => {
     const response = await PUT(
       makeRequest({
         url: "http://localhost/api/categories/cat-1",
@@ -91,8 +91,8 @@ describe("/api/categories/[id] route", () => {
     )
     const payload = await response.json()
 
-    expect(response.status).toBe(400)
-    expect(payload.error.code).toBe("USER_ID_REQUIRED")
+    expect(response.status).toBe(401)
+    expect(payload.error.code).toBe("AUTH_REQUIRED")
   })
 
   it("PUT retorna 404 quando service informa nao encontrada", async () => {

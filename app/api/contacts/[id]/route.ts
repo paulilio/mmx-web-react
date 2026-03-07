@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, context: { params: { id: string 
     const userId = resolveUserId(request)
 
     if (!userId) {
-      return fail(400, "USER_ID_REQUIRED", "Informe o userId na query ou no header x-user-id")
+      return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
     }
 
     const record = await contactService.getById(context.params.id, userId)
@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
     const userId = resolveUserId(request, body.userId)
 
     if (!userId) {
-      return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
+      return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
     }
 
     const updated = await contactService.update(context.params.id, userId, {
@@ -73,7 +73,7 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
     const userId = resolveUserId(request)
 
     if (!userId) {
-      return fail(400, "USER_ID_REQUIRED", "Informe o userId na query ou no header x-user-id")
+      return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
     }
 
     const deleted = await contactService.remove(context.params.id, userId)

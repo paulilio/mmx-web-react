@@ -19,7 +19,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       availableAmount?: number
     }
     const userId = resolveUserId(request, body.userId)
-    if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
+    if (!userId) return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
 
     const updated = await budgetService.updateAllocation(params.id, userId, {
       plannedAmount: body.planned_amount ?? body.plannedAmount,
@@ -38,7 +38,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const userId = resolveUserId(request)
-    if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId na query ou no header x-user-id")
+    if (!userId) return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
 
     const deleted = await budgetService.deleteAllocation(params.id, userId)
 

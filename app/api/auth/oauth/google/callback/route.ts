@@ -1,8 +1,9 @@
-import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../../../lib/server/http/api-response"
 import { userRepository } from "../../../../../../lib/server/repositories"
 import { setAuthCookies } from "../../../../../../lib/server/security/auth-cookies"
+import { issueAccessToken, issueRefreshToken } from "../../../../../../lib/server/security/jwt"
+import { persistRefreshSession } from "../../../../../../lib/server/security/refresh-session-store"
 import { exchangeGoogleCodeForProfile, resolveGoogleOAuthConfig } from "../../../../../../lib/server/services/google-oauth-service"
 
 export const runtime = "nodejs"
@@ -56,8 +57,6 @@ export async function GET(request: NextRequest) {
     }
 
     const existingUser = await userRepository.findByEmail(profile.email)
-    const accessToken = `at_${randomUUID()}`
-    const refreshToken = `rt_${randomUUID()}`
 
     if (existingUser) {
       const updatedUser = await userRepository.update(existingUser.id, {
@@ -66,10 +65,14 @@ export async function GET(request: NextRequest) {
         profilePhoto: profile.picture || existingUser.profilePhoto,
       })
 
+      const accessTokenResult = issueAccessToken({ id: updatedUser.id, email: updatedUser.email })
+      const refreshTokenResult = issueRefreshToken({ id: updatedUser.id, email: updatedUser.email })
+      persistRefreshSession(refreshTokenResult.token, updatedUser.id, refreshTokenResult.expiresInSeconds)
+
       const response = ok({
-        accessToken,
-        refreshToken,
-        expiresIn: 1800,
+        accessToken: accessTokenResult.token,
+        refreshToken: refreshTokenResult.token,
+        expiresIn: accessTokenResult.expiresInSeconds,
         isNewUser: false,
         user: {
           id: updatedUser.id,
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
       })
 
       response.cookies.delete("mmx_oauth_state")
-      return setAuthCookies(response, accessToken, refreshToken)
+      return setAuthCookies(response, accessTokenResult.token, refreshTokenResult.token)
     }
 
     const nameFromProfile = splitName(profile.fullName)
@@ -96,10 +99,14 @@ export async function GET(request: NextRequest) {
       lastLogin: new Date(),
     })
 
+    const accessTokenResult = issueAccessToken({ id: createdUser.id, email: createdUser.email })
+    const refreshTokenResult = issueRefreshToken({ id: createdUser.id, email: createdUser.email })
+    persistRefreshSession(refreshTokenResult.token, createdUser.id, refreshTokenResult.expiresInSeconds)
+
     const response = ok({
-      accessToken,
-      refreshToken,
-      expiresIn: 1800,
+      accessToken: accessTokenResult.token,
+      refreshToken: refreshTokenResult.token,
+      expiresIn: accessTokenResult.expiresInSeconds,
       isNewUser: true,
       user: {
         id: createdUser.id,
@@ -111,7 +118,7 @@ export async function GET(request: NextRequest) {
     })
 
     response.cookies.delete("mmx_oauth_state")
-    return setAuthCookies(response, accessToken, refreshToken)
+    return setAuthCookies(response, accessTokenResult.token, refreshTokenResult.token)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro no callback OAuth Google"
     return fail(400, "GOOGLE_OAUTH_CALLBACK_ERROR", message)

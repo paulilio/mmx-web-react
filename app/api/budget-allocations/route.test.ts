@@ -36,9 +36,9 @@ describe("/api/budget-allocations route", () => {
     vi.clearAllMocks()
   })
 
-  it("GET retorna 400 sem userId", async () => {
+  it("GET retorna 401 sem autenticacao", async () => {
     const response = await GET(makeRequest({ url: "http://localhost/api/budget-allocations" }) as never)
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(401)
   })
 
   it("GET retorna lista paginada", async () => {

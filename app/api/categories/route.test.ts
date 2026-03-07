@@ -39,13 +39,13 @@ describe("/api/categories route", () => {
     vi.clearAllMocks()
   })
 
-  it("GET retorna 400 quando userId nao e informado", async () => {
+  it("GET retorna 401 quando autenticacao nao e informada", async () => {
     const response = await GET(makeRequest({ url: "http://localhost/api/categories" }) as never)
     const payload = await response.json()
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(401)
     expect(payload.data).toBeNull()
-    expect(payload.error.code).toBe("USER_ID_REQUIRED")
+    expect(payload.error.code).toBe("AUTH_REQUIRED")
   })
 
   it("GET retorna lista paginada com mapper aplicado", async () => {

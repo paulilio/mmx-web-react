@@ -13,7 +13,7 @@ export async function PUT(request: NextRequest, { params }: { params: { groupId:
       amount?: number
     }
     const userId = resolveUserId(request, body.userId)
-    if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
+    if (!userId) return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
 
     const monthNum = Number(params.month)
     const yearNum = Number(params.year)

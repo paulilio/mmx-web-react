@@ -12,7 +12,7 @@ export async function POST(request: NextRequest, { params }: { params: { groupId
       amount?: number
     }
     const userId = resolveUserId(request, body.userId)
-    if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
+    if (!userId) return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
 
     const amount = Number(body.amount)
     if (!amount || amount <= 0) return fail(400, "INVALID_INPUT", "Amount deve ser maior que zero")

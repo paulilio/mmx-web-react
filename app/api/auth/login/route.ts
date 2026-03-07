@@ -1,9 +1,10 @@
-import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
 import { authService } from "../../../../lib/server/services"
 import { setAuthCookies } from "../../../../lib/server/security/auth-cookies"
+import { issueAccessToken, issueRefreshToken } from "../../../../lib/server/security/jwt"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
+import { persistRefreshSession } from "../../../../lib/server/security/refresh-session-store"
 
 export const runtime = "nodejs"
 
@@ -32,13 +33,21 @@ export async function POST(request: NextRequest) {
 
     const user = await authService.login({ email: body.email, password: body.password })
 
-    const accessToken = `at_${randomUUID()}`
-    const refreshToken = `rt_${randomUUID()}`
+    const accessTokenResult = issueAccessToken({
+      id: user.id,
+      email: user.email,
+    })
+    const refreshTokenResult = issueRefreshToken({
+      id: user.id,
+      email: user.email,
+    })
+
+    persistRefreshSession(refreshTokenResult.token, user.id, refreshTokenResult.expiresInSeconds)
 
     const response = ok({
-      accessToken,
-      refreshToken,
-      expiresIn: 1800,
+      accessToken: accessTokenResult.token,
+      refreshToken: refreshTokenResult.token,
+      expiresIn: accessTokenResult.expiresInSeconds,
       user: {
         id: user.id,
         email: user.email,
@@ -48,7 +57,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return setAuthCookies(response, accessToken, refreshToken)
+    return setAuthCookies(response, accessTokenResult.token, refreshTokenResult.token)
   } catch (error) {
     if (error instanceof Error && error.message === "Credenciais invalidas") {
       return fail(401, "INVALID_CREDENTIALS", error.message)

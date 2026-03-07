@@ -1,7 +1,7 @@
 import type { NextResponse } from "next/server"
 
-const ACCESS_TOKEN_COOKIE = "mmx_access_token"
-const REFRESH_TOKEN_COOKIE = "mmx_refresh_token"
+export const ACCESS_TOKEN_COOKIE = "mmx_access_token"
+export const REFRESH_TOKEN_COOKIE = "mmx_refresh_token"
 
 function isProduction(): boolean {
   return process.env.NODE_ENV === "production"
@@ -33,4 +33,8 @@ export function clearAuthCookies(response: NextResponse) {
   response.cookies.delete(ACCESS_TOKEN_COOKIE)
   response.cookies.delete(REFRESH_TOKEN_COOKIE)
   return response
+}
+
+export function resolveRefreshTokenFromCookie(request: { cookies: { get: (name: string) => { value: string } | undefined } }) {
+  return request.cookies.get(REFRESH_TOKEN_COOKIE)?.value ?? null
 }

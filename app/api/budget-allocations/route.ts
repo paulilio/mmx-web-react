@@ -8,7 +8,7 @@ export const runtime = "nodejs"
 export async function GET(request: NextRequest) {
   try {
     const userId = resolveUserId(request)
-    if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId na query ou no header x-user-id")
+    if (!userId) return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
 
     const month = request.nextUrl.searchParams.get("month") ?? undefined
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       fundedAmount?: number
     }
     const userId = resolveUserId(request, body.userId)
-    if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
+    if (!userId) return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
 
     if (!body.budgetGroupId || !body.month) return fail(400, "INVALID_INPUT", "Campos obrigatorios: budgetGroupId, month, fundedAmount/plannedAmount")
 

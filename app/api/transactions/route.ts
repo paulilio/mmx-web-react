@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const userId = resolveUserId(request)
 
     if (!userId) {
-      return fail(400, "USER_ID_REQUIRED", "Informe o userId na query ou no header x-user-id")
+      return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
     }
 
     const page = Number(request.nextUrl.searchParams.get("page") ?? 1)
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     const userId = resolveUserId(request, body.userId)
 
     if (!userId) {
-      return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
+      return fail(401, "AUTH_REQUIRED", "Autenticacao obrigatoria")
     }
 
     if (!body.date || !body.type || !body.categoryId) {

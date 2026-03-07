@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server"
+import { resolveAuthenticatedUserId } from "../security/auth-identity"
 import type {
   DomainCategoryStatus,
   DomainCategoryType,
@@ -18,6 +19,15 @@ interface CategoryLikeRecord {
 }
 
 export function resolveUserId(request: NextRequest, bodyUserId?: string): string | null {
+  const authenticatedUserId = resolveAuthenticatedUserId(request)
+  if (authenticatedUserId) {
+    return authenticatedUserId
+  }
+
+  if (process.env.NODE_ENV !== "test") {
+    return null
+  }
+
   const queryUserId = request.nextUrl.searchParams.get("userId")
   const headerUserId = request.headers.get("x-user-id")
   return bodyUserId ?? queryUserId ?? headerUserId
