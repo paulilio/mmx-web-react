@@ -36,6 +36,10 @@ pnpm build
 | `GOOGLE_CLIENT_ID` | Obrigatorio para OAuth Google | Client ID do app Google OAuth |
 | `GOOGLE_CLIENT_SECRET` | Obrigatorio para OAuth Google | Client secret do app Google OAuth |
 | `GOOGLE_REDIRECT_URI` | Opcional | URI de callback (padrao: `/api/auth/oauth/google/callback`) |
+| `MICROSOFT_CLIENT_ID` | Obrigatorio para OAuth Microsoft | Client ID do app Microsoft OAuth |
+| `MICROSOFT_CLIENT_SECRET` | Obrigatorio para OAuth Microsoft | Client secret do app Microsoft OAuth |
+| `MICROSOFT_REDIRECT_URI` | Opcional | URI de callback (padrao: `/api/auth/oauth/microsoft/callback`) |
+| `MICROSOFT_TENANT_ID` | Opcional | Tenant Microsoft (padrao: `common`) |
 
 Crie um `.env.local` para overrides locais (nunca commitar este arquivo):
 
@@ -49,6 +53,10 @@ CORS_ORIGINS_PROD=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth/google/callback
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+MICROSOFT_REDIRECT_URI=http://localhost:3000/api/auth/oauth/microsoft/callback
+MICROSOFT_TENANT_ID=common
 \`\`\`
 
 Na Vercel, configure em **Project Settings -> Environment Variables** por ambiente.

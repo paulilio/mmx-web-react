@@ -34,7 +34,7 @@
 - Use typed errors where possible (`ApiError`) and do not expose raw technical errors in UI.
 - Backend response envelope target: success `{ data, error: null }`, failure `{ data: null, error }`.
 - Domains already migrated to first-party API routes: `transactions`, `categories`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`.
-- OAuth provider status: Google integrated (`/api/auth/oauth/google` + `/api/auth/oauth/google/callback`), Microsoft pending.
+- OAuth provider status: Google integrated (`/api/auth/oauth/google` + `/api/auth/oauth/google/callback`) e Microsoft integrated (`/api/auth/oauth/microsoft` + `/api/auth/oauth/microsoft/callback`).
 - Keep auth hardening behavior intact:
   - rate limiting in `POST /api/auth/login|register|refresh`
   - CORS policy for `/api` managed in `middleware.ts` via `lib/server/security/cors.ts`
@@ -48,6 +48,10 @@
   - `GOOGLE_CLIENT_ID`
   - `GOOGLE_CLIENT_SECRET`
   - `GOOGLE_REDIRECT_URI`
+  - `MICROSOFT_CLIENT_ID`
+  - `MICROSOFT_CLIENT_SECRET`
+  - `MICROSOFT_REDIRECT_URI`
+  - `MICROSOFT_TENANT_ID`
 
 ## Testing Rules
 - Preferred stack for new tests: Vitest + Testing Library; Playwright for E2E.

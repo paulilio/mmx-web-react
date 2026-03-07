@@ -26,6 +26,10 @@ CORS_ORIGINS_PROD=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth/google/callback
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+MICROSOFT_REDIRECT_URI=http://localhost:3000/api/auth/oauth/microsoft/callback
+MICROSOFT_TENANT_ID=common
 ```
 
 Variaveis principais:
@@ -35,6 +39,7 @@ Variaveis principais:
 - `MMX_APP_ENV`: ambiente efetivo para politicas server (`development|staging|production`)
 - `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
 - `GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|GOOGLE_REDIRECT_URI`: configuracao do OAuth Google (`BE-06.1`)
+- `MICROSOFT_CLIENT_ID|MICROSOFT_CLIENT_SECRET|MICROSOFT_REDIRECT_URI|MICROSOFT_TENANT_ID`: configuracao do OAuth Microsoft (`BE-06.2`)
 
 ## Como rodar localmente
 
