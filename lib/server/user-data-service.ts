@@ -1,6 +1,9 @@
 import type { User } from "@/types/auth"
 import { logAuditEvent } from "../shared/utils"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
+import { logger } from "../shared/logger"
+
+const userDataLogger = logger.scope("UserDataService")
 
 interface UserDataContext {
   userId: string
@@ -56,17 +59,17 @@ export class UserDataService {
   private async runMigrationIfNeeded(): Promise<void> {
     try {
       if (migrationService.needsMigration()) {
-        console.log("[UserDataService] Running automatic migration for user:", this.context?.userId)
+        userDataLogger.info("Running automatic migration", { userId: this.context?.userId })
         const result = await migrationService.migrateToUnifiedStructure()
 
         if (result.success) {
-          console.log(`[UserDataService] Migration completed: ${result.totalRecords} records migrated`)
+          userDataLogger.info("Migration completed", { totalRecords: result.totalRecords })
         } else {
-          console.error("[UserDataService] Migration failed:", result.errors)
+          userDataLogger.error("Migration failed", result.errors, { errors: result.errors })
         }
       }
     } catch (error) {
-      console.error("[UserDataService] Migration error:", error)
+      userDataLogger.error("Migration error", error)
     }
   }
 
@@ -84,7 +87,7 @@ export class UserDataService {
 
       return data
     } catch (error) {
-      console.error(`Error loading user data for key ${key}:`, error)
+      userDataLogger.error("Error loading user data", error, { key })
 
       logAuditEvent("data_read_error", this.context?.userId || null, {
         resource: key,
@@ -115,7 +118,7 @@ export class UserDataService {
         dataSize: JSON.stringify(dataWithUserId).length,
       })
     } catch (error) {
-      console.error(`Error saving user data for key ${key}:`, error)
+      userDataLogger.error("Error saving user data", error, { key })
 
       logAuditEvent("data_write_error", this.context?.userId || null, {
         resource: key,
@@ -151,7 +154,7 @@ export class UserDataService {
 
       return orgData
     } catch (error) {
-      console.error(`Error loading org data for key ${key}:`, error)
+      userDataLogger.error("Error loading organization data", error, { key })
 
       logAuditEvent("org_data_read_error", this.context?.userId || null, {
         resource: key,
@@ -196,7 +199,7 @@ export class UserDataService {
         dataSize: JSON.stringify(dataWithOrgId).length,
       })
     } catch (error) {
-      console.error(`Error saving org data for key ${key}:`, error)
+      userDataLogger.error("Error saving organization data", error, { key })
 
       logAuditEvent("org_data_write_error", this.context?.userId || null, {
         resource: key,
@@ -230,7 +233,7 @@ export class UserDataService {
     if (!this.context) return
 
     const context = this.context
-    console.log(`[v0] Cleaning up session data for user ${context.userId}`)
+    userDataLogger.info("Cleaning up session data", { userId: context.userId })
 
     // Clear any temporary/session data but keep persistent user data
     const sessionKeys = ["session_logs", "temp_cache"]
@@ -247,7 +250,7 @@ export class UserDataService {
           cleanedCount++
         }
       } catch (error) {
-        console.error(`Error cleaning up ${key}:`, error)
+        userDataLogger.error("Error cleaning up session key", error, { key })
       }
     })
 
@@ -270,7 +273,7 @@ export class UserDataService {
         const userData = migrationService.getUserData(key, context.userId)
         stats[key] = userData.length
       } catch (error) {
-        console.error(`Error getting stats for ${key}:`, error)
+        userDataLogger.error("Error getting user data stats", error, { key })
         stats[key] = 0
       }
     })
@@ -299,7 +302,7 @@ export class UserDataService {
         const userData = migrationService.getUserData(key, context.userId)
         exportData[entityName] = userData
       } catch (error) {
-        console.error(`Error exporting ${entityName}:`, error)
+        userDataLogger.error("Error exporting entity", error, { entityName })
         exportData[entityName] = []
       }
     })

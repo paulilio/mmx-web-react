@@ -16,6 +16,7 @@ import { Plus, Edit, Trash2, Loader2, FolderOpen, Users } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { mutate } from "swr"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
+import { toast } from "sonner"
 
 export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -30,7 +31,6 @@ export default function CategoriesPage() {
     isLoading: categoriesLoading,
     deleteCategory,
   } = useCategories(() => {
-    console.log("[v0] Revalidating category groups from callback")
     mutateCategoryGroups()
   })
   const {
@@ -62,8 +62,8 @@ export default function CategoriesPage() {
       try {
         await deleteCategory(category.id)
         mutate("/categories")
-      } catch (error) {
-        console.error("Erro ao excluir categoria:", error)
+      } catch {
+        toast.error("Nao foi possivel excluir a categoria")
       }
     }
   }
@@ -77,8 +77,8 @@ export default function CategoriesPage() {
     if (confirm(`Tem certeza que deseja excluir o grupo "${group.name}"?`)) {
       try {
         await deleteCategoryGroup(group.id)
-      } catch (error) {
-        console.error("Erro ao excluir grupo categoria:", error)
+      } catch {
+        toast.error("Nao foi possivel excluir o grupo de categoria")
       }
     }
   }

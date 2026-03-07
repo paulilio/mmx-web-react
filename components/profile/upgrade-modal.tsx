@@ -15,6 +15,11 @@ interface UpgradeModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+type StoredUserRecord = {
+  id: string
+  [key: string]: unknown
+}
+
 export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -76,8 +81,8 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       }
 
       // Update user plan
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const updatedUsers = users.map((u: any) => {
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as StoredUserRecord[]
+      const updatedUsers = users.map((u) => {
         if (u.id === user.id) {
           return {
             ...u,
@@ -105,7 +110,7 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
       setTimeout(() => {
         window.location.reload()
       }, 1000)
-    } catch (error) {
+    } catch {
       toast.error("Failed to upgrade plan. Please try again.")
     } finally {
       setIsLoading(false)

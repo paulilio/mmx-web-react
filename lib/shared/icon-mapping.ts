@@ -22,6 +22,9 @@ import {
   HelpCircle,
   type LucideIcon,
 } from "lucide-react"
+import { logger } from "./logger"
+
+const iconLogger = logger.scope("IconMapping")
 
 export const ICON_MAPPING: Record<string, LucideIcon> = {
   // Emoji to icon name mapping
@@ -75,10 +78,9 @@ export function getIconComponent(iconName: string): LucideIcon {
   const IconComponent = ICON_MAPPING[iconName]
 
   if (IconComponent) {
-    console.log(`[v0] Icon rendered: ${iconName}`)
     return IconComponent
   } else {
-    console.log(`[v0] Warning: icon '${iconName}' not found, fallback used`)
+    iconLogger.warn("Icon not found, fallback used", { iconName })
     return FALLBACK_ICON
   }
 }

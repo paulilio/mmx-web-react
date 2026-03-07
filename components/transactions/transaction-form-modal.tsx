@@ -27,6 +27,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { IconWithText } from "@/components/ui/dynamic-icon"
 import { Building, Calendar, ArrowUpDown, DollarSign, Tag, CheckCircle } from "lucide-react"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
+import { toast } from "sonner"
 
 interface TransactionFormModalProps {
   isOpen: boolean
@@ -319,8 +320,6 @@ export function TransactionFormModal({
 
   useEffect(() => {
     if (transaction) {
-      console.log("[v0] Initializing form with transaction data:", transaction)
-
       // Reset form with transaction data
       reset({
         date: transaction.date,
@@ -359,10 +358,7 @@ export function TransactionFormModal({
         const [year, month, day] = transaction.date.split("-")
         const ptBRDate = `${day}/${month}/${year}`
         setDisplayDate(ptBRDate)
-        console.log("[v0] Initialized display date:", ptBRDate)
       }
-
-      console.log("[v0] Form initialized with frequency:", transaction.recurrence?.frequency || "monthly")
     }
   }, [transaction, reset])
 
@@ -481,7 +477,6 @@ export function TransactionFormModal({
 
       if (transaction?.recurrence?.generatedFrom && pendingFormData.recurrence) {
         pendingFormData.recurrence.generatedFrom = transaction.recurrence.generatedFrom
-        console.log("[v0] Preserved generatedFrom in recurring edit:", transaction.recurrence.generatedFrom)
       }
 
       const dataWithApplyMode = {
@@ -598,8 +593,8 @@ export function TransactionFormModal({
       await onDeleteRecurrence(transaction, modeMap[deleteRecurrenceMode])
       setShowDeleteRecurrenceModal(false)
       onClose()
-    } catch (error) {
-      console.error("Error deleting recurrence:", error)
+    } catch {
+      toast.error("Nao foi possivel excluir a recorrencia")
     }
   }
 

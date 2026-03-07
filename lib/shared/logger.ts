@@ -12,6 +12,7 @@ interface LogOptions {
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 const isDebugEnabled = process.env.NEXT_PUBLIC_DEBUG === 'true'
+const consoleSink = globalThis.console
 
 function formatMessage(level: LogLevel, message: string, options?: LogOptions): string {
   const timestamp = new Date().toISOString()
@@ -30,17 +31,17 @@ function shouldLog(level: LogLevel): boolean {
 export const logger = {
   debug(message: string, options?: LogOptions): void {
     if (!shouldLog('debug')) return
-    console.debug(formatMessage('debug', message, options), options?.data || '')
+    consoleSink?.debug?.(formatMessage('debug', message, options), options?.data || '')
   },
 
   info(message: string, options?: LogOptions): void {
     if (!shouldLog('info')) return
-    console.info(formatMessage('info', message, options), options?.data || '')
+    consoleSink?.info?.(formatMessage('info', message, options), options?.data || '')
   },
 
   warn(message: string, options?: LogOptions): void {
     if (!shouldLog('warn')) return
-    console.warn(formatMessage('warn', message, options), options?.data || '')
+    consoleSink?.warn?.(formatMessage('warn', message, options), options?.data || '')
   },
 
   error(message: string, error?: Error | unknown, options?: LogOptions): void {
@@ -48,7 +49,7 @@ export const logger = {
     const errorData = error instanceof Error 
       ? { message: error.message, stack: error.stack }
       : { error }
-    console.error(formatMessage('error', message, options), { ...options?.data, ...errorData })
+    consoleSink?.error?.(formatMessage('error', message, options), { ...options?.data, ...errorData })
   },
 
   /**

@@ -7,7 +7,13 @@ const STORAGE_KEYS = UNIFIED_STORAGE_KEYS
 
 const USE_API = process.env.NEXT_PUBLIC_USE_API === "true"
 
-const tempCache = new Map<string, { data: any[]; timestamp: number; userId?: string }>()
+type PersistedEntityRecord = {
+  id: string
+  userId: string
+  [key: string]: unknown
+}
+
+const tempCache = new Map<string, { data: object[]; timestamp: number; userId?: string }>()
 const CACHE_DURATION = 2000 // 2 seconds
 
 // JSON file paths - always use /data folder when in mock mode
@@ -35,7 +41,7 @@ function getCurrentUserId(): string | null {
   return null
 }
 
-async function loadFromFile<T>(filePath: string): Promise<T[]> {
+async function loadFromFile<T extends object>(filePath: string): Promise<T[]> {
   // Ensure we're always using /data folder in mock mode
   const normalizedPath = USE_API
     ? filePath
@@ -71,7 +77,7 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
         }
 
         // Get user-specific data from unified storage
-        const userData = migrationService.getUserData<any>(unifiedKey, currentUserId) as T[]
+        const userData = migrationService.getUserData<PersistedEntityRecord>(unifiedKey, currentUserId) as T[]
 
         // Update temp cache
         tempCache.set(cacheKey, { data: [...userData], timestamp: Date.now(), userId: currentUserId })
@@ -98,7 +104,7 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
       const data = await response.json()
       return data
     }
-  } catch (error) {
+  } catch {
     storageLogger.warn(`Failed to load ${normalizedPath}, using empty array`)
   }
 
@@ -106,7 +112,7 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
   return []
 }
 
-async function saveToCache<T>(filePath: string, data: T[]): Promise<void> {
+async function saveToCache<T extends object>(filePath: string, data: T[]): Promise<void> {
   // Ensure we're always using /data folder in mock mode
   const normalizedPath = USE_API
     ? filePath
@@ -135,10 +141,13 @@ async function saveToCache<T>(filePath: string, data: T[]): Promise<void> {
         const unifiedKey = STORAGE_KEYS[storageKey as keyof typeof STORAGE_KEYS]
 
         // Add userId to all records if not present
-        const dataWithUserId = data.map((item: any) => ({
-          ...item,
-          userId: item.userId || currentUserId,
-        }))
+        const dataWithUserId = data.map((item) => {
+          const record = item as PersistedEntityRecord
+          return {
+            ...record,
+            userId: record.userId || currentUserId,
+          }
+        })
 
         // Save to unified storage
         migrationService.saveUserData(unifiedKey, currentUserId, dataWithUserId)
@@ -201,7 +210,7 @@ export async function initializeCleanData(): Promise<void> {
   storageLogger.info("Clean data initialization completed")
 }
 
-export function bulkLoadData(data: Record<string, any[]>): void {
+export function bulkLoadData(data: Record<string, unknown[]>): void {
   storageLogger.info("Starting bulk data load")
 
   const currentUserId = getCurrentUserId()
@@ -221,10 +230,12 @@ export function bulkLoadData(data: Record<string, any[]>): void {
   Object.entries(data).forEach(([key, value]) => {
     if (Array.isArray(value) && keyToFileMap[key]) {
       // Add userId to all records
-      const dataWithUserId = value.map((item) => ({
-        ...item,
-        userId: item.userId || currentUserId,
-      }))
+      const dataWithUserId = value
+        .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+        .map((item) => ({
+          ...item,
+          userId: (item.userId as string | undefined) || currentUserId,
+        }))
 
       saveToCache(keyToFileMap[key], dataWithUserId)
       storageLogger.info(`Bulk loaded ${key}`, {

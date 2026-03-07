@@ -20,6 +20,13 @@ interface AccountSettingsModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+type StoredUserRecord = {
+  id: string
+  password?: string
+  creditCard?: CreditCardInfo
+  [key: string]: unknown
+}
+
 export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModalProps) {
   const { user } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
@@ -59,8 +66,8 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
     setIsLoading(true)
     try {
       // Mock API call - in production, this would be a real API
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const updatedUsers = users.map((u: any) => {
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as StoredUserRecord[]
+      const updatedUsers = users.map((u) => {
         if (u.id === user.id) {
           return {
             ...u,
@@ -84,7 +91,7 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
       )
 
       toast.success("Profile updated successfully!")
-    } catch (error) {
+    } catch {
       toast.error("Failed to update profile")
     } finally {
       setIsLoading(false)
@@ -105,8 +112,8 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
     setIsLoading(true)
     try {
       // Mock password change - in production, verify current password and hash new one
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const updatedUsers = users.map((u: any) => {
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as StoredUserRecord[]
+      const updatedUsers = users.map((u) => {
         if (u.id === user.id) {
           return { ...u, password: passwordForm.newPassword } // In production, hash this
         }
@@ -116,7 +123,7 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
       localStorage.setItem("users", JSON.stringify(updatedUsers))
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
       toast.success("Password changed successfully!")
-    } catch (error) {
+    } catch {
       toast.error("Failed to change password")
     } finally {
       setIsLoading(false)
@@ -151,8 +158,8 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
       }
 
       // Store in user profile
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const updatedUsers = users.map((u: any) => {
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as StoredUserRecord[]
+      const updatedUsers = users.map((u) => {
         if (u.id === user.id) {
           return { ...u, creditCard: newCard }
         }
@@ -171,7 +178,7 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
       setNewCardForm({ number: "", expiryMonth: "", expiryYear: "", cvv: "", holderName: "" })
       setShowAddCard(false)
       toast.success("Credit card added successfully!")
-    } catch (error) {
+    } catch {
       toast.error("Failed to add credit card")
     } finally {
       setIsLoading(false)
@@ -181,21 +188,21 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
   const handleRemoveCreditCard = async () => {
     setIsLoading(true)
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const updatedUsers = users.map((u: any) => {
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as StoredUserRecord[]
+      const updatedUsers = users.map((u) => {
         if (u.id === user.id) {
-          const { creditCard, ...userWithoutCard } = u
+          const { creditCard: _creditCard, ...userWithoutCard } = u
           return userWithoutCard
         }
         return u
       })
 
       localStorage.setItem("users", JSON.stringify(updatedUsers))
-      const { creditCard, ...userWithoutCard } = user
+      const { creditCard: _creditCard, ...userWithoutCard } = user
       localStorage.setItem("auth_user", JSON.stringify(userWithoutCard))
 
       toast.success("Credit card removed successfully!")
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove credit card")
     } finally {
       setIsLoading(false)

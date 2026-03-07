@@ -18,6 +18,11 @@ interface PersonalizationModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+type StoredUserRecord = {
+  id: string
+  [key: string]: unknown
+}
+
 export function PersonalizationModal({ open, onOpenChange }: PersonalizationModalProps) {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -48,8 +53,8 @@ export function PersonalizationModal({ open, onOpenChange }: PersonalizationModa
     setIsLoading(true)
     try {
       // Mock API call - in production, this would be a real API
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const updatedUsers = users.map((u: any) => {
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as StoredUserRecord[]
+      const updatedUsers = users.map((u) => {
         if (u.id === user.id) {
           return { ...u, preferences }
         }
@@ -81,7 +86,7 @@ export function PersonalizationModal({ open, onOpenChange }: PersonalizationModa
       }
 
       toast.success("Preferences saved successfully!")
-    } catch (error) {
+    } catch {
       toast.error("Failed to save preferences")
     } finally {
       setIsLoading(false)
