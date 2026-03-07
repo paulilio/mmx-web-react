@@ -2,6 +2,29 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { evaluateCorsRequest, resolveCorsOriginMatrix, resolveRuntimeEnvironment } from "./lib/server/security/cors"
 
+function isProtectedApiPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/api/transactions") ||
+    pathname.startsWith("/api/categories") ||
+    pathname.startsWith("/api/contacts") ||
+    pathname.startsWith("/api/areas") ||
+    pathname.startsWith("/api/budget") ||
+    pathname.startsWith("/api/budget-allocations")
+  )
+}
+
+function resolveAccessToken(request: NextRequest): string | null {
+  const authorization = request.headers.get("authorization")
+  if (authorization) {
+    const [scheme, token] = authorization.split(" ")
+    if (scheme?.toLowerCase() === "bearer" && token) {
+      return token
+    }
+  }
+
+  return request.cookies.get("mmx_access_token")?.value ?? null
+}
+
 function applySecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("X-Frame-Options", "DENY")
   response.headers.set("X-Content-Type-Options", "nosniff")
@@ -59,6 +82,24 @@ export function middleware(request: NextRequest) {
     const response = NextResponse.next()
     for (const [header, value] of Object.entries(corsDecision.headers)) {
       response.headers.set(header, value)
+    }
+
+    if (isProtectedApiPath(pathname) && !resolveAccessToken(request)) {
+      const unauthorizedResponse = NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: "AUTH_REQUIRED",
+            message: "Autenticacao obrigatoria",
+          },
+        },
+        {
+          status: 401,
+          headers: corsDecision.headers,
+        },
+      )
+
+      return applySecurityHeaders(unauthorizedResponse)
     }
 
     return applySecurityHeaders(response)
