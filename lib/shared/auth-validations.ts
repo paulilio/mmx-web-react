@@ -117,22 +117,22 @@ function isValidCpf(cpf: string): boolean {
   // Calculate first check digit
   let sum = 0
   for (let i = 0; i < 9; i++) {
-    sum += Number.parseInt(cpf[i]) * (10 - i)
+    sum += Number.parseInt(cpf.charAt(i) || "0") * (10 - i)
   }
   let remainder = sum % 11
   const checkDigit1 = remainder < 2 ? 0 : 11 - remainder
 
-  if (Number.parseInt(cpf[9]) !== checkDigit1) return false
+  if (Number.parseInt(cpf.charAt(9) || "0") !== checkDigit1) return false
 
   // Calculate second check digit
   sum = 0
   for (let i = 0; i < 10; i++) {
-    sum += Number.parseInt(cpf[i]) * (11 - i)
+    sum += Number.parseInt(cpf.charAt(i) || "0") * (11 - i)
   }
   remainder = sum % 11
   const checkDigit2 = remainder < 2 ? 0 : 11 - remainder
 
-  return Number.parseInt(cpf[10]) === checkDigit2
+  return Number.parseInt(cpf.charAt(10) || "0") === checkDigit2
 }
 
 function isValidCnpj(cnpj: string): boolean {
@@ -146,23 +146,23 @@ function isValidCnpj(cnpj: string): boolean {
   const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
   let sum = 0
   for (let i = 0; i < 12; i++) {
-    sum += Number.parseInt(cnpj[i]) * weights1[i]
+    sum += Number.parseInt(cnpj.charAt(i) || "0") * (weights1[i] || 0)
   }
   let remainder = sum % 11
   const checkDigit1 = remainder < 2 ? 0 : 11 - remainder
 
-  if (Number.parseInt(cnpj[12]) !== checkDigit1) return false
+  if (Number.parseInt(cnpj.charAt(12) || "0") !== checkDigit1) return false
 
   // Calculate second check digit
   const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
   sum = 0
   for (let i = 0; i < 13; i++) {
-    sum += Number.parseInt(cnpj[i]) * weights2[i]
+    sum += Number.parseInt(cnpj.charAt(i) || "0") * (weights2[i] || 0)
   }
   remainder = sum % 11
   const checkDigit2 = remainder < 2 ? 0 : 11 - remainder
 
-  return Number.parseInt(cnpj[13]) === checkDigit2
+  return Number.parseInt(cnpj.charAt(13) || "0") === checkDigit2
 }
 
 export function formatPhone(phone: string): string {

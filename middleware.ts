@@ -8,9 +8,6 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ["/auth", "/auth/confirm"]
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
-  // Get session from cookies or headers (in real app, this would be more secure)
-  const sessionCookie = request.cookies.get("auth_session")
-
   // For mock implementation, we'll check localStorage on client side
   // In production, this would validate JWT tokens or session IDs
 

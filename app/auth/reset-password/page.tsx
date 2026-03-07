@@ -13,6 +13,14 @@ import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, TrendingUp, Key } from "lu
 import { validatePassword } from "@/lib/shared/auth-validations"
 import { toast } from "sonner"
 
+type LocalResetUser = {
+  email: string
+  id: string
+  password: string
+  failedAttempts?: number
+  lockedUntil?: string | null
+}
+
 export default function ResetPasswordPage() {
   const [resetToken, setResetToken] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -55,13 +63,19 @@ export default function ResetPasswordPage() {
 
       // Mock password reset
       if (email) {
-        const users = JSON.parse(localStorage.getItem("users") || "[]")
-        const userIndex = users.findIndex((u: any) => u.email === email)
+        const users = JSON.parse(localStorage.getItem("users") || "[]") as LocalResetUser[]
+        const userIndex = users.findIndex((u) => u.email === email)
 
         if (userIndex !== -1) {
-          users[userIndex].password = newPassword // In real app, hash this
-          users[userIndex].failedAttempts = 0
-          users[userIndex].lockedUntil = null
+          const userToUpdate = users[userIndex]
+          if (!userToUpdate) {
+            setError("Usuário não encontrado para atualização de senha")
+            return
+          }
+
+          userToUpdate.password = newPassword // In real app, hash this
+          userToUpdate.failedAttempts = 0
+          userToUpdate.lockedUntil = null
           localStorage.setItem("users", JSON.stringify(users))
 
           // Log audit event
@@ -69,7 +83,7 @@ export default function ResetPasswordPage() {
           auditLogs.push({
             id: "log_" + Math.random().toString(36).substring(2),
             action: "password_reset_completed",
-            userId: users[userIndex].id,
+            userId: userToUpdate.id,
             metadata: { email },
             timestamp: new Date().toISOString(),
             ip: "mock_ip",
@@ -86,7 +100,7 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push("/auth")
       }, 3000)
-    } catch (error) {
+    } catch {
       setError("Erro ao alterar senha. Tente novamente.")
     } finally {
       setIsLoading(false)

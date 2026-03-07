@@ -2,13 +2,16 @@
 
 import useSWR, { mutate as globalMutate } from "swr"
 import { api } from "@/lib/client/api"
-import type { Category } from "@/lib/shared/types"
+import type { Category, CategoryGroup } from "@/lib/shared/types"
 
 export function useCategories(onCategoryGroupsChange?: () => void) {
   const { data, error, mutate } = useSWR<Category[]>("/categories", api.get)
 
-  const createCategory = async (data: Omit<Category, "id">) => {
-    const result = await api.post<Category>("/categories", data)
+  const createCategory = async (data: Partial<Category> & Pick<Category, "name" | "type">) => {
+    const result = await api.post<Category>("/categories", {
+      status: "active",
+      ...data,
+    })
     console.log("[v0] Category created:", result.id)
     mutate()
     if (data.categoryGroupId) {
@@ -32,8 +35,8 @@ export function useCategories(onCategoryGroupsChange?: () => void) {
       // Remove from old group
       if (oldCategoryGroupId) {
         try {
-          const oldGroup = await api.get(`/category-groups/${oldCategoryGroupId}`)
-          const updatedCategoryIds = oldGroup.categoryIds.filter((catId: string) => catId !== id)
+          const oldGroup = await api.get<CategoryGroup>(`/category-groups/${oldCategoryGroupId}`)
+          const updatedCategoryIds = (oldGroup.categoryIds || []).filter((catId: string) => catId !== id)
           await api.put(`/category-groups/${oldCategoryGroupId}`, {
             ...oldGroup,
             categoryIds: updatedCategoryIds,
@@ -46,8 +49,8 @@ export function useCategories(onCategoryGroupsChange?: () => void) {
       // Add to new group
       if (newCategoryGroupId) {
         try {
-          const newGroup = await api.get(`/category-groups/${newCategoryGroupId}`)
-          const updatedCategoryIds = [...new Set([...newGroup.categoryIds, id])]
+          const newGroup = await api.get<CategoryGroup>(`/category-groups/${newCategoryGroupId}`)
+          const updatedCategoryIds = [...new Set([...(newGroup.categoryIds || []), id])]
           await api.put(`/category-groups/${newCategoryGroupId}`, {
             ...newGroup,
             categoryIds: updatedCategoryIds,

@@ -54,14 +54,14 @@ export default function BudgetPage() {
   const { areas, isLoading: areasLoading } = useAreas()
   const { categoryGroups, isLoading: groupsLoading } = useCategoryGroups()
   const { categories } = useCategories()
-  const { transactions, getSpentByCategory } = useTransactions({ month: monthString })
+  const { getSpentByCategory } = useTransactions({ month: monthString })
 
   const isLoading = areasLoading || groupsLoading
 
   const budgetSummaries: BudgetSummary[] = (categoryGroups || [])
     .filter((group) => group.status === "active")
     .map((group) => {
-      const area = areas?.find((a) => a.id === group.areaId)
+      const area = areas?.find((a) => a.id === group.areaId) ?? null
       const groupCategories = categories.filter((c) => c.categoryGroupId === group.id)
 
       const spent = groupCategories.reduce((sum, category) => {

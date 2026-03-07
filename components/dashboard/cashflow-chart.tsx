@@ -64,6 +64,8 @@ export function CashflowChart() {
 
   const xScale = (index: number) => (index / (cashflowData.length - 1)) * innerWidth
   const yScale = (value: number) => innerHeight - ((value - minValue) / valueRange) * innerHeight
+  const periodStart = cashflowData[0]?.date ?? cashflowData[0]?.date ?? ""
+  const periodEnd = cashflowData[cashflowData.length - 1]?.date ?? cashflowData[0]?.date ?? ""
 
   // Generate path data for lines
   const createPath = (dataKey: keyof (typeof cashflowData)[0]) => {
@@ -195,8 +197,7 @@ export function CashflowChart() {
         {/* Data summary */}
         <div className="mt-4 text-sm text-gray-600">
           <p>
-            Dados: {cashflowData.length} pontos • Período: {formatDate(cashflowData[0]?.date)} a{" "}
-            {formatDate(cashflowData[cashflowData.length - 1]?.date)}
+            Dados: {cashflowData.length} pontos • Período: {formatDate(periodStart)} a {formatDate(periodEnd)}
           </p>
         </div>
       </CardContent>

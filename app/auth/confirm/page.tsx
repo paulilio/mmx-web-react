@@ -26,7 +26,6 @@ export default function ConfirmEmailPage() {
 
   useEffect(() => {
     if (user?.isEmailConfirmed && !isConfirmed) {
-      console.log("[v0] User email already confirmed, redirecting to dashboard")
       router.push("/dashboard")
     }
   }, [user?.isEmailConfirmed, router, isConfirmed])
@@ -47,13 +46,11 @@ export default function ConfirmEmailPage() {
       if (success) {
         setIsConfirmed(true)
         toast.success("Email confirmado com sucesso!")
-
-        console.log("[v0] Email confirmed, redirecting to dashboard immediately")
         router.push("/dashboard")
       } else {
         setError("Código de confirmação inválido. Verifique e tente novamente.")
       }
-    } catch (error) {
+    } catch {
       setError("Erro ao confirmar email. Tente novamente.")
     } finally {
       setIsLoading(false)
@@ -67,7 +64,7 @@ export default function ConfirmEmailPage() {
       // Pass email parameter to resendConfirmation
       await resendConfirmation(email || undefined)
       toast.success("Código reenviado com sucesso!")
-    } catch (error) {
+    } catch {
       toast.error("Erro ao reenviar código. Tente novamente.")
     } finally {
       setIsResending(false)

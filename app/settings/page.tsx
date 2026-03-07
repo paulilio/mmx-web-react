@@ -46,13 +46,31 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+type SeedTableKey = "mmx_areas" | "mmx_category_groups" | "mmx_categories" | "mmx_transactions" | "mmx_contacts"
+
+type SeedData = Record<SeedTableKey, unknown[]>
+
+const parseStorageArray = (key: SeedTableKey): unknown[] => {
+  const raw = localStorage.getItem(key)
+  if (!raw) {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export default function SettingsPage() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [backupModalOpen, setBackupModalOpen] = useState(false)
-  const [selectedTables, setSelectedTables] = useState<string[]>([])
+  const [selectedTables, setSelectedTables] = useState<SeedTableKey[]>([])
 
   const [selectedAreaId, setSelectedAreaId] = useState<string>("")
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
@@ -68,40 +86,31 @@ export default function SettingsPage() {
         return
       }
 
-      console.log("[v0] Backup modal opened")
-      console.log(`[v0] Backup export started: tables=[${selectedTables.join(", ")}]`)
-
       try {
-        const backupData: Record<string, any[]> = {}
+        const backupData: Partial<SeedData> = {}
 
         for (const table of selectedTables) {
-          let data: any[] = []
+          let data: unknown[] = []
 
           switch (table) {
             case "mmx_areas":
-              const areasData = localStorage.getItem("mmx_areas")
-              data = areasData ? JSON.parse(areasData) : []
+              data = parseStorageArray("mmx_areas")
               break
             case "mmx_category_groups":
-              const groupsData = localStorage.getItem("mmx_category_groups")
-              data = groupsData ? JSON.parse(groupsData) : []
+              data = parseStorageArray("mmx_category_groups")
               break
             case "mmx_categories":
-              const categoriesData = localStorage.getItem("mmx_categories")
-              data = categoriesData ? JSON.parse(categoriesData) : []
+              data = parseStorageArray("mmx_categories")
               break
             case "mmx_transactions":
-              const transactionsData = localStorage.getItem("mmx_transactions")
-              data = transactionsData ? JSON.parse(transactionsData) : []
+              data = parseStorageArray("mmx_transactions")
               break
             case "mmx_contacts":
-              const contactsData = localStorage.getItem("mmx_contacts")
-              data = contactsData ? JSON.parse(contactsData) : []
+              data = parseStorageArray("mmx_contacts")
               break
           }
 
           backupData[table] = data
-          console.log(`[v0] Exported ${data.length} records from ${table}`)
         }
 
         // Generate filename with timestamp
@@ -120,12 +129,9 @@ export default function SettingsPage() {
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
 
-        console.log(`[v0] Backup export completed: file=${filename}`)
-
         setBackupModalOpen(false)
         setSelectedTables([])
       } catch (error) {
-        console.log(`[v0] Backup export error: ${error}`)
         throw error
       }
     },
@@ -133,11 +139,11 @@ export default function SettingsPage() {
     errorMessage: "Erro ao exportar backup. Tente novamente.",
   })
 
-  const handleTableToggle = (table: string) => {
+  const handleTableToggle = (table: SeedTableKey) => {
     setSelectedTables((prev) => (prev.includes(table) ? prev.filter((t) => t !== table) : [...prev, table]))
   }
 
-  const availableTables = [
+  const availableTables: Array<{ id: SeedTableKey; label: string }> = [
     { id: "mmx_areas", label: "Áreas" },
     { id: "mmx_category_groups", label: "Grupos de Categoria" },
     { id: "mmx_categories", label: "Categorias" },
@@ -154,9 +160,7 @@ export default function SettingsPage() {
       }
 
       const text = await selectedFile.text()
-      const data = JSON.parse(text)
-
-      console.log("[v0] Validating JSON structure:", Object.keys(data))
+      const data: unknown = JSON.parse(text)
 
       if (!validateSeedJSON(data)) {
         toast.error(
@@ -165,11 +169,8 @@ export default function SettingsPage() {
         return
       }
 
-      console.log("[v0] JSON validation passed, loading data with fallback storage")
-
       bulkLoadData(data)
 
-      console.log("[v0] Invalidating SWR cache for all endpoints")
       await Promise.all([
         mutate("/areas"),
         mutate("/category-groups"),
@@ -333,10 +334,21 @@ export default function SettingsPage() {
     }
   }
 
-  const validateSeedJSON = (data: any): boolean => {
-    const requiredKeys = ["mmx_areas", "mmx_category_groups", "mmx_categories", "mmx_transactions", "mmx_contacts"]
+  const validateSeedJSON = (data: unknown): data is SeedData => {
+    if (!data || typeof data !== "object") {
+      return false
+    }
 
-    const isValidStructure = requiredKeys.every((key) => key in data && Array.isArray(data[key]))
+    const requiredKeys: SeedTableKey[] = [
+      "mmx_areas",
+      "mmx_category_groups",
+      "mmx_categories",
+      "mmx_transactions",
+      "mmx_contacts",
+    ]
+
+    const parsedData = data as Partial<Record<SeedTableKey, unknown>>
+    const isValidStructure = requiredKeys.every((key) => Array.isArray(parsedData[key]))
 
     if (!isValidStructure) return false
 

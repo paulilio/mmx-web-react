@@ -110,7 +110,10 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
               // Only add if it's after the current date and within limits
               if (targetDate > currentDate && generatedCount < maxOccurrences) {
                 if (!endDateTime || targetDate <= endDateTime) {
-                  dates.push(targetDate.toISOString().split("T")[0])
+                  const targetIsoDate = targetDate.toISOString().split("T")[0]
+                  if (targetIsoDate) {
+                    dates.push(targetIsoDate)
+                  }
                   generatedCount++
                 }
               }
@@ -204,7 +207,10 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
 
       // Add the date if we haven't reached the count limit
       if (generatedCount < maxOccurrences) {
-        dates.push(currentDate.toISOString().split("T")[0])
+        const currentIsoDate = currentDate.toISOString().split("T")[0]
+        if (currentIsoDate) {
+          dates.push(currentIsoDate)
+        }
         generatedCount++
       }
     }
@@ -222,6 +228,9 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
 
       for (let i = 0; i < recurringDates.length; i++) {
         const date = recurringDates[i]
+        if (!date) {
+          continue
+        }
         const recurringId = `${baseId}-r${i + 1}`
 
         const recurringTransaction: TransactionFormData = {
@@ -235,7 +244,10 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
         }
 
         try {
-          const result = await api.post("/transactions", recurringTransaction, recurringId)
+          const result = await api.post<Transaction>("/transactions", {
+            ...recurringTransaction,
+            recurrenceId: recurringId,
+          })
           createdTransactions.push(result)
         } catch (error) {
           console.error(`[v0] Error creating recurring transaction for date ${date}:`, error)
@@ -269,14 +281,14 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
     if (applyMode === "single") {
       // Update only this transaction, remove it from recurrence chain if needed
       const updateData = { ...data }
-      if (data.recurrence && !data.recurrence.enabled) {
+      if (data.recurrence && !data.recurrence.enabled && transaction.recurrence) {
         updateData.recurrence = {
           ...transaction.recurrence,
           enabled: false,
           generatedFrom: undefined,
         }
       }
-      return await api.put(`/transactions/${id}`, updateData)
+      return await api.put<Transaction>(`/transactions/${id}`, updateData)
     }
 
     const parentId = transaction.recurrence?.generatedFrom || transaction.id
@@ -434,7 +446,7 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
     }
   }
 
-  const cleanupRecurrenceAfterDeletion = async (parentId: string, allTransactions: Transaction[]) => {
+  const cleanupRecurrenceAfterDeletion = async (parentId: string, _allTransactions: Transaction[]) => {
     // Get updated list of transactions after deletion
     const updatedTransactions = (await api.get("/transactions")) as Transaction[]
 
@@ -446,6 +458,9 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
     if (remainingTransactions.length === 1) {
       // Only one record remains, remove recurrence link
       const lastTransaction = remainingTransactions[0]
+      if (!lastTransaction?.recurrence) {
+        return
+      }
 
       const updateData = {
         ...lastTransaction,
@@ -456,7 +471,7 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
         },
       }
 
-      await api.put(`/transactions/${lastTransaction.id}`, updateData)
+      await api.put<Transaction>(`/transactions/${lastTransaction.id}`, updateData)
       console.log(`[v0] Recurrence cleanup: removed recurrence from last remaining transaction ${lastTransaction.id}`)
     }
   }
@@ -524,7 +539,7 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
       categoryGroupId: hierarchyData.categoryGroupId,
     }
 
-    const result = await api.post("/transactions", transactionData)
+    const result = await api.post<Transaction>("/transactions", transactionData)
     console.log(`[v0] Transaction created: ${result.id} (${result.type}, R$ ${result.amount})`)
 
     if (data.recurrence?.enabled && !data.recurrence?.generatedFrom) {
@@ -659,7 +674,7 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
       updatedAt: new Date().toISOString(),
     }
 
-    const result = await api.put(`/transactions/${id}`, updateData)
+    const result = await api.put<Transaction>(`/transactions/${id}`, updateData)
     console.log(`[v0] Transaction updated: ${id}`)
 
     mutate((currentData) => {

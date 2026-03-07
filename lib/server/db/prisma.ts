@@ -19,9 +19,12 @@ type Delegate = {
 export interface DbClient {
   user: Delegate
   transaction: Delegate
+  category: Delegate
+  contact: Delegate
 }
 
 declare global {
+  // eslint-disable-next-line no-var
   var prisma: DbClient | undefined
 }
 

@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       // Validate email
       const emailValidation = validateEmail(email)
       if (!emailValidation.isValid) {
-        setError(emailValidation.errors[0])
+        setError(emailValidation.errors[0] ?? "Email invalido")
         return
       }
 
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
               <Alert className="border-blue-200 bg-blue-50">
                 <Mail className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
-                  <strong>Para teste:</strong> Use o token "RESET-123" na próxima tela
+                  <strong>Para teste:</strong> Use o token &quot;RESET-123&quot; na próxima tela
                   <br />
                   <span className="text-sm text-blue-600">Em produção, este token seria enviado por email</span>
                 </AlertDescription>

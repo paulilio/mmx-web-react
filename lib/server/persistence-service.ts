@@ -169,6 +169,9 @@ class PersistenceService {
       }
 
       const existingTransaction = transactions[index]
+      if (!existingTransaction) {
+        throw new Error("Transaction not found")
+      }
 
       // Verify user owns this transaction
       if ((existingTransaction as any).userId && (existingTransaction as any).userId !== currentUserId) {
@@ -298,7 +301,7 @@ class PersistenceService {
       thisYear: transactions.filter((t) => t.date.startsWith(thisYear)).length,
       categories: transactions.reduce(
         (acc, t) => {
-          const categoryId = t.category_id || "uncategorized"
+          const categoryId = t.categoryId || "uncategorized"
           acc[categoryId] = (acc[categoryId] || 0) + 1
           return acc
         },

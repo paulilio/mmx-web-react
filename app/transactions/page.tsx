@@ -32,7 +32,8 @@ import { formatDateToPtBR, isSameMonth } from "@/lib/shared/date-utils"
 import { MainLayout } from "@/components/layout/main-layout"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import type { Transaction } from "@/types"
+import type { Category, Transaction, TransactionFormData as TransactionPayloadFormData } from "@/lib/shared/types"
+import type { TransactionFormData as TransactionModalFormData } from "@/lib/shared/validations"
 import { DatePicker } from "@/components/ui/date-picker"
 
 // Custom SVG Pie Chart Component
@@ -40,7 +41,6 @@ const CustomPieChart = ({ percentage, color = "#10B981" }: { percentage: number;
   const safePercentage = isNaN(percentage) || !isFinite(percentage) ? 0 : Math.max(0, Math.min(100, percentage))
 
   const radius = 36
-  const innerRadius = 24
   const circumference = 2 * Math.PI * radius
   const strokeDasharray = `${(safePercentage / 100) * circumference} ${circumference}`
 
@@ -116,7 +116,7 @@ const CustomBarChart = ({ data }: { data: Array<{ name: string; atual: number; f
       </div>
 
       <div className="grid grid-cols-2 gap-8 text-center text-xs w-full">
-        {safeData.map((item, index) => {
+        {safeData.map((item) => {
           const isReceitas = item.name === "Recebimentos"
           const labelColor = isReceitas ? "text-green-600" : "text-blue-600"
 
@@ -133,21 +133,44 @@ const CustomBarChart = ({ data }: { data: Array<{ name: string; atual: number; f
   )
 }
 
-const getSafeDate = (dateValue: any): Date => {
+void CustomPieChart
+void CustomBarChart
+
+type EditableValue = string | number
+
+const getSafeDate = (dateValue: unknown): Date => {
   if (!dateValue) return new Date()
+
+  if (dateValue instanceof Date) {
+    return isNaN(dateValue.getTime()) ? new Date() : dateValue
+  }
+
+  if (typeof dateValue !== "string" && typeof dateValue !== "number") {
+    return new Date()
+  }
+
   const date = new Date(dateValue)
   return isNaN(date.getTime()) ? new Date() : date
 }
 
-const isValidDateString = (dateValue: any): boolean => {
+const isValidDateString = (dateValue: unknown): boolean => {
   if (!dateValue) return false
+
+  if (dateValue instanceof Date) {
+    return !isNaN(dateValue.getTime())
+  }
+
+  if (typeof dateValue !== "string" && typeof dateValue !== "number") {
+    return false
+  }
+
   const date = new Date(dateValue)
   return !isNaN(date.getTime())
 }
 
 export default function TransactionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1)
   const [activeTab, setActiveTab] = useState("income")
@@ -155,10 +178,10 @@ export default function TransactionsPage() {
 
   const [editingTransaction, setEditingTransaction] = useState<string | null>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
-  const [editingValue, setEditingValue] = useState<any>(null)
+  const [editingValue, setEditingValue] = useState<EditableValue>("")
 
   const [showRecurringDeleteModal, setShowRecurringDeleteModal] = useState(false)
-  const [transactionToDelete, setTransactionToDelete] = useState<any>(null)
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null)
 
   const [sortField, setSortField] = useState<string>("date")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
@@ -173,6 +196,8 @@ export default function TransactionsPage() {
     actions: true,
   })
 
+  type VisibleColumnKey = keyof typeof visibleColumns
+
   const handleSort = (field: string) => {
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc")
@@ -182,7 +207,7 @@ export default function TransactionsPage() {
     }
   }
 
-  const toggleColumn = (column: string) => {
+  const toggleColumn = (column: VisibleColumnKey) => {
     if (column === "date") return // Date field cannot be disabled
     setVisibleColumns((prev) => ({
       ...prev,
@@ -191,8 +216,7 @@ export default function TransactionsPage() {
   }
 
   const handleDataChange = async () => {
-    console.log("[v0] Calling transactions revalidation callback")
-    // Only log the callback, let SWR handle revalidation naturally
+    // Keep callback for hook contract; SWR handles the revalidation.
   }
 
   const {
@@ -226,7 +250,7 @@ export default function TransactionsPage() {
       const dateB = new Date(b.date)
       return dateB.getTime() - dateA.getTime()
     })
-    return new Date(sortedTransactions[0].date)
+    return new Date(sortedTransactions[0]?.date || new Date().toISOString())
   }, [transactions, hasData])
 
   useEffect(() => {
@@ -296,10 +320,6 @@ export default function TransactionsPage() {
       }
     }
 
-    console.log("[v0] Dashboard calculation - hasData:", hasData)
-    console.log("[v0] Dashboard calculation - transactions count:", transactions.length)
-    console.log("[v0] Dashboard calculation - categories count:", categories.length)
-
     if (currentMonthTransactions.length === 0) {
       return {
         currentIncome: 0,
@@ -315,11 +335,6 @@ export default function TransactionsPage() {
       }
     }
 
-    currentMonthTransactions.forEach((t) => {
-      const category = categories.find((c) => c.id === t.categoryId)
-      console.log(`[v0] Transaction ${t.id}: status="${t.status}", type="${category?.type}", amount=${t.amount}`)
-    })
-
     const activeTransactions = currentMonthTransactions.filter((t) => t.status !== "cancelled")
 
     const currentMonthIncomeTransactions = activeTransactions.filter((t) => {
@@ -333,56 +348,34 @@ export default function TransactionsPage() {
     })
 
     const totalIncome = currentMonthIncomeTransactions.reduce((sum, t) => {
-      const amount =
-        typeof t.amount === "string"
-          ? Number.parseFloat(t.amount.replace(/\./g, "").replace(",", ".")) || 0
-          : Number(t.amount) || 0
+      const amount = Number(t.amount) || 0
       return sum + amount
     }, 0)
 
     const totalExpenses = currentMonthExpenseTransactions.reduce((sum, t) => {
-      const amount =
-        typeof t.amount === "string"
-          ? Number.parseFloat(t.amount.replace(/\./g, "").replace(",", ".")) || 0
-          : Number(t.amount) || 0
+      const amount = Number(t.amount) || 0
       return sum + amount
     }, 0)
-
-    console.log("[v0] Total income calculated:", totalIncome)
-    console.log("[v0] Total expenses calculated:", totalExpenses)
 
     const consolidatedIncome = currentMonthIncomeTransactions
       .filter((t) => {
         const isCompleted = t.status?.trim().toLowerCase() === "completed"
-        console.log(`[v0] Income transaction ${t.id}: status="${t.status}" -> isCompleted=${isCompleted}`)
         return isCompleted
       })
       .reduce((sum, t) => {
-        const amount =
-          typeof t.amount === "string"
-            ? Number.parseFloat(t.amount.replace(/\./g, "").replace(",", ".")) || 0
-            : Number(t.amount) || 0
+        const amount = Number(t.amount) || 0
         return sum + amount
       }, 0)
 
     const consolidatedExpenses = currentMonthExpenseTransactions
       .filter((t) => {
         const isCompleted = t.status?.trim().toLowerCase() === "completed"
-        console.log(`[v0] Expense transaction ${t.id}: status="${t.status}" -> isCompleted=${isCompleted}`)
         return isCompleted
       })
       .reduce((sum, t) => {
-        const amount =
-          typeof t.amount === "string"
-            ? Number.parseFloat(t.amount.replace(/\./g, "").replace(",", ".")) || 0
-            : Number(t.amount) || 0
+        const amount = Number(t.amount) || 0
         return sum + amount
       }, 0)
-
-    console.log("[v0] Consolidated income calculated:", consolidatedIncome)
-    console.log("[v0] Consolidated expenses calculated:", consolidatedExpenses)
-    console.log("[v0] Remaining income to consolidate:", totalIncome - consolidatedIncome)
-    console.log("[v0] Remaining expenses to consolidate:", totalExpenses - consolidatedExpenses)
 
     const activePreviousTransactions = previousMonthTransactions.filter((t) => t.status !== "cancelled")
     const previousIncomeTransactions = activePreviousTransactions.filter((t) => {
@@ -396,18 +389,12 @@ export default function TransactionsPage() {
     })
 
     const previousIncome = previousIncomeTransactions.reduce((sum, t) => {
-      const amount =
-        typeof t.amount === "string"
-          ? Number.parseFloat(t.amount.replace(/\./g, "").replace(",", ".")) || 0
-          : Number(t.amount) || 0
+      const amount = Number(t.amount) || 0
       return sum + amount
     }, 0)
 
     const previousExpenses = previousExpenseTransactions.reduce((sum, t) => {
-      const amount =
-        typeof t.amount === "string"
-          ? Number.parseFloat(t.amount.replace(/\./g, "").replace(",", ".")) || 0
-          : Number(t.amount) || 0
+      const amount = Number(t.amount) || 0
       return sum + amount
     }, 0)
 
@@ -451,8 +438,8 @@ export default function TransactionsPage() {
     }
 
     filtered.sort((a, b) => {
-      let aValue: any
-      let bValue: any
+      let aValue: string | number | Date
+      let bValue: string | number | Date
 
       switch (sortField) {
         case "date":
@@ -478,8 +465,8 @@ export default function TransactionsPage() {
           bValue = categoryB?.name?.toLowerCase() || ""
           break
         default:
-          aValue = a[sortField]
-          bValue = b[sortField]
+          aValue = ""
+          bValue = ""
       }
 
       if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
@@ -508,8 +495,6 @@ export default function TransactionsPage() {
       ]
     }
 
-    const totalLancado = currentMonthTransactions.reduce((sum, t) => sum + t.amount, 0)
-
     return [
       {
         name: "Recebimentos",
@@ -522,30 +507,47 @@ export default function TransactionsPage() {
         falta: (dashboardData.totalExpenses - dashboardData.consolidatedExpenses) / 1000,
       },
     ]
-  }, [currentMonthTransactions, dashboardData, hasData])
+  }, [dashboardData, hasData])
 
-  const handleCreateTransaction = async (data: any) => {
-    try {
-      await createTransaction(data)
-      setIsModalOpen(false)
-    } catch (error) {
-      console.error("Error creating transaction:", error)
+  void chartData
+
+  const normalizeTransactionPayload = (data: TransactionModalFormData): TransactionPayloadFormData => {
+    const recurrence = data.recurrence
+      ? {
+          ...data.recurrence,
+          interval: data.recurrence.interval ?? 1,
+        }
+      : undefined
+
+    return {
+      ...data,
+      description: data.description ?? "",
+      recurrence,
     }
   }
 
-  const handleUpdateTransaction = async (data: any) => {
+  const handleCreateTransaction = async (data: TransactionModalFormData) => {
+    try {
+      await createTransaction(normalizeTransactionPayload(data))
+      setIsModalOpen(false)
+    } catch {
+      // Error is handled by the hook/UI feedback.
+    }
+  }
+
+  const handleUpdateTransaction = async (data: TransactionModalFormData) => {
     if (selectedTransaction) {
       try {
-        await updateTransaction(selectedTransaction.id, data)
+        await updateTransaction(selectedTransaction.id, normalizeTransactionPayload(data))
         setSelectedTransaction(null)
         setIsModalOpen(false)
-      } catch (error) {
-        console.error("Error updating transaction:", error)
+      } catch {
+        // Error is handled by the hook/UI feedback.
       }
     }
   }
 
-  const handleEditTransaction = (transaction: any) => {
+  const handleEditTransaction = (transaction: Transaction) => {
     setSelectedTransaction(transaction)
     setIsModalOpen(true)
   }
@@ -561,8 +563,8 @@ export default function TransactionsPage() {
       if (confirm("Tem certeza que deseja excluir esta transação?")) {
         try {
           await deleteTransaction(id)
-        } catch (error) {
-          console.error("Error deleting transaction:", error)
+        } catch {
+          // Error is handled by the hook/UI feedback.
         }
       }
     }
@@ -578,12 +580,11 @@ export default function TransactionsPage() {
         all: "allEvents" as const,
       }
 
-      console.log(`[v0] Deleting recurring transaction ${transactionToDelete.id} with mode: ${mode}`)
       await deleteRecurrence(transactionToDelete, modeMapping[mode])
       setShowRecurringDeleteModal(false)
       setTransactionToDelete(null)
-    } catch (error) {
-      console.error("Error deleting recurring transaction:", error)
+    } catch {
+      // Error is handled by the hook/UI feedback.
     }
   }
 
@@ -592,20 +593,25 @@ export default function TransactionsPage() {
     applyMode: "thisAndFollowing" | "keepThisDeleteFollowing" | "allRecords",
   ) => {
     try {
-      await deleteRecurrence(transaction, applyMode)
-    } catch (error) {
-      console.error("Error deleting recurrence:", error)
+      const mappedMode =
+        applyMode === "thisAndFollowing"
+          ? "followingEvents"
+          : applyMode === "keepThisDeleteFollowing"
+            ? "thisEvent"
+            : "allEvents"
+      await deleteRecurrence(transaction, mappedMode)
+    } catch {
+      // Error is handled by the hook/UI feedback.
     }
   }
 
-  const startEditing = (transactionId: string, field: string, value: any) => {
+  const startEditing = (transactionId: string, field: string, value: EditableValue) => {
     let processedValue = value
 
     // Convert ISO date to pt-BR format for display when editing dates
     if (field === "date" && typeof value === "string" && value.includes("-")) {
       const [year, month, day] = value.split("-")
       processedValue = `${day}/${month}/${year}`
-      console.log("[v0] Starting date edit: converted", value, "to", processedValue)
     }
 
     setEditingTransaction(transactionId)
@@ -616,7 +622,7 @@ export default function TransactionsPage() {
   const cancelEditing = () => {
     setEditingTransaction(null)
     setEditingField(null)
-    setEditingValue(null)
+    setEditingValue("")
   }
 
   const handleDateChange = (formattedDate: string) => {
@@ -652,30 +658,30 @@ export default function TransactionsPage() {
 
       const cleanUpdateData = {
         id: transaction.id,
-        date: editingField === "date" ? processedValue : transaction.date,
-        amount: editingField === "amount" ? editingValue : transaction.amount,
-        categoryId: editingField === "categoryId" ? editingValue : transaction.categoryId,
-        contactId: editingField === "contactId" ? editingValue : transaction.contactId,
-        description: editingField === "description" ? editingValue : transaction.description,
-        type: editingField === "type" ? editingValue : transaction.type,
-        status: editingField === "status" ? editingValue : transaction.status,
-        notes: editingField === "notes" ? editingValue : transaction.notes,
-        recurrence: editingField === "recurrence" ? editingValue : transaction.recurrence,
-        areaId: editingField === "areaId" ? editingValue : transaction.areaId,
-        categoryGroupId: editingField === "categoryGroupId" ? editingValue : transaction.categoryGroupId,
-      }
-
-      console.log("[v0] Saving inline edit:", {
-        field: editingField,
-        originalValue: editingValue,
-        processedValue: processedValue,
-        transactionId: editingTransaction,
-      })
+        date: editingField === "date" ? String(processedValue) : transaction.date,
+        amount:
+          editingField === "amount"
+            ? typeof editingValue === "number"
+              ? editingValue
+              : parseValueFromEdit(editingValue)
+            : transaction.amount,
+        categoryId: editingField === "categoryId" ? String(editingValue) : transaction.categoryId,
+        contactId: editingField === "contactId" ? String(editingValue) : transaction.contactId,
+        description: editingField === "description" ? String(editingValue) : transaction.description,
+        type: editingField === "type" ? (String(editingValue) as Transaction["type"]) : transaction.type,
+        status:
+          editingField === "status" ? (String(editingValue) as Transaction["status"]) : transaction.status,
+        notes: editingField === "notes" ? String(editingValue) : transaction.notes,
+        recurrence: transaction.recurrence,
+        areaId: editingField === "areaId" ? String(editingValue) : transaction.areaId,
+        categoryGroupId:
+          editingField === "categoryGroupId" ? String(editingValue) : transaction.categoryGroupId,
+      } as Partial<Transaction>
 
       await updateTransaction(editingTransaction, cleanUpdateData)
       cancelEditing()
-    } catch (error) {
-      console.error("Error updating transaction:", error)
+    } catch {
+      // Error is handled by the hook/UI feedback.
     }
   }
 
@@ -683,7 +689,7 @@ export default function TransactionsPage() {
     return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
-  const parseValueFromEdit = (value: string) => {
+  const parseValueFromEdit = (value: string | number) => {
     // Remove all dots (thousands separator) and replace comma with dot (decimal separator)
     const cleanValue = value.toString().replace(/\./g, "").replace(",", ".")
     const parsed = Number.parseFloat(cleanValue)
@@ -698,7 +704,7 @@ export default function TransactionsPage() {
       .sort((a, b) => a.name.localeCompare(b.name))
 
     // Group expense categories by area
-    const expensesByArea: Record<string, any[]> = {}
+    const expensesByArea: Record<string, Category[]> = {}
 
     categories
       .filter((cat) => cat.type === "expense")
@@ -715,7 +721,9 @@ export default function TransactionsPage() {
 
     // Sort categories within each area
     Object.keys(expensesByArea).forEach((areaName) => {
-      expensesByArea[areaName].sort((a, b) => a.name.localeCompare(b.name))
+      if (expensesByArea[areaName]) {
+        expensesByArea[areaName].sort((a, b) => a.name.localeCompare(b.name))
+      }
     })
 
     return {
@@ -724,7 +732,7 @@ export default function TransactionsPage() {
     }
   }, [categories, categoryGroups, areas])
 
-  const renderCategorySelect = (transaction: any) => {
+  const renderCategorySelect = (transaction: Transaction) => {
     const currentCategory = categories.find((c) => c.id === transaction.categoryId)
 
     const areaNameMapping: { [key: string]: string } = {
@@ -768,52 +776,35 @@ export default function TransactionsPage() {
     )
   }
 
-  const handleFieldUpdate = async (transactionId: string, field: string, value: any) => {
+  const handleFieldUpdate = async (transactionId: string, field: string, value: EditableValue) => {
     setEditingTransaction(transactionId)
     setEditingField(field)
     setEditingValue(value)
 
-    console.log("[v0] handleFieldUpdate - transactionId:", transactionId)
-    console.log(
-      "[v0] handleFieldUpdate - filteredTransactions type:",
-      Array.isArray(filteredTransactions) ? "array" : typeof filteredTransactions,
-    )
-    console.log("[v0] handleFieldUpdate - filteredTransactions length:", filteredTransactions?.length)
-    console.log("[v0] handleFieldUpdate - first transaction:", filteredTransactions?.[0])
-
     const transaction = filteredTransactions.find((t) => t.id === transactionId)
     if (!transaction) {
-      console.log("[v0] handleFieldUpdate - transaction not found!")
       return
     }
-
-    console.log("[v0] handleFieldUpdate - found transaction:", transaction)
-    console.log("[v0] handleFieldUpdate - transaction keys:", Object.keys(transaction))
 
     try {
       const updateData = {
         [field]: value,
-      }
-
-      console.log("[v0] handleFieldUpdate - updateData:", updateData)
-      console.log("[v0] handleFieldUpdate - updateData keys:", Object.keys(updateData))
+      } as Partial<Transaction>
 
       await updateTransaction(transactionId, updateData)
       cancelEditing()
-    } catch (error) {
-      console.error("Error updating transaction:", error)
+    } catch {
+      // Error is handled by the hook/UI feedback.
     }
   }
 
   const formatDateToISO = (dateString: string): string => {
     if (!dateString || !dateString.includes("/") || dateString.length < 10) {
-      console.log("[v0] Invalid date format for ISO conversion:", dateString)
       return dateString // Return as-is if not a complete date
     }
 
     const [day, month, year] = dateString.split("/")
     if (!day || !month || !year || day.length !== 2 || month.length !== 2 || year.length !== 4) {
-      console.log("[v0] Incomplete date parts:", { day, month, year })
       return dateString // Return as-is if incomplete
     }
 
@@ -1324,14 +1315,7 @@ export default function TransactionsPage() {
                                         {formatDateToPtBR(transaction.date)}
                                       </button>
                                       {(transaction.recurrence?.enabled || transaction.recurrence?.generatedFrom) && (
-                                        <Repeat
-                                          className="h-3 w-3 text-blue-500 flex-shrink-0"
-                                          title={
-                                            transaction.recurrence?.enabled
-                                              ? "Transação recorrente"
-                                              : "Instância de transação recorrente"
-                                          }
-                                        />
+                                        <Repeat className="h-3 w-3 text-blue-500 flex-shrink-0" />
                                       )}
                                     </>
                                   )}
@@ -1362,7 +1346,7 @@ export default function TransactionsPage() {
                                   </div>
                                 ) : (
                                   <button
-                                    onClick={() => startEditing(transaction.id, "description", transaction.description)}
+                                    onClick={() => startEditing(transaction.id, "description", transaction.description || "")}
                                     className="text-left hover:bg-slate-100 px-2 py-1 rounded font-medium text-slate-900 text-sm"
                                   >
                                     {transaction.description || "Sem descrição"}
@@ -1403,7 +1387,10 @@ export default function TransactionsPage() {
                               <td className="py-3 px-4">
                                 {isEditing && editingField === "status" ? (
                                   <div className="flex items-center gap-2">
-                                    <Select value={editingValue} onValueChange={setEditingValue}>
+                                    <Select
+                                      value={typeof editingValue === "string" ? editingValue : undefined}
+                                      onValueChange={setEditingValue}
+                                    >
                                       <SelectTrigger className="h-8 text-xs w-28">
                                         <SelectValue />
                                       </SelectTrigger>

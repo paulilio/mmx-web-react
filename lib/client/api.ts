@@ -23,8 +23,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
 const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 100))
 
 function resolveApiUrl(endpoint: string): string {
-  // Transactions already have first-party Next.js handlers in app/api.
-  if (endpoint.startsWith("/transactions")) {
+  // Migrated domains already have first-party Next.js handlers in app/api.
+  if (endpoint.startsWith("/transactions") || endpoint.startsWith("/categories") || endpoint.startsWith("/contacts")) {
     return `/api${endpoint}`
   }
 
@@ -111,9 +111,6 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
     if (endpoint === "/reports/aging") {
       const transactions = await transactionsStorage.getAll()
       console.log("[v0] Reports aging - transactions count:", transactions?.length)
-
-      const completedTransactions = transactions?.filter((t) => t.status === "completed") || []
-      const pendingTransactions = transactions?.filter((t) => t.status === "pending") || []
 
       const aging = {
         overdue: 0,

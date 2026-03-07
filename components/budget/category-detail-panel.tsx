@@ -20,12 +20,6 @@ export function CategoryDetailPanel({ budgetSummary }: CategoryDetailPanelProps)
     return Math.min((spent / funded) * 100, 100)
   }
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage <= 50) return "bg-green-500"
-    if (percentage <= 80) return "bg-yellow-500"
-    return "bg-red-500"
-  }
-
   return (
     <div className="space-y-6 mt-6">
       {/* Group Summary */}
@@ -34,13 +28,13 @@ export function CategoryDetailPanel({ budgetSummary }: CategoryDetailPanelProps)
           <div className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
-              style={{ backgroundColor: budgetSummary.budgetGroup.color }}
+              style={{ backgroundColor: budgetSummary.categoryGroup.color }}
             >
-              <DynamicIcon iconName={budgetSummary.budgetGroup.icon} size={20} className="text-white" />
+              <DynamicIcon iconName={budgetSummary.categoryGroup.icon} size={20} className="text-white" />
             </div>
             <div>
-              <CardTitle className="text-lg">{budgetSummary.budgetGroup.name}</CardTitle>
-              <p className="text-sm text-slate-600">{budgetSummary.budgetGroup.description}</p>
+              <CardTitle className="text-lg">{budgetSummary.categoryGroup.name}</CardTitle>
+              <p className="text-sm text-slate-600">{budgetSummary.categoryGroup.description}</p>
             </div>
           </div>
         </CardHeader>

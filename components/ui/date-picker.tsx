@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/shared/utils"
+import { ptBR } from "date-fns/locale"
 
 interface DatePickerProps {
   value: string
@@ -113,30 +114,7 @@ export function DatePicker({
             selected={selectedDate}
             onSelect={handleCalendarSelect}
             initialFocus
-            locale={{
-              localize: {
-                day: (n: number) => ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][n],
-                month: (n: number) =>
-                  [
-                    "Janeiro",
-                    "Fevereiro",
-                    "Março",
-                    "Abril",
-                    "Maio",
-                    "Junho",
-                    "Julho",
-                    "Agosto",
-                    "Setembro",
-                    "Outubro",
-                    "Novembro",
-                    "Dezembro",
-                  ][n],
-              },
-              formatLong: {
-                date: () => "dd/MM/yyyy",
-              },
-              code: "pt-BR",
-            }}
+            locale={ptBR}
           />
         </PopoverContent>
       </Popover>

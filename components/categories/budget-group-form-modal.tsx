@@ -80,9 +80,9 @@ export function BudgetGroupFormModal({ open, onOpenChange, budgetGroup }: Budget
           color: budgetGroup.color,
           icon: budgetGroup.icon,
           status: budgetGroup.status,
-          categoryIds: budgetGroup.categoryIds,
+          categoryIds: budgetGroup.categoryIds || [],
         })
-        setSelectedCategories(budgetGroup.categoryIds)
+        setSelectedCategories(budgetGroup.categoryIds || [])
       } else {
         reset({
           name: "",

@@ -6,6 +6,7 @@ export interface Contact {
   email?: string
   phone?: string
   identifier?: string
+  document?: string
   type: "customer" | "supplier"
   status: "active" | "inactive"
   createdAt: string
@@ -58,6 +59,7 @@ export interface CategoryGroup {
   icon: string
   status: "active" | "inactive"
   areaId?: string
+  categoryIds?: string[]
   createdAt: string
   updatedAt: string
 }
@@ -66,12 +68,21 @@ export interface Area {
   id: string
   name: string
   description?: string
-  type: "income" | "fixedExpenses" | "dailyExpenses" | "personal" | "taxesFees"
+  type: "income" | "fixedExpenses" | "dailyExpenses" | "personal" | "taxesFees" | "fixed-expenses" | "daily-expenses" | "taxes-fees"
   color: string
   icon: string
   status: "active" | "inactive"
   createdAt: string
   updatedAt: string
+}
+
+export interface AreaFormData {
+  name: string
+  description?: string
+  type: Area["type"]
+  color: string
+  icon: string
+  status: Area["status"]
 }
 
 export interface Budget {
@@ -85,6 +96,63 @@ export interface Budget {
   rolloverEnabled: boolean
   rolloverAmount?: number
 }
+
+export interface BudgetAllocation {
+  id: string
+  budget_group_id: string
+  category_group_id?: string
+  month: string
+  planned_amount: number
+  funded_amount: number
+  spent_amount: number
+  available_amount: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface BudgetAllocationFormData {
+  budget_group_id: string
+  category_group_id?: string
+  month: string
+  planned_amount: number
+  funded_amount: number
+}
+
+export interface BudgetFormData {
+  categoryGroupId: string
+  month: number
+  year: number
+  planned: number
+  funded: number
+  rolloverEnabled?: boolean
+  rolloverAmount?: number
+}
+
+export interface FundTransferFormData {
+  fromBudgetGroupId: string
+  toBudgetGroupId: string
+  amount: number
+  month: number
+  year: number
+}
+
+export interface BudgetGroup extends CategoryGroup {
+  categoryIds?: string[]
+}
+
+export interface BudgetGroupFormData {
+  name: string
+  description?: string
+  color: string
+  icon: string
+  status: "active" | "inactive"
+  areaId?: string
+  categoryIds?: string[]
+}
+
+export type CategoryGroupFormData = BudgetGroupFormData
+export type GrupoCategoria = CategoryGroup
+export type GrupoCategoriaFormData = CategoryGroupFormData
 
 export interface BudgetSummary {
   categoryGroup: CategoryGroup
@@ -102,7 +170,7 @@ export interface CategoryWithSpent extends Category {
 
 export interface Transaction {
   id: string
-  description: string
+  description?: string
   amount: number
   type: "income" | "expense"
   categoryId: string
@@ -113,6 +181,8 @@ export interface Transaction {
   recurrence?: TransactionRecurrence
   areaId?: string
   categoryGroupId?: string
+  parentId?: string
+  generatedFrom?: string
   createdAt: string
   updatedAt: string
 }
@@ -136,9 +206,12 @@ export interface TransactionRecurrence {
   frequency: "daily" | "weekly" | "monthly" | "yearly"
   interval: number // 1-99, repetir a cada X dias, semanas, meses, anos
   daysOfWeek?: DayOfWeek[] // usado quando diário ou semanal
+  dayOfWeek?: DayOfWeek // usado no mensal por semana
   dayOfMonth?: number // usado no mensal (1-31)
   weekOfMonth?: "first" | "second" | "third" | "fourth" | "last" // usado no mensal por semana
   monthOfYear?: number // usado no anual (1-12)
+  monthlyType?: "dayOfMonth" | "weekOfMonth"
+  endType?: "count" | "date"
   count?: number // 1-100 repetições (opcional)
   endDate?: string // ISO 8601 date | null
   generatedFrom?: string // id of original transaction

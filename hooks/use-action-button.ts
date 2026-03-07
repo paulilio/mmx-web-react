@@ -5,18 +5,25 @@ import { toast } from "sonner"
 
 interface UseActionButtonOptions {
   actionName: string // Nome da ação para as mensagens (ex: "Transação salva", "Registro excluído")
-  onAction: () => Promise<void> | void
+  onAction: (...args: any[]) => Promise<void> | void
   successMessage?: string // Mensagem customizada de sucesso
   errorMessage?: string // Mensagem customizada de erro
 }
 
-export function useActionButton({ actionName, onAction, successMessage, errorMessage }: UseActionButtonOptions) {
+export function useActionButton<TArgs extends any[]>({
+  actionName,
+  onAction,
+  successMessage,
+  errorMessage,
+}: Omit<UseActionButtonOptions, "onAction"> & {
+  onAction: (...args: TArgs) => Promise<void> | void
+}) {
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const execute = async () => {
+  const execute = async (...args: TArgs) => {
     setIsProcessing(true)
     try {
-      await onAction()
+      await onAction(...args)
 
       const message = successMessage || `${actionName} com sucesso! Os dados foram atualizados.`
       toast.success(message)

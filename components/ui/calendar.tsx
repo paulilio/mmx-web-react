@@ -36,13 +36,13 @@ function Calendar({
       formatters={{
         formatMonthDropdown: (date) => {
           if (locale?.localize?.month) {
-            return locale.localize.month(date.getMonth())
+            return locale.localize.month(date.getMonth() as never)
           }
           return date.toLocaleString("pt-BR", { month: "long" })
         },
         formatWeekdayName: (date) => {
           if (locale?.localize?.day) {
-            return locale.localize.day(date.getDay())
+            return locale.localize.day(date.getDay() as never)
           }
           return date.toLocaleDateString("pt-BR", { weekday: "short" })
         },

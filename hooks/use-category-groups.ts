@@ -1,24 +1,24 @@
 import useSWR, { mutate as globalMutate } from "swr"
-import type { CategoryGroup, CategoryGroupFormData } from "@/lib/shared/types"
+import type { Category, CategoryGroup, CategoryGroupFormData } from "@/lib/shared/types"
 import { api } from "@/lib/client/api"
 
 export function useCategoryGroups() {
   const { data, error, mutate } = useSWR<CategoryGroup[]>("/category-groups", api.get)
 
   const createCategoryGroup = async (data: CategoryGroupFormData) => {
-    const result = await api.post("/category-groups", data)
+    const result = await api.post<CategoryGroup>("/category-groups", data)
     mutate()
     return result
   }
 
-  const updateCategoryGroup = async (id: string, data: CategoryGroupFormData) => {
-    const result = await api.put(`/category-groups/${id}`, data)
+  const updateCategoryGroup = async (id: string, data: Partial<CategoryGroupFormData>) => {
+    const result = await api.put<CategoryGroup>(`/category-groups/${id}`, data)
     mutate()
     return result
   }
 
   const deleteCategoryGroup = async (id: string) => {
-    const categories = await api.get("/categories")
+    const categories = await api.get<Category[]>("/categories")
     const associatedCategories = categories.filter((cat: any) => cat.categoryGroupId === id)
 
     for (const category of associatedCategories) {

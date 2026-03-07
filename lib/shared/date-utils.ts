@@ -94,7 +94,12 @@ export function getMonthsWithTransactions(transactions: any[]): Array<{ year: nu
 
   return Array.from(months)
     .map((monthStr) => {
-      const [year, month] = monthStr.split("-").map(Number)
+      const [rawYear, rawMonth] = monthStr.split("-").map(Number)
+      const year = rawYear ?? 0
+      const month = rawMonth ?? 0
+      if (!Number.isFinite(year) || !Number.isFinite(month)) {
+        return null
+      }
       const monthNames = [
         "Janeiro",
         "Fevereiro",
@@ -112,9 +117,10 @@ export function getMonthsWithTransactions(transactions: any[]): Array<{ year: nu
       return {
         year,
         month,
-        label: `${monthNames[month - 1]} ${year}`,
+        label: `${monthNames[month - 1] || ""} ${year}`,
       }
     })
+    .filter((item): item is { year: number; month: number; label: string } => item !== null)
     .sort((a, b) => {
       if (a.year !== b.year) return b.year - a.year
       return b.month - a.month

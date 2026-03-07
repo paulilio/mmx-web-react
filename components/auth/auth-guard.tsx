@@ -59,11 +59,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
         // Only initialize clean data in mock mode and when user is authenticated
         if (process.env.NEXT_PUBLIC_USE_API !== "true") {
           try {
-            const { initializeCleanData } = await import("../lib/storage")
+            const { initializeCleanData } = await import("../../lib/server/storage")
             await initializeCleanData()
-            console.log("[v0] Data initialized after authentication")
-          } catch (error) {
-            console.log("[v0] Error initializing data:", error)
+          } catch {
+            // Keep auth flow resilient if mock initialization fails.
           }
         }
         setDataInitialized(true)

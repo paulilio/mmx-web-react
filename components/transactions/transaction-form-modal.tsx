@@ -94,7 +94,7 @@ export function TransactionFormModal({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
     setValue,
     watch,
@@ -206,7 +206,7 @@ export function TransactionFormModal({
   useEffect(() => {
     if (isOpen) {
       if (transaction) {
-        const isRecurring = transaction.recurrence?.enabled || transaction.recurrence?.generatedFrom
+        const isRecurring = Boolean(transaction.recurrence?.enabled || transaction.recurrence?.generatedFrom)
         setIsRecurringEdit(isRecurring)
 
         if (transaction.recurrence?.generatedFrom) {
@@ -237,7 +237,7 @@ export function TransactionFormModal({
           }
         }
 
-        const recurrenceData = isRecurring
+        const recurrenceData: TransactionFormData["recurrence"] = isRecurring
           ? {
               enabled: true,
               frequency: transaction.recurrence?.frequency || "monthly",
@@ -246,9 +246,9 @@ export function TransactionFormModal({
               endType: transaction.recurrence?.endType || "count",
               daysOfWeek: transaction.recurrence?.daysOfWeek || [],
               dayOfMonth: transaction.recurrence?.dayOfMonth || 1,
-              weekOfMonth: "first",
+              weekOfMonth: "first" as const,
               monthOfYear: 1,
-              monthlyType: "dayOfMonth",
+              monthlyType: "dayOfMonth" as const,
               endDate: transaction.recurrence?.endDate,
               generatedFrom: transaction.recurrence?.generatedFrom,
             }
@@ -258,7 +258,7 @@ export function TransactionFormModal({
               interval: 1,
               count: 2,
               endType: "count" as const,
-              daysOfWeek: [] as string[],
+              daysOfWeek: [] as DayOfWeek[],
               dayOfMonth: 1,
               weekOfMonth: "first" as const,
               monthOfYear: 1,
@@ -293,7 +293,7 @@ export function TransactionFormModal({
           interval: 1,
           count: 2,
           endType: "count" as const,
-          daysOfWeek: [] as string[],
+          daysOfWeek: [] as DayOfWeek[],
           dayOfMonth: 1,
           weekOfMonth: "first" as const,
           monthOfYear: 1,
@@ -368,7 +368,6 @@ export function TransactionFormModal({
 
   const selectedCategoryId = watch("categoryId")
   const transactionType = watch("type")
-  const transactionStatus = watch("status")
   const recurrenceEnabled = watch("recurrence.enabled")
   const recurrenceFrequency = watch("recurrence.frequency")
   const recurrenceEndType = watch("recurrence.endType")
@@ -397,6 +396,8 @@ export function TransactionFormModal({
         value: area.id,
         label: area.name,
         name: area.name,
+        color: area.color,
+        icon: area.icon,
       }))
       .sort((a, b) => a.name.localeCompare(b.name)) // Alphabetical order A-Z
 
@@ -443,19 +444,8 @@ export function TransactionFormModal({
     setValue("categoryGroupId", "", { shouldDirty: true })
     setValue("categoryId", "", { shouldDirty: true })
 
-    // Check if current area is still valid for new type
     if (currentAreaId) {
-      const isAreaStillValid = areas?.some(
-        (area) =>
-          area.id === currentAreaId &&
-          area.status === "active" &&
-          categories?.some(
-            (category) =>
-              category.status === "active" &&
-              category.type === type &&
-              categoryGroups?.some((group) => group.id === category.categoryGroupId && group.areaId === area.id),
-          ),
-      )
+      void currentAreaId
     }
   }
 
@@ -509,12 +499,8 @@ export function TransactionFormModal({
     },
   })
 
-  const handleFormSubmit = async (data: TransactionFormData) => {
+  const handleFormSubmit = async () => {
     await submitButton.execute()
-  }
-
-  const handleRecurringEditConfirm = async () => {
-    await recurringEditButton.execute()
   }
 
   const dayOfWeekLabels: Record<DayOfWeek, string> = {
@@ -527,15 +513,6 @@ export function TransactionFormModal({
     sunday: "D",
   }
 
-  const dayOfWeekFullLabels: Record<DayOfWeek, string> = {
-    monday: "Segunda",
-    tuesday: "Terça",
-    wednesday: "Quarta",
-    thursday: "Quinta",
-    friday: "Sexta",
-    saturday: "Sábado",
-    sunday: "Domingo",
-  }
 
   const dayOfWeekOptions: DayOfWeek[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
@@ -613,7 +590,12 @@ export function TransactionFormModal({
     if (!transaction || !onDeleteRecurrence) return
 
     try {
-      await onDeleteRecurrence(transaction, deleteRecurrenceMode)
+      const modeMap = {
+        thisEvent: "keepThisDeleteFollowing",
+        followingEvents: "thisAndFollowing",
+        allEvents: "allRecords",
+      } as const
+      await onDeleteRecurrence(transaction, modeMap[deleteRecurrenceMode])
       setShowDeleteRecurrenceModal(false)
       onClose()
     } catch (error) {
@@ -631,7 +613,6 @@ export function TransactionFormModal({
   }
 
   // const [date, setDate] = useState<string>(new Date().toLocaleDateString("pt-BR"))
-  const [type, setType] = useState<"income" | "expense">("expense")
   const [status, setStatus] = useState<"pending" | "completed" | "cancelled">("pending")
   const handleCategoryChange = (categoryId: string) => {
     setValue("categoryId", categoryId, { shouldDirty: true })
@@ -791,7 +772,7 @@ export function TransactionFormModal({
                   <CheckCircle className="h-4 w-4" />
                   Status da Transação
                 </Label>
-                <Select value={status} onValueChange={setStatus}>
+                <Select value={status} onValueChange={(value) => setStatus(value as "pending" | "completed" | "cancelled")}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o status" />
                   </SelectTrigger>
@@ -918,7 +899,7 @@ export function TransactionFormModal({
                               <div className="flex justify-between py-1">
                                 <span className="text-slate-600">Dias da semana:</span>
                                 <span className="font-medium">
-                                  {watch("recurrence.daysOfWeek")
+                                  {(watch("recurrence.daysOfWeek") || [])
                                     .map((day: string) => {
                                       const dayNames: Record<string, string> = {
                                         sunday: "Dom",
@@ -1131,7 +1112,16 @@ export function TransactionFormModal({
                                                 ? "fourth"
                                                 : "last",
                                       )
-                                      setValue("recurrence.dayOfWeek", selectedOption.dayOfWeek)
+                                      const dayMap: Record<number, DayOfWeek> = {
+                                        0: "sunday",
+                                        1: "monday",
+                                        2: "tuesday",
+                                        3: "wednesday",
+                                        4: "thursday",
+                                        5: "friday",
+                                        6: "saturday",
+                                      }
+                                      setValue("recurrence.dayOfWeek", dayMap[selectedOption.dayOfWeek || 0])
                                     }
                                   }
                                 }}

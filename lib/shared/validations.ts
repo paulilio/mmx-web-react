@@ -28,6 +28,7 @@ export const categoryGroupSchema = z.object({
     required_error: "Status é obrigatório",
   }),
   areaId: z.string().optional(),
+  categoryIds: z.array(z.string()).optional(),
 })
 
 export const areaSchema = z.object({
@@ -54,8 +55,8 @@ export const budgetSchema = z.object({
 })
 
 export const fundTransferSchema = z.object({
-  fromCategoryGroupId: z.string().min(1, "Grupo de origem é obrigatório"),
-  toCategoryGroupId: z.string().min(1, "Grupo de destino é obrigatório"),
+  fromBudgetGroupId: z.string().min(1, "Grupo de origem é obrigatório"),
+  toBudgetGroupId: z.string().min(1, "Grupo de destino é obrigatório"),
   amount: z.number().positive("Valor deve ser positivo"),
   month: z.number().min(1).max(12),
   year: z.number().min(2020),
@@ -130,7 +131,9 @@ export const transactionSchema = z.object({
       required_error: "Status é obrigatório",
     })
     .default("pending"),
+  notes: z.string().optional(),
   recurrence: recurrenceSchema.optional(),
+  contactId: z.string().optional(),
   areaId: z.string().optional(),
   categoryGroupId: z.string().optional(),
 })

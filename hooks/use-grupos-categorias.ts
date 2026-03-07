@@ -1,25 +1,25 @@
 import useSWR, { mutate as globalMutate } from "swr"
-import type { GrupoCategoria, GrupoCategoriaFormData } from "@/lib/shared/types"
+import type { Category, GrupoCategoria, GrupoCategoriaFormData } from "@/lib/shared/types"
 import { api } from "@/lib/client/api"
 
 export function useGruposCategorias() {
   const { data, error, mutate } = useSWR<GrupoCategoria[]>("/grupos-categorias", api.get)
 
   const createGrupoCategoria = async (data: GrupoCategoriaFormData) => {
-    const result = await api.post("/grupos-categorias", data)
+    const result = await api.post<GrupoCategoria>("/grupos-categorias", data)
     mutate()
     return result
   }
 
   const updateGrupoCategoria = async (id: string, data: GrupoCategoriaFormData) => {
-    const result = await api.put(`/grupos-categorias/${id}`, data)
+    const result = await api.put<GrupoCategoria>(`/grupos-categorias/${id}`, data)
     mutate()
     return result
   }
 
   const deleteGrupoCategoria = async (id: string) => {
     // Remove grupoCategoriaId from associated categories
-    const categories = await api.get("/categories")
+    const categories = await api.get<Category[]>("/categories")
     const associatedCategories = categories.filter((cat: any) => cat.grupoCategoriaId === id)
 
     for (const category of associatedCategories) {

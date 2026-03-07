@@ -31,6 +31,44 @@ import { useAuth } from "@/hooks/use-auth"
 import { validateRegistrationForm, validateEmail, validatePassword } from "@/lib/shared/auth-validations"
 import { toast } from "sonner"
 
+type LocalAuthUser = {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  phone: string
+  cpfCnpj: string
+  password: string
+  isEmailConfirmed: boolean
+  defaultOrganizationId: string
+  organizations: Array<{
+    id: string
+    name: string
+    role: string
+    permissions: string[]
+    joinedAt: string
+  }>
+  planType: "free" | "pro" | "enterprise"
+  preferences: {
+    theme: string
+    language: string
+    notifications: {
+      email: boolean
+      push: boolean
+      sms: boolean
+    }
+    layout: {
+      sidebarCollapsed: boolean
+      compactMode: boolean
+    }
+  }
+  status: "active" | "inactive"
+  createdAt: string
+  updatedAt: string
+  failedAttempts: number
+  lockedUntil: string | null
+}
+
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -89,8 +127,6 @@ export default function AuthPage() {
       const testEmail = "paulilio.ferreira@gmail.com"
       const testPassword = "123456"
 
-      console.log("[v0] Starting direct login process")
-
       // Check if localStorage is available
       const isLocalStorageAvailable = (() => {
         try {
@@ -98,36 +134,29 @@ export default function AuthPage() {
           localStorage.setItem(testKey, "test")
           localStorage.removeItem(testKey)
           return true
-        } catch (e) {
+        } catch {
           return false
         }
       })()
 
       if (!isLocalStorageAvailable) {
-        console.log("[v0] localStorage not available")
         toast.error("Login direto não disponível neste navegador. Tente desabilitar o modo privado.")
         return
       }
 
-      console.log("[v0] localStorage is available")
-
       // Get existing users
-      let users: any[] = []
+      let users: LocalAuthUser[] = []
       try {
         const usersData = localStorage.getItem("users")
-        users = usersData ? JSON.parse(usersData) : []
-        console.log("[v0] Loaded existing users:", users.length)
-      } catch (parseError) {
-        console.error("[v0] Error parsing users from localStorage:", parseError)
+        users = usersData ? (JSON.parse(usersData) as LocalAuthUser[]) : []
+      } catch {
         users = []
       }
 
       // Check if test user exists
-      let testUser = users.find((u: any) => u.email === testEmail)
+      let testUser = users.find((u) => u.email === testEmail)
 
       if (!testUser) {
-        console.log("[v0] Test user not found, creating mock user record")
-
         const userId = "user_" + Math.random().toString(36).substring(2)
         const organizationId = "org_" + Math.random().toString(36).substring(2)
 
@@ -173,16 +202,14 @@ export default function AuthPage() {
         }
 
         users.push(testUser)
-        console.log("[v0] Mock test user created successfully with password:", testPassword)
       } else {
-        console.log("[v0] Test user found, ensuring password is correct")
         // Ensure password is correct and reset any failed attempts
         testUser.password = testPassword
         testUser.failedAttempts = 0
         testUser.lockedUntil = null
         testUser.updatedAt = new Date().toISOString()
 
-        const userIndex = users.findIndex((u: any) => u.email === testEmail)
+        const userIndex = users.findIndex((u) => u.email === testEmail)
         if (userIndex !== -1) {
           users[userIndex] = testUser
         }
@@ -191,7 +218,6 @@ export default function AuthPage() {
       // Save to localStorage with error handling
       try {
         localStorage.setItem("users", JSON.stringify(users))
-        console.log("[v0] Users saved to localStorage successfully")
 
         // Verify the save was successful
         const verifyData = localStorage.getItem("users")
@@ -199,27 +225,20 @@ export default function AuthPage() {
           throw new Error("localStorage write failed - data not persisted")
         }
 
-        const verifyUsers = JSON.parse(verifyData)
-        const verifyUser = verifyUsers.find((u: any) => u.email === testEmail)
+        const verifyUsers = JSON.parse(verifyData) as LocalAuthUser[]
+        const verifyUser = verifyUsers.find((u) => u.email === testEmail)
         if (!verifyUser) {
           throw new Error("Test user not found after localStorage write")
         }
-
-        console.log("[v0] localStorage write verified successfully")
-      } catch (storageError) {
-        console.error("[v0] localStorage error:", storageError)
+      } catch {
         toast.error("Erro ao salvar dados do usuário. Tente recarregar a página.")
         return
       }
 
       // Proceed with login
-      console.log("[v0] Attempting login with email:", testEmail)
       await login(testEmail, testPassword)
-
-      console.log("[v0] Direct login completed successfully")
       toast.success("Login direto realizado com sucesso!")
     } catch (error) {
-      console.error("[v0] Error in direct login:", error)
       toast.error("Erro no login direto: " + (error as Error).message)
     } finally {
       setIsLoading(false)

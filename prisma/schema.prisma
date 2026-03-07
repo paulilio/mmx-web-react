@@ -24,6 +24,26 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ContactType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id                    String        @id @default(cuid())
   email                 String        @unique
@@ -41,8 +61,27 @@ model User {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   transactions          Transaction[]
+  categories            Category[]
+  contacts              Contact[]
 
   @@index([email])
+}
+
+model Contact {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  email      String?
+  phone      String?
+  identifier String?
+  type       ContactType
+  status     ContactStatus @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
 }
 
 model Transaction {
@@ -66,4 +105,59 @@ model Transaction {
   @@index([userId, date])
   @@index([userId, status])
   @@index([userId, categoryId])
+}
+
+model Category {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  type            CategoryType
+  categoryGroupId String?
+  areaId          String?
+  status          CategoryStatus @default(ACTIVE)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
+  @@index([userId, categoryGroupId])
+}
+
+model Budget {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryGroupId String
+  month           Int
+  year            Int
+  planned         Decimal  @db.Decimal(14, 2)
+  funded          Decimal  @db.Decimal(14, 2)
+  spent           Decimal  @db.Decimal(14, 2) @default(0)
+  rolloverEnabled Boolean  @default(false)
+  rolloverAmount  Decimal? @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, categoryGroupId])
+  @@index([userId, month, year])
+}
+
+model BudgetAllocation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetGroupId   String
+  categoryGroupId String?
+  month           String
+  plannedAmount   Decimal  @db.Decimal(14, 2)
+  fundedAmount    Decimal  @db.Decimal(14, 2)
+  spentAmount     Decimal  @db.Decimal(14, 2) @default(0)
+  availableAmount Decimal  @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, budgetGroupId])
+  @@index([userId, month])
 }

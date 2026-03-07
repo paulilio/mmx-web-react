@@ -70,7 +70,7 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
         }
 
         // Get user-specific data from unified storage
-        const userData = migrationService.getUserData<T & { userId: string }>(unifiedKey, currentUserId)
+        const userData = migrationService.getUserData<any>(unifiedKey, currentUserId) as T[]
 
         // Update temp cache
         tempCache.set(cacheKey, { data: [...userData], timestamp: Date.now(), userId: currentUserId })
@@ -120,7 +120,7 @@ async function saveToCache<T>(filePath: string, data: T[]): Promise<void> {
   const cacheKey = `${normalizedPath}:${currentUserId || "anonymous"}`
 
   // Always update temp cache
-  tempCache.set(cacheKey, { data: [...data], timestamp: Date.now(), userId: currentUserId })
+  tempCache.set(cacheKey, { data: [...data], timestamp: Date.now(), userId: currentUserId ?? undefined })
 
   if (!USE_API && currentUserId) {
     try {
@@ -281,10 +281,12 @@ export const areasStorage = {
     const areas = await loadFromFile<Area>(DATA_FILES.areas)
     const index = areas.findIndex((a) => a.id === id)
     if (index === -1) throw new Error("Area not found")
+    const currentArea = areas[index]
+    if (!currentArea) throw new Error("Area not found")
 
-    areas[index] = { ...areas[index], ...data }
+    areas[index] = { ...currentArea, ...data }
     await saveToCache(DATA_FILES.areas, areas)
-    return areas[index]
+    return areas[index] as Area
   },
 
   delete: async (id: string): Promise<void> => {
@@ -332,9 +334,12 @@ export const categoryGroupsStorage = {
     const index = categoryGroups.findIndex((g) => g.id === id)
     if (index === -1) throw new Error("Category group not found")
 
-    categoryGroups[index] = { ...categoryGroups[index], ...data }
+    const currentGroup = categoryGroups[index]
+    if (!currentGroup) throw new Error("Category group not found")
+
+    categoryGroups[index] = { ...currentGroup, ...data }
     await saveToCache(DATA_FILES.categoryGroups, categoryGroups)
-    return categoryGroups[index]
+    return categoryGroups[index] as CategoryGroup
   },
 
   delete: async (id: string): Promise<void> => {
@@ -377,9 +382,12 @@ export const categoriesStorage = {
     const index = categories.findIndex((c) => c.id === id)
     if (index === -1) throw new Error("Category not found")
 
-    categories[index] = { ...categories[index], ...data }
+    const currentCategory = categories[index]
+    if (!currentCategory) throw new Error("Category not found")
+
+    categories[index] = { ...currentCategory, ...data }
     await saveToCache(DATA_FILES.categories, categories)
-    return categories[index]
+    return categories[index] as Category
   },
 
   delete: async (id: string): Promise<void> => {
@@ -397,7 +405,7 @@ export const transactionsStorage = {
 
   getByCategoryAndMonth: async (categoryId: string, month: string): Promise<Transaction[]> => {
     const transactions = await transactionPersistence.read()
-    return transactions.filter((t) => t.category_id === categoryId && t.date.startsWith(month))
+    return transactions.filter((t) => t.categoryId === categoryId && t.date.startsWith(month))
   },
 
   create: async (data: Omit<Transaction, "id">): Promise<Transaction> => {
@@ -438,7 +446,6 @@ export const transactionsStorage = {
     if (!targetTransaction) throw new Error("Transaction not found")
 
     const parentId = targetTransaction.recurrence?.generatedFrom || id
-    const isParent = !targetTransaction.recurrence?.generatedFrom
 
     let updatedTransactions: Transaction[] = []
 
@@ -447,8 +454,10 @@ export const transactionsStorage = {
         // Update only this transaction
         const singleIndex = transactions.findIndex((t) => t.id === id)
         if (singleIndex !== -1) {
-          transactions[singleIndex] = { ...transactions[singleIndex], ...data }
-          updatedTransactions = [transactions[singleIndex]]
+          const current = transactions[singleIndex]
+          if (!current) throw new Error("Transaction not found")
+          transactions[singleIndex] = { ...current, ...data }
+          updatedTransactions = [transactions[singleIndex] as Transaction]
         }
         break
 
@@ -457,8 +466,10 @@ export const transactionsStorage = {
         const targetDate = new Date(targetTransaction.date)
         transactions.forEach((t, index) => {
           if ((t.id === id || t.recurrence?.generatedFrom === parentId) && new Date(t.date) >= targetDate) {
-            transactions[index] = { ...transactions[index], ...data }
-            updatedTransactions.push(transactions[index])
+            const current = transactions[index]
+            if (!current) return
+            transactions[index] = { ...current, ...data }
+            updatedTransactions.push(transactions[index] as Transaction)
           }
         })
         break
@@ -467,8 +478,10 @@ export const transactionsStorage = {
         // Update parent and all recurring transactions
         transactions.forEach((t, index) => {
           if (t.id === parentId || t.recurrence?.generatedFrom === parentId) {
-            transactions[index] = { ...transactions[index], ...data }
-            updatedTransactions.push(transactions[index])
+            const current = transactions[index]
+            if (!current) return
+            transactions[index] = { ...current, ...data }
+            updatedTransactions.push(transactions[index] as Transaction)
           }
         })
         break
@@ -529,9 +542,12 @@ export const contactsStorage = {
     const index = contacts.findIndex((c) => c.id === id)
     if (index === -1) throw new Error("Contact not found")
 
-    contacts[index] = { ...contacts[index], ...data }
+    const currentContact = contacts[index]
+    if (!currentContact) throw new Error("Contact not found")
+
+    contacts[index] = { ...currentContact, ...data }
     await saveToCache(DATA_FILES.contacts, contacts)
-    return contacts[index]
+    return contacts[index] as Contact
   },
 
   delete: async (id: string): Promise<void> => {
@@ -707,7 +723,7 @@ function generateRecurringTransactions(parentTransaction: Transaction): Transact
     const recurringTransaction: Transaction = {
       ...parentTransaction,
       id: generateRecurringId(parentTransaction.id, i),
-      date: currentDate.toISOString().split("T")[0],
+      date: currentDate.toISOString().split("T")[0] || parentTransaction.date,
       recurrence: {
         ...parentTransaction.recurrence,
         generatedFrom: parentTransaction.id,
@@ -722,6 +738,8 @@ function generateRecurringTransactions(parentTransaction: Transaction): Transact
 
   return recurringTransactions
 }
+
+void generateRecurringTransactions
 
 async function processRecurringTransactions(transaction: Transaction): Promise<void> {
   if (!transaction.recurrence?.enabled) {

@@ -1,17 +1,17 @@
 import useSWR, { mutate as globalMutate } from "swr"
-import type { BudgetGroup, BudgetGroupFormData } from "@/lib/shared/types"
+import type { BudgetGroup, BudgetGroupFormData, Category } from "@/lib/shared/types"
 import { api } from "@/lib/client/api"
 
 export function useBudgetGroups() {
   const { data, error, mutate } = useSWR<BudgetGroup[]>("/budget-groups", api.get)
 
   const createBudgetGroup = async (data: BudgetGroupFormData) => {
-    const result = await api.post("/budget-groups", data)
+    const result = await api.post<BudgetGroup>("/budget-groups", data)
 
     if (data.categoryIds && data.categoryIds.length > 0) {
       for (const categoryId of data.categoryIds) {
         try {
-          const category = await api.get(`/categories/${categoryId}`)
+          const category = await api.get<Category>(`/categories/${categoryId}`)
           await api.put(`/categories/${categoryId}`, { ...category, budgetGroupId: result.id })
         } catch (error) {
           console.error("[v0] Error updating category:", categoryId, error)
@@ -26,7 +26,7 @@ export function useBudgetGroups() {
   }
 
   const updateBudgetGroup = async (id: string, data: BudgetGroupFormData) => {
-    const categories = await api.get("/categories")
+    const categories = await api.get<Category[]>("/categories")
     const currentCategoryIds = categories.filter((cat: any) => cat.budgetGroupId === id).map((cat: any) => cat.id)
     const newCategoryIds = data.categoryIds || []
 
@@ -36,7 +36,7 @@ export function useBudgetGroups() {
     for (const categoryId of currentCategoryIds) {
       if (!newCategoryIds.includes(categoryId)) {
         try {
-          const category = await api.get(`/categories/${categoryId}`)
+          const category = await api.get<Category>(`/categories/${categoryId}`)
           await api.put(`/categories/${categoryId}`, { ...category, budgetGroupId: undefined })
         } catch (error) {
           console.error("[v0] Error removing budgetGroupId from category:", categoryId, error)
@@ -47,7 +47,7 @@ export function useBudgetGroups() {
     // Add budgetGroupId to new categories
     for (const categoryId of newCategoryIds) {
       try {
-        const category = await api.get(`/categories/${categoryId}`)
+          const category = await api.get<Category>(`/categories/${categoryId}`)
         await api.put(`/categories/${categoryId}`, { ...category, budgetGroupId: id })
       } catch (error) {
         console.error("[v0] Error adding budgetGroupId to category:", categoryId, error)
@@ -61,7 +61,7 @@ export function useBudgetGroups() {
   }
 
   const deleteBudgetGroup = async (id: string) => {
-    const categories = await api.get("/categories")
+    const categories = await api.get<Category[]>("/categories")
     const associatedCategories = categories.filter((cat: any) => cat.budgetGroupId === id)
 
     for (const category of associatedCategories) {

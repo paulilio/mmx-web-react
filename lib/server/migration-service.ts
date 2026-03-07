@@ -69,6 +69,9 @@ class MigrationService {
         if (match) {
           const userId = match[1]
           const entityType = key.split("_user_")[0] // Extract entity type
+          if (!userId || !entityType) {
+            continue
+          }
           legacyKeys.push({ key, userId, entityType })
           break
         }

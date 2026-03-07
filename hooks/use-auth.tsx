@@ -339,7 +339,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!user) {
           console.log("[v0] No user found in context, checking URL params")
           const urlParams = new URLSearchParams(window.location.search)
-          targetEmail = urlParams.get("email")
+          targetEmail = urlParams.get("email") ?? undefined
 
           if (targetEmail) {
             const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
@@ -484,7 +484,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!targetEmail) {
         const urlParams = new URLSearchParams(window.location.search)
-        targetEmail = urlParams.get("email")
+        targetEmail = urlParams.get("email") ?? undefined
       }
 
       if (!targetEmail) {
