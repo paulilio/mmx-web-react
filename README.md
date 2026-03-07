@@ -3,7 +3,7 @@
 Frontend web do projeto **MMX**, construido com **Next.js + TypeScript**.
 
 O repositorio esta em modo **mock-first com migracao incremental para backend real**.
-Atualmente, transacoes ja possuem rotas backend em `app/api/transactions/**`.
+Atualmente, transacoes, categories, contacts, budget e areas ja possuem rotas backend em `app/api/**`.
 
 ---
 
@@ -49,10 +49,16 @@ Crie um `.env.local` na raiz do projeto:
 ```bash
 NEXT_PUBLIC_API_BASE=http://localhost:4000
 NEXT_PUBLIC_USE_API=false
+MMX_APP_ENV=development
+CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
+CORS_ORIGINS_STAGING=
+CORS_ORIGINS_PROD=
 ```
 
 - `NEXT_PUBLIC_USE_API=false`: usa modo mock/local
 - `NEXT_PUBLIC_USE_API=true`: usa chamadas de API
+- `MMX_APP_ENV`: seleciona ambiente efetivo para matriz de CORS (`development|staging|production`)
+- `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
 
 ---
 
@@ -80,6 +86,8 @@ NEXT_PUBLIC_USE_API=false
 
 ## Status atual (resumo)
 
-- Fluxo completo em transacoes: `API -> Service -> Domain -> Repository -> Prisma`
+- Fluxo completo em transacoes, categories, contacts, budget e areas: `API -> Service -> Domain -> Repository -> Prisma`
 - Contrato HTTP padronizado com envelope `{ data, error }`
-- Auth backend (bcrypt/JWT), rate limiting e OAuth: em andamento no plano
+- Endpoints de auth backend: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
+- Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
+- Auth backend completo (hash/JWT/OAuth): em andamento no plano

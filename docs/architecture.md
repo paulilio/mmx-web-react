@@ -2,7 +2,7 @@
 
 ## Visao Geral do Sistema
 
-MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e baseada em localStorage (JSON mock), com uma camada de adapter preparada para substituicao por API sem mudancas de UI.
+MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e hibrida (localStorage + API de primeira parte), com camada de adapter preparada para migracao incremental sem mudancas de UI.
 
 ## Stack
 
@@ -35,7 +35,7 @@ localStorage (mock) | REST API (production)
 
 1. A pagina renderiza e chama o hook de dominio (ex.: `useTransactions`)
 2. O hook chama o servico de persistencia, que chama `lib/client/api.ts`
-3. `lib/client/api.ts` le/escreve adapters locais; transacoes ja usam `/api/transactions`
+3. `lib/client/api.ts` le/escreve adapters locais e roteia para endpoints de primeira parte em dominos migrados (`/api/transactions`, `/api/categories`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/auth`)
 4. O hook retorna dados tipados e o componente re-renderiza
 
 ## Isolamento por Usuario
@@ -75,3 +75,22 @@ docs/                 # This folder
 | Multi-user migration | `lib/server/migration-service.ts` |
 | Audit log | `lib/shared/audit-logger.ts` |
 | Route protection | `middleware.ts` + `components/auth/auth-guard.tsx` |
+
+## Backend de Primeira Parte (estado atual)
+
+- Vertical slices completos no fluxo `API -> Service -> Domain -> Repository -> Prisma`:
+        - transactions
+        - categories
+        - contacts
+        - budget + budget-allocations
+        - areas
+- Auth backend inicial:
+        - `POST /api/auth/login`
+        - `POST /api/auth/register`
+        - `POST /api/auth/refresh`
+
+## Hardening HTTP (estado atual)
+
+- Envelope padrao de resposta: `{ data, error }` em `lib/server/http/api-response.ts`
+- Rate limiting de auth em `lib/server/security/rate-limit.ts`
+- CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`

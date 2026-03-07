@@ -43,6 +43,8 @@ Exemplos:
 - `lib/server/services/`
 - `lib/server/repositories/`
 - `lib/server/db/prisma.ts`
+- `lib/server/security/rate-limit.ts`
+- `lib/server/security/cors.ts`
 
 ### `domain/` (equivalente logico)
 

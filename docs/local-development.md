@@ -19,12 +19,18 @@ Crie um arquivo `.env.local` na raiz do projeto:
 ```bash
 NEXT_PUBLIC_API_BASE=http://localhost:4000
 NEXT_PUBLIC_USE_API=false
+MMX_APP_ENV=development
+CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
+CORS_ORIGINS_STAGING=
+CORS_ORIGINS_PROD=
 ```
 
 Variaveis principais:
 
 - `NEXT_PUBLIC_USE_API`: `false` usa modo mock/local; `true` usa chamadas de API
 - `NEXT_PUBLIC_API_BASE`: URL base para endpoints quando `NEXT_PUBLIC_USE_API=true`
+- `MMX_APP_ENV`: ambiente efetivo para politicas server (`development|staging|production`)
+- `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
 
 ## Como rodar localmente
 
@@ -64,4 +70,4 @@ pnpm prisma:studio
 ## Observacoes rapidas
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), o projeto funciona sem backend completo.
-- O dominio de transacoes ja possui rotas em `app/api/transactions/**`.
+- Dominios com rotas de primeira parte ja ativos: transacoes, categories, contacts, budget, budget-allocations, areas e auth.

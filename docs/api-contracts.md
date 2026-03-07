@@ -5,8 +5,8 @@
 Todas as chamadas de API passam por `lib/client/api.ts`.
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
-- Transacoes ja possuem rotas Next.js de primeira parte em `app/api/transactions/**`.
-- Outros dominios ainda estao em mock-first e serao migrados incrementalmente.
+- Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, contacts, budget, budget-allocations, areas e auth.
+- A migracao incremental continua para dominios/fluxos ainda nao cobertos (ex.: JWT completo, OAuth).
 
 ```ts
 // lib/client/api.ts (pattern)
@@ -80,22 +80,51 @@ POST   /api/transactions      -> { data: Transaction, error: null } | { data: nu
 GET    /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
 PUT    /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
 DELETE /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
+
+GET    /api/categories         -> { data: Category[], error: null } | { data: null, error }
+POST   /api/categories         -> { data: Category, error: null } | { data: null, error }
+GET    /api/categories/:id     -> { data: Category, error: null } | { data: null, error }
+PUT    /api/categories/:id     -> { data: Category, error: null } | { data: null, error }
+DELETE /api/categories/:id     -> { data: Category, error: null } | { data: null, error }
+
+GET    /api/contacts           -> { data: Contact[], error: null } | { data: null, error }
+POST   /api/contacts           -> { data: Contact, error: null } | { data: null, error }
+GET    /api/contacts/:id       -> { data: Contact, error: null } | { data: null, error }
+PUT    /api/contacts/:id       -> { data: Contact, error: null } | { data: null, error }
+DELETE /api/contacts/:id       -> { data: Contact, error: null } | { data: null, error }
+
+GET    /api/budget/:groupId/:year/:month               -> { data: BudgetSnapshot, error: null } | { data: null, error }
+POST   /api/budget/:groupId/:year/:month/add-funds     -> { data: BudgetSnapshot, error: null } | { data: null, error }
+POST   /api/budget/:groupId/:year/:month/rollover      -> { data: BudgetSnapshot, error: null } | { data: null, error }
+GET    /api/budget-allocations                          -> { data: BudgetAllocation[], error: null } | { data: null, error }
+POST   /api/budget-allocations                          -> { data: BudgetAllocation, error: null } | { data: null, error }
+PUT    /api/budget-allocations/:id                      -> { data: BudgetAllocation, error: null } | { data: null, error }
+DELETE /api/budget-allocations/:id                      -> { data: BudgetAllocation, error: null } | { data: null, error }
+
+GET    /api/areas               -> { data: Area[], error: null } | { data: null, error }
+POST   /api/areas               -> { data: Area, error: null } | { data: null, error }
+GET    /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
+PUT    /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
+DELETE /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
+
+POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }
+POST   /api/auth/register       -> { data: AuthRegisterResponse, error: null } | { data: null, error }
+POST   /api/auth/refresh        -> { data: AuthRefreshResponse, error: null } | { data: null, error }
 ```
 
 ## Endpoints Planejados (proximas fases)
 
 ```text
-GET/POST /api/categories
-GET/POST /api/contacts
-GET/POST /api/category-groups
-GET/POST /api/budget
-GET/POST /api/areas
-
-POST     /api/auth/login
-POST     /api/auth/register
-POST     /api/auth/refresh
 POST     /api/auth/logout
 ```
+
+## Hardening Ativo em API
+
+- Rate limiting em auth: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
+  - Ao exceder limite da janela: `429` com `error.code = "RATE_LIMITED"`
+- CORS por ambiente aplicado no `middleware.ts` para `/api`
+  - Preflight `OPTIONS`: `204` com headers `Access-Control-Allow-*`
+  - Origem bloqueada: `403` com `error.code = "CORS_ORIGIN_BLOCKED"`
 
 ## Formato Padrao de Resposta
 

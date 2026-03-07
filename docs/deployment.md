@@ -29,12 +29,20 @@ pnpm build
 |---|---|---|
 | `NEXT_PUBLIC_API_BASE` | Nao | URL base para chamadas de API (vazio = modo mock) |
 | `NEXT_PUBLIC_USE_API` | Nao | `"true"` troca de localStorage para API real |
+| `MMX_APP_ENV` | Recomendado | Ambiente efetivo para politicas server (`development|staging|production`) |
+| `CORS_ORIGINS_DEV` | Recomendado | CSV de origens permitidas para `/api` em desenvolvimento |
+| `CORS_ORIGINS_STAGING` | Recomendado | CSV de origens permitidas para `/api` em staging |
+| `CORS_ORIGINS_PROD` | Recomendado | CSV de origens permitidas para `/api` em producao |
 
 Crie um `.env.local` para overrides locais (nunca commitar este arquivo):
 
 \`\`\`bash
 NEXT_PUBLIC_API_BASE=http://localhost:4000
 NEXT_PUBLIC_USE_API=false
+MMX_APP_ENV=development
+CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
+CORS_ORIGINS_STAGING=
+CORS_ORIGINS_PROD=
 \`\`\`
 
 Na Vercel, configure em **Project Settings -> Environment Variables** por ambiente.
@@ -77,6 +85,7 @@ jobs:
 \`\`\`
 NEXT_PUBLIC_USE_API=false  -> localStorage (mock, padrao)
 NEXT_PUBLIC_USE_API=true   -> lib/client/api.ts chama endpoints reais
+MMX_APP_ENV               -> escolhe matriz de CORS para `/api`
 \`\`\`
 
 Para trocar para API de producao:
