@@ -13,7 +13,12 @@ interface UserDataContext {
 interface EntityRecord {
   id: string
   userId: string
-  [key: string]: any
+  [key: string]: unknown
+}
+
+type SessionRecord = {
+  userId?: string
+  [key: string]: unknown
 }
 
 export class UserDataService {
@@ -173,7 +178,7 @@ export class UserDataService {
 
       if (!context.organizationId) {
         // Fallback to user-specific data if no organization
-        return this.saveUserData(key, data as any)
+        return this.saveUserData<T>(key, data)
       }
 
       // Get existing data
@@ -244,8 +249,8 @@ export class UserDataService {
         // Clear session data from unified storage
         const stored = localStorage.getItem(key)
         if (stored) {
-          const allData = JSON.parse(stored)
-          const filteredData = allData.filter((record: any) => record.userId !== context.userId)
+          const allData = JSON.parse(stored) as SessionRecord[]
+          const filteredData = allData.filter((record) => record.userId !== context.userId)
           localStorage.setItem(key, JSON.stringify(filteredData))
           cleanedCount++
         }
@@ -270,7 +275,7 @@ export class UserDataService {
     // Use unified storage keys
     Object.values(UNIFIED_STORAGE_KEYS).forEach((key) => {
       try {
-        const userData = migrationService.getUserData(key, context.userId)
+        const userData = migrationService.getUserData<EntityRecord>(key, context.userId)
         stats[key] = userData.length
       } catch (error) {
         userDataLogger.error("Error getting user data stats", error, { key })
@@ -293,13 +298,13 @@ export class UserDataService {
   }
 
   // Export user data for backup
-  async exportUserData(): Promise<Record<string, any[]>> {
+  async exportUserData(): Promise<Record<string, EntityRecord[]>> {
     const context = this.getContext()
-    const exportData: Record<string, any[]> = {}
+    const exportData: Record<string, EntityRecord[]> = {}
 
     Object.entries(UNIFIED_STORAGE_KEYS).forEach(([entityName, key]) => {
       try {
-        const userData = migrationService.getUserData(key, context.userId)
+        const userData = migrationService.getUserData<EntityRecord>(key, context.userId)
         exportData[entityName] = userData
       } catch (error) {
         userDataLogger.error("Error exporting entity", error, { entityName })
@@ -317,7 +322,7 @@ export class UserDataService {
 
   // Import user data from backup
   async importUserData(
-    data: Record<string, any[]>,
+    data: Record<string, EntityRecord[]>,
     overwrite = false,
   ): Promise<{ success: boolean; errors: string[] }> {
     const context = this.getContext()
@@ -343,7 +348,7 @@ export class UserDataService {
             migrationService.saveUserData(key, context.userId, recordsWithUserId)
           } else {
             // Merge with existing data
-            const existingData = migrationService.getUserData(key, context.userId)
+            const existingData = migrationService.getUserData<EntityRecord>(key, context.userId)
             const existingIds = new Set(existingData.map((r) => r.id))
             const newRecords = recordsWithUserId.filter((r) => !existingIds.has(r.id))
             const mergedData = [...existingData, ...newRecords]

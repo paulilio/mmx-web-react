@@ -57,6 +57,10 @@ export function RecurringDeleteModal({
     },
   ]
 
+  const isDeleteMode = (value: string): value is "single" | "future" | "all" => {
+    return deleteOptions.some((option) => option.value === value)
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent className="sm:max-w-md">
@@ -71,7 +75,14 @@ export function RecurringDeleteModal({
         </DialogHeader>
 
         <div className="py-4">
-          <RadioGroup value={deleteMode} onValueChange={(value) => setDeleteMode(value as any)}>
+          <RadioGroup
+            value={deleteMode}
+            onValueChange={(value) => {
+              if (isDeleteMode(value)) {
+                setDeleteMode(value)
+              }
+            }}
+          >
             {deleteOptions.map((option) => (
               <div key={option.value} className="space-y-1">
                 <div className="flex items-center space-x-2">

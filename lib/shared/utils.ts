@@ -39,6 +39,6 @@ export function createDefaultAccount(userId: string): void {
   localStorage.setItem("accounts", JSON.stringify(accounts))
 }
 
-export function logAuditEvent(action: string, userId: string | null, metadata: Record<string, any> = {}): void {
+export function logAuditEvent(action: string, userId: string | null, metadata: Record<string, unknown> = {}): void {
   auditLogger.log(action, userId, metadata)
 }

@@ -40,6 +40,8 @@ type MockBudgetAllocationRecord = {
   updated_at: string
 }
 
+type JsonObject = Record<string, unknown>
+
 function resolveCanonicalEndpoint(endpoint: string): string {
   if (endpoint.startsWith("/budget-groups")) {
     return endpoint.replace("/budget-groups", "/category-groups")
@@ -146,7 +148,7 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
     await mockDelay()
     const canonicalEndpoint = resolveCanonicalEndpoint(endpoint)
 
-    const parseAmount = (amount: any): number => {
+    const parseAmount = (amount: unknown): number => {
       if (typeof amount === "number") return amount
       if (typeof amount === "string") {
         // Remove dots (thousands separator) and replace comma with dot (decimal separator)
@@ -375,40 +377,41 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
   return handleResponse<T>(response)
 }
 
-export async function postJSON<T>(endpoint: string, data: any): Promise<T> {
+export async function postJSON<T>(endpoint: string, data: unknown): Promise<T> {
   if (!USE_API) {
     await mockDelay()
     const canonicalEndpoint = resolveCanonicalEndpoint(endpoint)
+    const payload = (data ?? {}) as JsonObject
 
     if (canonicalEndpoint === "/areas") {
-      return areasStorage.create(data) as T
+      return areasStorage.create(payload as Parameters<typeof areasStorage.create>[0]) as T
     }
     if (canonicalEndpoint === "/category-groups") {
-      return categoryGroupsStorage.create(data) as T
+      return categoryGroupsStorage.create(payload as Parameters<typeof categoryGroupsStorage.create>[0]) as T
     }
     if (canonicalEndpoint === "/categories") {
-      return categoriesStorage.create(data) as T
+      return categoriesStorage.create(payload as Parameters<typeof categoriesStorage.create>[0]) as T
     }
     if (canonicalEndpoint === "/contacts") {
-      return contactsStorage.create(data) as T
+      return contactsStorage.create(payload as Parameters<typeof contactsStorage.create>[0]) as T
     }
     if (canonicalEndpoint === "/transactions") {
-      return transactionsStorage.create(data) as T
+      return transactionsStorage.create(payload as Parameters<typeof transactionsStorage.create>[0]) as T
     }
 
     if (canonicalEndpoint === "/budget-allocations") {
       const allocations = readMockBudgetAllocations()
-      const allocation = normalizeBudgetAllocation(data)
+      const allocation = normalizeBudgetAllocation(payload)
       allocations.push(allocation)
       writeMockBudgetAllocations(allocations)
       return allocation as T
     }
 
     if (canonicalEndpoint === "/budget/transfer-funds") {
-      const fromBudgetGroupId = data.fromBudgetGroupId as string
-      const toBudgetGroupId = data.toBudgetGroupId as string
-      const amount = toNumber(data.amount)
-      const month = `${data.year}-${String(data.month).padStart(2, "0")}`
+      const fromBudgetGroupId = payload.fromBudgetGroupId as string
+      const toBudgetGroupId = payload.toBudgetGroupId as string
+      const amount = toNumber(payload.amount)
+      const month = `${payload.year}-${String(payload.month).padStart(2, "0")}`
       const currentUserId = getMockCurrentUserId()
 
       const allocations = readMockBudgetAllocations()
@@ -451,7 +454,7 @@ export async function postJSON<T>(endpoint: string, data: any): Promise<T> {
 
       const monthString = `${year}-${month.padStart(2, "0")}`
       const currentUserId = getMockCurrentUserId()
-      const amount = toNumber(data.amount)
+      const amount = toNumber(payload.amount)
       const allocations = readMockBudgetAllocations()
 
       let target = allocations.find(
@@ -491,10 +494,11 @@ export async function postJSON<T>(endpoint: string, data: any): Promise<T> {
   return handleResponse<T>(response)
 }
 
-export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
+export async function putJSON<T>(endpoint: string, data: unknown): Promise<T> {
   if (!USE_API) {
     await mockDelay()
     const canonicalEndpoint = resolveCanonicalEndpoint(endpoint)
+    const payload = (data ?? {}) as JsonObject
 
     apiLogger.debug("PUT request received", {
       endpoint: canonicalEndpoint,
@@ -505,16 +509,16 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
 
     if (canonicalEndpoint.includes("/areas/")) {
       apiLogger.debug("Routing PUT to areas storage")
-      return areasStorage.update(id, data) as T
+      return areasStorage.update(id, payload as Parameters<typeof areasStorage.update>[1]) as T
     }
     if (canonicalEndpoint.includes("/category-groups/")) {
       apiLogger.debug("Routing PUT to category groups storage")
-      return categoryGroupsStorage.update(id, data) as T
+      return categoryGroupsStorage.update(id, payload as Parameters<typeof categoryGroupsStorage.update>[1]) as T
     }
     if (canonicalEndpoint.includes("/categories/")) {
       apiLogger.debug("Routing PUT to categories storage")
       try {
-        const result = categoriesStorage.update(id, data)
+        const result = categoriesStorage.update(id, payload as Parameters<typeof categoriesStorage.update>[1])
         apiLogger.debug("Categories update successful", {
           id,
         })
@@ -526,11 +530,11 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
     }
     if (canonicalEndpoint.includes("/contacts/")) {
       apiLogger.debug("Routing PUT to contacts storage")
-      return contactsStorage.update(id, data) as T
+      return contactsStorage.update(id, payload as Parameters<typeof contactsStorage.update>[1]) as T
     }
     if (canonicalEndpoint.includes("/transactions/")) {
       apiLogger.debug("Routing PUT to transactions storage")
-      return transactionsStorage.update(id, data) as T
+      return transactionsStorage.update(id, payload as Parameters<typeof transactionsStorage.update>[1]) as T
     }
 
     if (canonicalEndpoint.includes("/budget-allocations/")) {
@@ -547,16 +551,34 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
 
       allocations[index] = normalizeBudgetAllocation({
         ...current,
-        ...data,
+        ...payload,
         id: current.id,
         userId: current.userId,
-        budget_group_id: data.budget_group_id ?? data.budgetGroupId ?? current.budget_group_id,
-        category_group_id: data.category_group_id ?? data.categoryGroupId ?? current.category_group_id,
-        month: data.month ?? current.month,
-        planned_amount: data.planned_amount ?? data.plannedAmount ?? current.planned_amount,
-        funded_amount: data.funded_amount ?? data.fundedAmount ?? current.funded_amount,
-        spent_amount: data.spent_amount ?? data.spentAmount ?? current.spent_amount,
-        available_amount: data.available_amount ?? data.availableAmount ?? current.available_amount,
+        budget_group_id:
+          (payload.budget_group_id as string | undefined) ??
+          (payload.budgetGroupId as string | undefined) ??
+          current.budget_group_id,
+        category_group_id:
+          (payload.category_group_id as string | undefined) ??
+          (payload.categoryGroupId as string | undefined) ??
+          current.category_group_id,
+        month: (payload.month as string | undefined) ?? current.month,
+        planned_amount:
+          (payload.planned_amount as number | undefined) ??
+          (payload.plannedAmount as number | undefined) ??
+          current.planned_amount,
+        funded_amount:
+          (payload.funded_amount as number | undefined) ??
+          (payload.fundedAmount as number | undefined) ??
+          current.funded_amount,
+        spent_amount:
+          (payload.spent_amount as number | undefined) ??
+          (payload.spentAmount as number | undefined) ??
+          current.spent_amount,
+        available_amount:
+          (payload.available_amount as number | undefined) ??
+          (payload.availableAmount as number | undefined) ??
+          current.available_amount,
         created_at: current.created_at,
         updated_at: new Date().toISOString(),
       })
@@ -574,11 +596,11 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
         categoryGroupId: budgetGroupId,
         month: Number(month),
         year: Number(year),
-        planned: toNumber(data.planned),
-        funded: toNumber(data.funded),
+        planned: toNumber(payload.planned),
+        funded: toNumber(payload.funded),
         spent: 0,
-        rolloverEnabled: Boolean(data.rolloverEnabled),
-        rolloverAmount: data.rolloverAmount ?? null,
+        rolloverEnabled: Boolean(payload.rolloverEnabled),
+        rolloverAmount: payload.rolloverAmount ?? null,
       } as T
     }
 
@@ -594,8 +616,8 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
         planned: 0,
         funded: 0,
         spent: 0,
-        rolloverEnabled: Boolean(data.enabled ?? data.rolloverEnabled),
-        rolloverAmount: data.amount ?? data.rolloverAmount ?? null,
+        rolloverEnabled: Boolean(payload.enabled ?? payload.rolloverEnabled),
+        rolloverAmount: payload.amount ?? payload.rolloverAmount ?? null,
       } as T
     }
 

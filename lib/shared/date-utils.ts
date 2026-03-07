@@ -78,7 +78,9 @@ export function isSameMonth(date1: string | Date | null | undefined, year: numbe
   return dateObj.getFullYear() === year && dateObj.getMonth() === month - 1
 }
 
-export function getMonthsWithTransactions(transactions: any[]): Array<{ year: number; month: number; label: string }> {
+export function getMonthsWithTransactions(
+  transactions: Array<{ date?: string | null }>,
+): Array<{ year: number; month: number; label: string }> {
   const months = new Set<string>()
 
   transactions.forEach((transaction) => {

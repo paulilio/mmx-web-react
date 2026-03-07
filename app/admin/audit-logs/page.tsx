@@ -13,7 +13,7 @@ interface AuditEvent {
   id: string
   action: string
   userId: string | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   timestamp: string
   userAgent: string
   ip: string

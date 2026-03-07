@@ -16,7 +16,7 @@ import { TransferFundsModal } from "@/components/budget/transfer-funds-modal"
 import { RolloverModal } from "@/components/budget/rollover-modal"
 import { CategoryDetailPanel } from "@/components/budget/category-detail-panel"
 import { formatCurrency } from "@/lib/shared/utils"
-import type { CategoryGroup, Area } from "@/lib/shared/types"
+import type { Category, CategoryGroup, Area } from "@/lib/shared/types"
 import { DynamicIcon } from "@/components/ui/dynamic-icon"
 import {
   PiggyBank,
@@ -37,7 +37,7 @@ interface BudgetSummary {
   funded: number
   spent: number
   available: number
-  categories: any[]
+  categories: Array<Category & { spent: number }>
 }
 
 export default function BudgetPage() {

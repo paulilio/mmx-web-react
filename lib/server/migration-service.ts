@@ -10,7 +10,6 @@ interface MigrationResult {
 interface EntityRecord {
   id: string
   userId: string
-  [key: string]: any
 }
 
 // Unified storage keys for the new structure
@@ -101,17 +100,19 @@ class MigrationService {
     return keyMap[entityType] || null
   }
 
-  private addUserIdToRecords(records: any[], userId: string): EntityRecord[] {
+  private addUserIdToRecords(records: unknown[], userId: string): EntityRecord[] {
     if (!Array.isArray(records)) {
       migrationLogger.warn(`Expected array but got ${typeof records}`)
       return []
     }
 
-    return records.map((record) => ({
-      ...record,
-      userId: record.userId || userId, // Preserve existing userId if present
-      id: record.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Ensure ID exists
-    }))
+    return records
+      .filter((record): record is Record<string, unknown> => typeof record === "object" && record !== null)
+      .map((record) => ({
+        ...record,
+        userId: (record.userId as string | undefined) || userId, // Preserve existing userId if present
+        id: (record.id as string | undefined) || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Ensure ID exists
+      })) as EntityRecord[]
   }
 
   private mergeIntoUnifiedStorage(unifiedKey: string, newRecords: EntityRecord[]): void {
@@ -314,7 +315,11 @@ class MigrationService {
       const categoryIds = new Set(categories.map((c) => c.id))
 
       transactions.forEach((tx) => {
-        const transactionCategoryId = tx.categoryId || tx.category_id
+        const txWithCategory = tx as EntityRecord & {
+          categoryId?: string
+          category_id?: string
+        }
+        const transactionCategoryId = txWithCategory.categoryId || txWithCategory.category_id
         if (transactionCategoryId && !categoryIds.has(transactionCategoryId)) {
           issues.push(`Transaction ${tx.id} references non-existent category ${transactionCategoryId}`)
         }

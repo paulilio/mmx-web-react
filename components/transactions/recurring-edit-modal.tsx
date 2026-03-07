@@ -73,6 +73,10 @@ export function RecurringEditModal({
           },
         ]
 
+  const isEditMode = (value: string): value is "single" | "future" | "all" => {
+    return options.some((option) => option.value === value)
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent className="sm:max-w-md">
@@ -89,7 +93,14 @@ export function RecurringEditModal({
         </DialogHeader>
 
         <div className="py-4">
-          <RadioGroup value={selectedMode} onValueChange={(value) => setSelectedMode(value as any)}>
+          <RadioGroup
+            value={selectedMode}
+            onValueChange={(value) => {
+              if (isEditMode(value)) {
+                setSelectedMode(value)
+              }
+            }}
+          >
             {options.map((option) => (
               <div key={option.value} className="space-y-1">
                 <div className="flex items-center space-x-2">

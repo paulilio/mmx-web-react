@@ -5,7 +5,7 @@ export interface AuditEvent {
   action: string
   userId: string | null
   organizationId?: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   timestamp: string
   userAgent: string
   ip: string
@@ -33,7 +33,7 @@ export class AuditLogger {
   log(
     action: string,
     userId: string | null,
-    metadata: Record<string, any> = {},
+    metadata: Record<string, unknown> = {},
     options: {
       organizationId?: string
       severity?: AuditEvent["severity"]

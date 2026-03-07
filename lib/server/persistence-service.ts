@@ -24,6 +24,17 @@ class PersistenceService {
     return `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 
+  private getOwnerUserId(transaction: Transaction): string | undefined {
+    return (transaction as Partial<TransactionWithUserId>).userId
+  }
+
+  private ensureTransactionUserId(transaction: Transaction, fallbackUserId: string): TransactionWithUserId {
+    return {
+      ...transaction,
+      userId: this.getOwnerUserId(transaction) || fallbackUserId,
+    }
+  }
+
   private getCurrentUserId(): string | null {
     try {
       if (typeof window !== "undefined") {
@@ -90,7 +101,7 @@ class PersistenceService {
         const validTransactions = transactions.map((t) => ({
           ...t,
           id: t.id || this.generateId(),
-          userId: (t as any).userId || currentUserId,
+          userId: this.getOwnerUserId(t) || currentUserId,
           createdAt: t.createdAt || new Date().toISOString(),
           updatedAt: t.updatedAt || new Date().toISOString(),
         })) as TransactionWithUserId[]
@@ -179,17 +190,19 @@ class PersistenceService {
         throw new Error("Transaction not found")
       }
 
+      const ownerUserId = this.getOwnerUserId(existingTransaction)
+
       // Verify user owns this transaction
-      if ((existingTransaction as any).userId && (existingTransaction as any).userId !== currentUserId) {
+      if (ownerUserId && ownerUserId !== currentUserId) {
         storageLogger.error("User attempted to update transaction owned by another user", undefined, {
           userId: currentUserId,
           transactionId: id,
-          ownerUserId: (existingTransaction as any).userId,
+          ownerUserId,
         })
         throw new Error("Access denied: transaction belongs to another user")
       }
 
-      const updatedTransaction: Transaction = {
+      const updatedTransactionBase: Transaction = {
         ...existingTransaction,
         ...data,
         // Always preserve immutable fields
@@ -199,15 +212,14 @@ class PersistenceService {
         updatedAt: new Date().toISOString(),
       }
 
-      // Ensure userId is preserved
-      ;(updatedTransaction as any).userId = (existingTransaction as any).userId || currentUserId
+      const updatedTransaction = this.ensureTransactionUserId(updatedTransactionBase, ownerUserId || currentUserId)
 
       if (!updatedTransaction.id || !updatedTransaction.createdAt) {
         storageLogger.error(`Persistence update failed for transaction ${id} - missing required fields`)
         throw new Error("Transaction data corruption detected")
       }
 
-      transactions[index] = updatedTransaction
+      transactions[index] = updatedTransaction as Transaction
       await this.saveToStorage(transactions)
 
       storageLogger.info("Transaction updated successfully", {
@@ -233,12 +245,14 @@ class PersistenceService {
       throw new Error("Transaction not found")
     }
 
+    const ownerUserId = this.getOwnerUserId(transactionToDelete)
+
     // Verify user owns this transaction
-    if ((transactionToDelete as any).userId && (transactionToDelete as any).userId !== currentUserId) {
+    if (ownerUserId && ownerUserId !== currentUserId) {
       storageLogger.error("User attempted to delete transaction owned by another user", undefined, {
         userId: currentUserId,
         transactionId: id,
-        ownerUserId: (transactionToDelete as any).userId,
+        ownerUserId,
       })
       throw new Error("Access denied: transaction belongs to another user")
     }
@@ -260,13 +274,14 @@ class PersistenceService {
 
     const transactions = await this.loadFromStorage()
     const transaction = transactions.find((t) => t.id === id)
+    const ownerUserId = transaction ? this.getOwnerUserId(transaction) : undefined
 
     // Verify user owns this transaction
-    if (transaction && (transaction as any).userId && (transaction as any).userId !== currentUserId) {
+    if (transaction && ownerUserId && ownerUserId !== currentUserId) {
       storageLogger.error("User attempted to access transaction owned by another user", undefined, {
         userId: currentUserId,
         transactionId: id,
-        ownerUserId: (transaction as any).userId,
+        ownerUserId,
       })
       return null
     }
