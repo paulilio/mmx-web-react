@@ -44,6 +44,7 @@
 - Auth rate limiting is active in `POST /api/auth/login|register|refresh` via `lib/server/security/rate-limit.ts`.
 - CORS for `/api` is centralized in `lib/server/security/cors.ts` + `middleware.ts`, including preflight handling.
 - Auth cookies are centralized in `lib/server/security/auth-cookies.ts` with secure behavior (`HttpOnly`, `SameSite`, `Secure` in production).
+- Auth base uses `lib/server/services/auth-service.ts` for `register/login`, with password hashing in `lib/server/security/password-hash.ts` (`bcryptjs`) and `lastLogin` update on successful login.
 - Global security headers are applied in `middleware.ts` (including HSTS in production).
 - OAuth providers integrated and must preserve current `start + callback` flow with state validation:
   - Google: `/api/auth/oauth/google` + `/api/auth/oauth/google/callback`

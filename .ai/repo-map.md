@@ -57,9 +57,11 @@
 - `lib/server/persistence-service.ts`: transaction persistence abstraction.
 - `lib/server/user-data-service.ts`: user-context data operations.
 - `lib/server/migration-service.ts`: key migration + user data isolation helper.
+- `lib/server/services/auth-service.ts`: auth register/login orchestration and `lastLogin` update.
 - `lib/server/security/rate-limit.ts`: auth rate limiting.
 - `lib/server/security/cors.ts`: CORS by environment.
 - `lib/server/security/auth-cookies.ts`: secure auth cookie helpers.
+- `lib/server/security/password-hash.ts`: password hash/verify with `bcryptjs`.
 
 ## Build and Deployment References
 - `package.json`: scripts (`dev`, `build`, `lint`) and dependencies.

@@ -41,10 +41,12 @@ No projeto atual, a camada server esta organizada em `lib/server/`.
 Exemplos:
 
 - `lib/server/services/`
+- `lib/server/services/auth-service.ts`
 - `lib/server/repositories/`
 - `lib/server/db/prisma.ts`
 - `lib/server/security/rate-limit.ts`
 - `lib/server/security/cors.ts`
+- `lib/server/security/password-hash.ts`
 
 ### `domain/` (equivalente logico)
 
@@ -55,6 +57,7 @@ Exemplos:
 - `lib/domain/transactions/transaction-entity.ts`
 - `lib/domain/transactions/transaction-rules.ts`
 - `lib/domain/budgets/budget-entity.ts`
+- `lib/domain/auth/auth-rules.ts`
 
 ### `repositories/` (equivalente logico)
 

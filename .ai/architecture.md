@@ -19,6 +19,7 @@
 - Session behavior: `hooks/use-session.ts`.
 - Route protection: `middleware.ts` + `components/auth/auth-guard.tsx` + `components/auth/session-monitor.tsx`.
 - Auth routes currently active: login/register/refresh and OAuth (Google + Microsoft).
+- Auth backend ownership: `lib/server/services/auth-service.ts` + `lib/domain/auth/auth-rules.ts`.
 
 ## Data and Persistence Boundary
 - Adapter entrypoint for UI/hook calls: `lib/client/api.ts`.
@@ -36,6 +37,7 @@
 - CORS policy: `lib/server/security/cors.ts` wired in `middleware.ts` for `/api`.
 - Rate limiting: `lib/server/security/rate-limit.ts` on auth endpoints.
 - Auth cookies: `lib/server/security/auth-cookies.ts`.
+- Password hashing: `lib/server/security/password-hash.ts` (`bcryptjs`).
 - Global security headers: set in `middleware.ts` (plus HSTS in production).
 
 ## Data Flow Rules

@@ -35,6 +35,10 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
   - CORS by environment for `/api`
   - secure auth cookies (`HttpOnly`, `SameSite`, `Secure` in production)
   - security headers in `middleware.ts`
+- Auth base already active:
+  - `register/login` delegated to `lib/server/services/auth-service.ts`
+  - password hashing/verification in `lib/server/security/password-hash.ts` (`bcryptjs`)
+  - `lastLogin` updated on successful login
 - OAuth providers active:
   - Google: `/api/auth/oauth/google` + `/api/auth/oauth/google/callback`
   - Microsoft: `/api/auth/oauth/microsoft` + `/api/auth/oauth/microsoft/callback`

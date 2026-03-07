@@ -6,6 +6,7 @@ Todas as chamadas de API passam por `lib/client/api.ts`.
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
 - Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, contacts, budget, budget-allocations, areas e auth.
+- Auth base em backend ja ativo: `register/login` com hash de senha (`bcryptjs`) e update de `lastLogin` no login.
 - A migracao incremental continua para dominios/fluxos ainda nao cobertos (ex.: JWT completo, logout).
 
 ```ts
@@ -115,6 +116,10 @@ GET    /api/auth/oauth/google/callback -> { data: OAuthLoginResponse, error: nul
 GET    /api/auth/oauth/microsoft -> redirect para consentimento Microsoft
 GET    /api/auth/oauth/microsoft/callback -> { data: OAuthLoginResponse, error: null } | { data: null, error }
 ```
+
+Observacao auth atual:
+- `POST /api/auth/register`: persiste senha como hash (nao texto puro).
+- `POST /api/auth/login`: valida hash e atualiza `lastLogin` do usuario autenticado.
 
 ## Endpoints Planejados (proximas fases)
 

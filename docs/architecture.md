@@ -84,10 +84,13 @@ docs/                 # This folder
         - contacts
         - budget + budget-allocations
         - areas
-- Auth backend inicial:
+- Auth backend base concluido:
         - `POST /api/auth/login`
         - `POST /api/auth/register`
         - `POST /api/auth/refresh`
+        - `lib/server/services/auth-service.ts` (register/login)
+        - `lib/domain/auth/auth-rules.ts` (validacoes de auth)
+        - `lib/server/security/password-hash.ts` (`bcryptjs` para hash/compare)
 
 ## Hardening HTTP (estado atual)
 

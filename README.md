@@ -71,7 +71,6 @@ CORS_ORIGINS_PROD=
 - Estrutura do projeto: `docs/project-structure.md`
 - Diretrizes de frontend: `docs/frontend-guidelines.md`
 - ADRs (decisoes arquiteturais): `docs/adr/README.md`
-- Mapa explicativo de ADRs: `docs/adr/review.md`
 
 ---
 
@@ -92,4 +91,5 @@ CORS_ORIGINS_PROD=
 - OAuth Google backend: `GET /api/auth/oauth/google` + `GET /api/auth/oauth/google/callback`
 - OAuth Microsoft backend: `GET /api/auth/oauth/microsoft` + `GET /api/auth/oauth/microsoft/callback`
 - Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
-- Auth backend completo (hash/JWT): em andamento no plano
+- Auth backend base concluido: hash de senha com `bcryptjs`, `AuthService` e atualizacao de `lastLogin` no login
+- Proxima fase de auth: contrato JWT completo + logout + middleware de autorizacao
