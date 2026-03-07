@@ -93,4 +93,4 @@ test("renders title", () => {
 - ESLint: `next lint` (extends `next/core-web-vitals`)
 - Prettier: aspas duplas, indentacao de 2 espacos, trailing commas
 - Rodar antes do commit: `pnpm lint && pnpm type-check`
-- Evitar `console.log` em codigo de producao; usar `lib/shared/audit-logger.ts` para rastreio
+- Evitar `console.*` em codigo de producao; usar logger central (`lib/shared/logger.ts`) e `audit-logger` apenas para trilhas de auditoria

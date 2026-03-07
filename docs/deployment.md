@@ -24,7 +24,7 @@ pnpm build
 pnpm validate:env -- --env=production
 \`\`\`
 
-**Atalho de login direto** (somente mock): em `/auth`, use o botao "Login Direto" para autenticar como `paulilio.ferreira@gmail.com`. Remova esse botao antes de producao.
+**Atalho de login direto** (somente desenvolvimento): em `/auth`, o botao "Login Direto" fica disponivel apenas em ambiente de desenvolvimento para fluxo mock.
 
 ## Variaveis de Ambiente
 
@@ -117,7 +117,7 @@ MMX_APP_ENV               -> escolhe matriz de CORS para `/api`
 Para trocar para API de producao:
 1. Definir `NEXT_PUBLIC_USE_API=true` e `NEXT_PUBLIC_API_BASE=<url>` nas variaveis de ambiente da Vercel
 2. Implementar/expandir chamadas `fetch` em `lib/client/api.ts`
-3. Remover o botao "Login Direto" de `app/auth/page.tsx`
+3. Validar que fluxos de desenvolvimento (ex.: "Login Direto") permanecem protegidos por gate de ambiente
 4. Remover a logica de `lib/server/migration-service.ts` apos migracao completa dos dados para o banco
 
 ## Hardening de seguranca (backend)

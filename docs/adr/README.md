@@ -47,7 +47,8 @@ docs/
     0002-use-nextjs-api-routes.md
     0003-adopt-clean-architecture.md
     0004-auth-local-session-first.md
-    review.md
+    0005-adopt-backend-jwt-auth.md
+    ...
 ```
 
 Rules:

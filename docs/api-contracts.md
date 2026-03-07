@@ -37,7 +37,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
 | `mmx_areas` | Areas | `userId` |
 | `mmx_budget_allocations` | Orcamento | `userId` |
 | `mmx_contacts` | Contatos | `userId` |
-| `mmx_sessions` | Sessoes | `userId` |
+| `mmx_auth_sessions` | Sessoes de auth | `userId` |
 | `mmx_audit_log` | Logs de auditoria | `userId` |
 
 ## Interfaces TypeScript (referencia)
@@ -152,15 +152,19 @@ Observacao auth atual:
 
 ```ts
 // hooks/use-transactions.ts
+import { logger } from "@/lib/shared/logger"
+
+const transactionLogger = logger.scope("Transactions")
+
 try {
   const data = await getTransactions(userId)
   setTransactions(data)
 } catch (err) {
   toast.error("Erro ao carregar transacoes")
-  console.error("[transactions]", err)
+  transactionLogger.error("Erro ao carregar transacoes", err)
 }
 ```
 
 - Nunca expor mensagens tecnicas brutas na UI
 - Sempre mostrar mensagem amigavel em portugues via `toast.error()`
-- Registrar detalhes tecnicos com prefixo de namespace: `[module-name]`
+- Registrar detalhes tecnicos via logger central com escopo de modulo (`logger.scope("ModuleName")`)
