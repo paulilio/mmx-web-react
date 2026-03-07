@@ -17,7 +17,7 @@
 - `hooks/use-session.ts`: session validity and extension behavior.
 - `lib/server/storage.ts`: mock storage helpers and cache behavior.
 - `lib/server/migration-service.ts`: legacy key migration and user-scoped storage helpers.
-- `middleware.ts`: `/api` CORS handling (including preflight), origin enforcement, and security headers.
+- `middleware.ts`: `/api` CORS handling (including preflight), origin enforcement, centralized auth gate for protected APIs, and security headers.
 - `app/layout.tsx`: root providers and app shell wiring.
 - `.github/copilot-instructions.md`: AI generation constraints.
 
@@ -44,6 +44,7 @@
   - `app/api/auth/login/route.ts`
   - `app/api/auth/register/route.ts`
   - `app/api/auth/refresh/route.ts`
+  - `app/api/auth/logout/route.ts`
   - `app/api/auth/oauth/google/**`
   - `app/api/auth/oauth/microsoft/**`
 
@@ -62,6 +63,9 @@
 - `lib/server/security/cors.ts`: CORS by environment.
 - `lib/server/security/auth-cookies.ts`: secure auth cookie helpers.
 - `lib/server/security/password-hash.ts`: password hash/verify with `bcryptjs`.
+- `lib/server/security/jwt.ts`: access/refresh token sign/verify helpers.
+- `lib/server/security/refresh-session-store.ts`: refresh token rotation/revocation store.
+- `lib/server/security/auth-identity.ts`: authenticated user identity resolver from bearer/cookie.
 
 ## Build and Deployment References
 - `package.json`: scripts (`dev`, `build`, `lint`) and dependencies.

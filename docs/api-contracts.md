@@ -7,7 +7,7 @@ Todas as chamadas de API passam por `lib/client/api.ts`.
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
 - Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, contacts, budget, budget-allocations, areas e auth.
 - Auth base em backend ja ativo: `register/login` com hash de senha (`bcryptjs`) e update de `lastLogin` no login.
-- A migracao incremental continua para dominios/fluxos ainda nao cobertos (ex.: JWT completo, logout).
+- Auth JWT ja ativo com access+refresh token, rotacao/revogacao de refresh e logout.
 
 ```ts
 // lib/client/api.ts (pattern)
@@ -111,6 +111,7 @@ DELETE /api/areas/:id           -> { data: Area, error: null } | { data: null, e
 POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }
 POST   /api/auth/register       -> { data: AuthRegisterResponse, error: null } | { data: null, error }
 POST   /api/auth/refresh        -> { data: AuthRefreshResponse, error: null } | { data: null, error }
+POST   /api/auth/logout         -> { data: AuthLogoutResponse, error: null } | { data: null, error }
 GET    /api/auth/oauth/google   -> redirect para consentimento Google
 GET    /api/auth/oauth/google/callback -> { data: OAuthLoginResponse, error: null } | { data: null, error }
 GET    /api/auth/oauth/microsoft -> redirect para consentimento Microsoft
@@ -120,12 +121,9 @@ GET    /api/auth/oauth/microsoft/callback -> { data: OAuthLoginResponse, error: 
 Observacao auth atual:
 - `POST /api/auth/register`: persiste senha como hash (nao texto puro).
 - `POST /api/auth/login`: valida hash e atualiza `lastLogin` do usuario autenticado.
-
-## Endpoints Planejados (proximas fases)
-
-```text
-POST     /api/auth/logout
-```
+- JWT (`access` + `refresh`) assinado e validado em `lib/server/security/jwt.ts`.
+- Rotacao/revogacao de refresh em `lib/server/security/refresh-session-store.ts`.
+- `POST /api/auth/logout`: revoga refresh ativo e limpa cookies de auth.
 
 ## Hardening Ativo em API
 
@@ -137,6 +135,8 @@ POST     /api/auth/logout
 - Cookies de auth emitidos nas rotas de login/refresh/OAuth callback:
   - `mmx_access_token` e `mmx_refresh_token`
   - `HttpOnly`, `SameSite=Lax`, `Secure` em producao
+- Gate de autorizacao no `middleware.ts` para APIs protegidas:
+  - Sem bearer token/cookie de access token: `401` com `error.code = "AUTH_REQUIRED"`
 
 ## Formato Padrao de Resposta
 

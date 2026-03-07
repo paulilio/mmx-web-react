@@ -88,12 +88,16 @@ docs/                 # This folder
         - `POST /api/auth/login`
         - `POST /api/auth/register`
         - `POST /api/auth/refresh`
+        - `POST /api/auth/logout`
         - `lib/server/services/auth-service.ts` (register/login)
         - `lib/domain/auth/auth-rules.ts` (validacoes de auth)
         - `lib/server/security/password-hash.ts` (`bcryptjs` para hash/compare)
+        - `lib/server/security/jwt.ts` (access/refresh token)
+        - `lib/server/security/refresh-session-store.ts` (rotacao/revogacao de refresh)
 
 ## Hardening HTTP (estado atual)
 
 - Envelope padrao de resposta: `{ data, error }` em `lib/server/http/api-response.ts`
 - Rate limiting de auth em `lib/server/security/rate-limit.ts`
 - CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`
+- Gate de autorizacao central no `middleware.ts` para APIs protegidas (`401 AUTH_REQUIRED` sem access token)

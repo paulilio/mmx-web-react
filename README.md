@@ -92,4 +92,4 @@ CORS_ORIGINS_PROD=
 - OAuth Microsoft backend: `GET /api/auth/oauth/microsoft` + `GET /api/auth/oauth/microsoft/callback`
 - Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
 - Auth backend base concluido: hash de senha com `bcryptjs`, `AuthService` e atualizacao de `lastLogin` no login
-- Proxima fase de auth: contrato JWT completo + logout + middleware de autorizacao
+- Auth JWT concluido: emissao/validacao de access+refresh token, `POST /api/auth/logout` e gate central de autorizacao para APIs protegidas no `middleware.ts`

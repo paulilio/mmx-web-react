@@ -8,8 +8,9 @@
 ## Current Backend Coverage
 - Implemented first-party domains: `transactions`, `categories`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`.
 - Auth base is implemented with `AuthService` (`register/login`), password hashing via `bcryptjs`, and `lastLogin` update on successful login.
+- JWT auth is active with access+refresh tokens, refresh rotation/revocation, and logout route (`POST /api/auth/logout`).
 - OAuth providers implemented: Google and Microsoft.
-- API hardening implemented: rate limiting on auth endpoints, CORS by environment, security headers, secure auth cookies.
+- API hardening implemented: rate limiting on auth endpoints, CORS by environment, security headers, secure auth cookies, and central middleware auth gate for protected APIs.
 
 ## Business Terms
 - `Area`: top-level financial grouping.

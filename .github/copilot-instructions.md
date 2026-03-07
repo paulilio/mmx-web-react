@@ -45,6 +45,9 @@
 - CORS for `/api` is centralized in `lib/server/security/cors.ts` + `middleware.ts`, including preflight handling.
 - Auth cookies are centralized in `lib/server/security/auth-cookies.ts` with secure behavior (`HttpOnly`, `SameSite`, `Secure` in production).
 - Auth base uses `lib/server/services/auth-service.ts` for `register/login`, with password hashing in `lib/server/security/password-hash.ts` (`bcryptjs`) and `lastLogin` update on successful login.
+- JWT is active via `lib/server/security/jwt.ts` with access+refresh tokens and refresh rotation/revocation via `lib/server/security/refresh-session-store.ts`.
+- `POST /api/auth/logout` is active for refresh revocation and auth cookie cleanup.
+- Protected API authorization gate is centralized in `middleware.ts` (returns `401 AUTH_REQUIRED` when token is missing).
 - Global security headers are applied in `middleware.ts` (including HSTS in production).
 - OAuth providers integrated and must preserve current `start + callback` flow with state validation:
   - Google: `/api/auth/oauth/google` + `/api/auth/oauth/google/callback`
