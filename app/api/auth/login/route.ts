@@ -1,9 +1,8 @@
 import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
-import { userRepository } from "../../../../lib/server/repositories"
+import { authService } from "../../../../lib/server/services"
 import { setAuthCookies } from "../../../../lib/server/security/auth-cookies"
-import { verifyPassword } from "../../../../lib/server/security/password-hash"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
 
 export const runtime = "nodejs"
@@ -31,19 +30,10 @@ export async function POST(request: NextRequest) {
       return fail(400, "INVALID_INPUT", "Campos obrigatorios: email, password")
     }
 
-    const user = await userRepository.findByEmail(body.email)
-
-    const isValidPassword =
-      user && user.passwordHash ? await verifyPassword(body.password, user.passwordHash) : false
-
-    if (!user || !isValidPassword) {
-      return fail(401, "INVALID_CREDENTIALS", "Credenciais invalidas")
-    }
+    const user = await authService.login({ email: body.email, password: body.password })
 
     const accessToken = `at_${randomUUID()}`
     const refreshToken = `rt_${randomUUID()}`
-
-    await userRepository.update(user.id, { lastLogin: new Date() })
 
     const response = ok({
       accessToken,
@@ -60,6 +50,10 @@ export async function POST(request: NextRequest) {
 
     return setAuthCookies(response, accessToken, refreshToken)
   } catch (error) {
+    if (error instanceof Error && error.message === "Credenciais invalidas") {
+      return fail(401, "INVALID_CREDENTIALS", error.message)
+    }
+
     const message = error instanceof Error ? error.message : "Erro no login"
     return fail(400, "AUTH_LOGIN_ERROR", message)
   }

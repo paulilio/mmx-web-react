@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
-import { userRepository } from "../../../../lib/server/repositories"
-import { hashPassword } from "../../../../lib/server/security/password-hash"
+import { authService } from "../../../../lib/server/services"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
 
 export const runtime = "nodejs"
@@ -33,21 +32,13 @@ export async function POST(request: NextRequest) {
       return fail(400, "INVALID_INPUT", "Campos obrigatorios: email, password, firstName, lastName")
     }
 
-    const existing = await userRepository.findByEmail(body.email)
-    if (existing) {
-      return fail(409, "USER_ALREADY_EXISTS", "Email ja esta em uso")
-    }
-
-    const passwordHash = await hashPassword(body.password)
-
-    const created = await userRepository.create({
+    const created = await authService.register({
       email: body.email,
-      passwordHash,
+      password: body.password,
       firstName: body.firstName,
       lastName: body.lastName,
-      phone: body.phone ?? null,
-      cpfCnpj: body.cpfCnpj ?? null,
-      planType: "FREE",
+      phone: body.phone,
+      cpfCnpj: body.cpfCnpj,
     })
 
     return ok(
@@ -60,6 +51,10 @@ export async function POST(request: NextRequest) {
       201,
     )
   } catch (error) {
+    if (error instanceof Error && error.message === "Email ja esta em uso") {
+      return fail(409, "USER_ALREADY_EXISTS", error.message)
+    }
+
     const message = error instanceof Error ? error.message : "Erro no registro"
     return fail(400, "AUTH_REGISTER_ERROR", message)
   }

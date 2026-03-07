@@ -1,25 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { userRepositoryMock, limiterMock, passwordHashMock } = vi.hoisted(() => ({
-  userRepositoryMock: {
-    findByEmail: vi.fn(),
-    update: vi.fn(),
+const { authServiceMock, limiterMock } = vi.hoisted(() => ({
+  authServiceMock: {
+    login: vi.fn(),
   },
   limiterMock: {
     applyRateLimit: vi.fn(),
     resolveClientIp: vi.fn(),
   },
-  passwordHashMock: {
-    verifyPassword: vi.fn(),
-  },
 }))
 
-vi.mock("../../../../lib/server/repositories", () => ({
-  userRepository: userRepositoryMock,
+vi.mock("../../../../lib/server/services", () => ({
+  authService: authServiceMock,
 }))
 
 vi.mock("../../../../lib/server/security/rate-limit", () => limiterMock)
-vi.mock("../../../../lib/server/security/password-hash", () => passwordHashMock)
 
 import { POST } from "./route"
 
@@ -35,7 +30,6 @@ describe("/api/auth/login", () => {
     vi.clearAllMocks()
     limiterMock.resolveClientIp.mockReturnValue("127.0.0.1")
     limiterMock.applyRateLimit.mockReturnValue({ allowed: true, retryAfterSeconds: 0, remaining: 4 })
-    passwordHashMock.verifyPassword.mockResolvedValue(true)
   })
 
   it("retorna 429 quando limite estoura", async () => {
@@ -49,19 +43,27 @@ describe("/api/auth/login", () => {
   })
 
   it("retorna 200 com credenciais válidas", async () => {
-    userRepositoryMock.findByEmail.mockResolvedValueOnce({
+    authServiceMock.login.mockResolvedValueOnce({
       id: "u1",
       email: "a@a.com",
-      passwordHash: "hashed-password",
       firstName: "A",
       lastName: "B",
       planType: "FREE",
     })
-    userRepositoryMock.update.mockResolvedValueOnce({})
 
     const response = await POST(makeRequest({ email: "a@a.com", password: "123" }) as never)
 
     expect(response.status).toBe(200)
-    expect(passwordHashMock.verifyPassword).toHaveBeenCalledWith("123", "hashed-password")
+    expect(authServiceMock.login).toHaveBeenCalledWith({ email: "a@a.com", password: "123" })
+  })
+
+  it("retorna 401 para credenciais invalidas", async () => {
+    authServiceMock.login.mockRejectedValueOnce(new Error("Credenciais invalidas"))
+
+    const response = await POST(makeRequest({ email: "a@a.com", password: "123" }) as never)
+    const payload = await response.json()
+
+    expect(response.status).toBe(401)
+    expect(payload.error.code).toBe("INVALID_CREDENTIALS")
   })
 })
