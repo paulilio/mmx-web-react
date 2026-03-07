@@ -41,6 +41,21 @@ const LEGACY_KEY_PATTERNS = [
 const migrationLogger = logger.scope("Migration")
 
 class MigrationService {
+  private normalizeLegacyRecordFields<T extends EntityRecord>(record: T): T {
+    const normalized = { ...(record as unknown as Record<string, unknown>) }
+    const legacyCategoryId = normalized.category_id
+
+    if (typeof legacyCategoryId === "string" && typeof normalized.categoryId !== "string") {
+      normalized.categoryId = legacyCategoryId
+    }
+
+    if ("category_id" in normalized) {
+      delete normalized.category_id
+    }
+
+    return normalized as unknown as T
+  }
+
   private isLocalStorageAvailable(): boolean {
     try {
       if (typeof window === "undefined" || !window.localStorage) {
@@ -108,11 +123,13 @@ class MigrationService {
 
     return records
       .filter((record): record is Record<string, unknown> => typeof record === "object" && record !== null)
-      .map((record) => ({
-        ...record,
-        userId: (record.userId as string | undefined) || userId, // Preserve existing userId if present
-        id: (record.id as string | undefined) || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Ensure ID exists
-      })) as EntityRecord[]
+      .map((record) =>
+        this.normalizeLegacyRecordFields({
+          ...record,
+          userId: (record.userId as string | undefined) || userId, // Preserve existing userId if present
+          id: (record.id as string | undefined) || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Ensure ID exists
+        } as EntityRecord),
+      )
   }
 
   private mergeIntoUnifiedStorage(unifiedKey: string, newRecords: EntityRecord[]): void {
@@ -253,7 +270,7 @@ class MigrationService {
       if (!data) return []
 
       const allRecords: T[] = JSON.parse(data)
-      return allRecords.filter((record) => record.userId === userId)
+      return allRecords.map((record) => this.normalizeLegacyRecordFields(record)).filter((record) => record.userId === userId)
     } catch (error) {
       migrationLogger.error(`Error getting user data for ${entityKey}`, error)
       return []
@@ -280,8 +297,10 @@ class MigrationService {
         userId: record.userId || userId,
       })) as T[]
 
+      const normalizedRecords = recordsWithUserId.map((record) => this.normalizeLegacyRecordFields(record))
+
       // Merge and save
-      const mergedRecords = [...otherUsersRecords, ...recordsWithUserId]
+      const mergedRecords = [...otherUsersRecords, ...normalizedRecords]
       localStorage.setItem(entityKey, JSON.stringify(mergedRecords))
 
       migrationLogger.info(`Saved ${records.length} records for user ${userId} in ${entityKey}`)
@@ -315,11 +334,8 @@ class MigrationService {
       const categoryIds = new Set(categories.map((c) => c.id))
 
       transactions.forEach((tx) => {
-        const txWithCategory = tx as EntityRecord & {
-          categoryId?: string
-          category_id?: string
-        }
-        const transactionCategoryId = txWithCategory.categoryId || txWithCategory.category_id
+        const txWithCategory = tx as EntityRecord & { categoryId?: string }
+        const transactionCategoryId = txWithCategory.categoryId
         if (transactionCategoryId && !categoryIds.has(transactionCategoryId)) {
           issues.push(`Transaction ${tx.id} references non-existent category ${transactionCategoryId}`)
         }

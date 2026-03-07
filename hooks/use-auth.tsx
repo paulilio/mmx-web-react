@@ -9,6 +9,7 @@ import type { User, SessionData, RegisterData } from "@/types/auth"
 import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEvent } from "@/lib/shared/utils"
 import { validateRegistrationForm } from "@/lib/shared/auth-validations"
 import { hashMockPassword, isHashedMockPassword, verifyMockPassword } from "@/lib/shared/mock-auth-password"
+import { consumeTimedValue, generateConfirmationCode, generateResetToken } from "@/lib/shared/mock-auth-flow"
 import { userDataService } from "@/lib/server/user-data-service"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/server/migration-service"
 
@@ -27,8 +28,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const IS_DEV_MODE = process.env.NODE_ENV !== "production"
-const DEV_CONFIRMATION_CODE = "XPX-7F5G"
-const DEV_RESET_TOKEN = "RESET-123"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -233,6 +232,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       users.push(userWithPassword)
       localStorage.setItem("users", JSON.stringify(users))
 
+      const confirmationCode = generateConfirmationCode()
+      const confirmationCodesData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
+      const globalConfirmationCodes = localStorage.getItem("confirmation_codes")
+      const confirmationCodes = globalConfirmationCodes ? JSON.parse(globalConfirmationCodes) : confirmationCodesData
+
+      const filteredCodes = confirmationCodes.filter((c: { email?: string }) => c.email !== data.email)
+      filteredCodes.push({
+        email: data.email,
+        code: confirmationCode,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        used: false,
+        createdAt: new Date().toISOString(),
+        userId: newUser.id,
+      })
+      localStorage.setItem("confirmation_codes", JSON.stringify(filteredCodes))
+
       userDataService.setContext(newUser, organizationId)
 
       createDefaultAccount(newUser.id)
@@ -242,7 +257,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(newUser)
       localStorage.setItem("auth_user", JSON.stringify(newUser))
 
-      toast.success("Conta criada com sucesso! Redirecionando para confirmação...")
+      if (IS_DEV_MODE) {
+        toast.success(`Conta criada com sucesso! Codigo de teste: ${confirmationCode}`)
+      } else {
+        toast.success("Conta criada com sucesso! Redirecionando para confirmação...")
+      }
 
       setTimeout(() => {
         router.push(`/auth/confirm?email=${encodeURIComponent(data.email)}`)
@@ -295,7 +314,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = users.find((u: any) => u.email === email)
 
       if (user) {
-        const resetToken = IS_DEV_MODE ? DEV_RESET_TOKEN : generateSessionToken().slice(0, 10).toUpperCase()
+        const resetToken = generateResetToken()
         const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
         const resetTokensData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
@@ -329,134 +348,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const confirmEmail = async (code: string): Promise<boolean> => {
     try {
-      if (IS_DEV_MODE && code === DEV_CONFIRMATION_CODE) {
-        console.log("[Auth] Development confirmation code detected")
-
-        let targetUser = user
-        let targetEmail = user?.email
-
-        if (!user) {
-          const urlParams = new URLSearchParams(window.location.search)
-          targetEmail = urlParams.get("email") ?? undefined
-
-          if (targetEmail) {
-            const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-            const globalUsers = localStorage.getItem("users")
-            const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-            targetUser = users.find((u: any) => u.email === targetEmail)
-          }
-        }
-
-        if (!targetUser || !targetEmail) {
-          return false
-        }
-
-        const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-        const globalUsers = localStorage.getItem("users")
-        const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-        const updatedUsers = users.map((u: any) => {
-          if (u.id === targetUser.id) {
-            return { ...u, isEmailConfirmed: true, userId: u.id }
-          }
-          return { ...u, userId: u.id }
-        })
-
-        localStorage.setItem("users", JSON.stringify(updatedUsers))
-
-        if (user && user.id === targetUser.id) {
-          const updatedUser = { ...user, isEmailConfirmed: true }
-          setUser(updatedUser)
-          localStorage.setItem("auth_user", JSON.stringify(updatedUser))
-        }
-
-        const confirmedUser = updatedUsers.find((u: any) => u.id === targetUser.id)
-
-        const sessionToken = generateSessionToken()
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-
-        const sessionData: SessionData = {
-          token: sessionToken,
-          userId: confirmedUser.id,
-          organizationId: confirmedUser.defaultOrganizationId,
-          expiresAt,
-        }
-
-        localStorage.setItem("auth_session", JSON.stringify(sessionData))
-        localStorage.setItem("auth_user", JSON.stringify(confirmedUser))
-
-        userDataService.setContext(confirmedUser, confirmedUser.defaultOrganizationId)
-
-        setUser(confirmedUser)
-
-        logAuditEvent("email_confirmed", targetUser.id, { email: targetEmail })
-        logAuditEvent("login_success", confirmedUser.id, { email: targetEmail, source: "email_confirmation" })
-
-        console.log("[Auth] Email confirmed successfully and user logged in")
-        return true
-      }
-
       const confirmationCodesData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
       const globalConfirmationCodes = localStorage.getItem("confirmation_codes")
       const confirmationCodes = globalConfirmationCodes ? JSON.parse(globalConfirmationCodes) : confirmationCodesData
 
-      const validCode = confirmationCodes.find(
-        (c: any) => c.code === code && c.email === user?.email && new Date(c.expiresAt) > new Date() && !c.used,
-      )
+      const targetEmail =
+        user?.email || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("email") : null)
 
-      if (validCode && user) {
-
-        const updatedCodes = confirmationCodes.map((c: any) =>
-          c.code === code ? { ...c, used: true, userId: c.userId || user.id } : { ...c, userId: c.userId || user.id },
-        )
-        localStorage.setItem("confirmation_codes", JSON.stringify(updatedCodes))
-
-        const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-        const globalUsers = localStorage.getItem("users")
-        const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-        const updatedUsers = users.map((u: any) => {
-          if (u.id === user.id) {
-            return { ...u, isEmailConfirmed: true, userId: u.id }
-          }
-          return { ...u, userId: u.id }
-        })
-
-        localStorage.setItem("users", JSON.stringify(updatedUsers))
-
-        const confirmedUser = updatedUsers.find((u: any) => u.id === user.id)
-
-        const sessionToken = generateSessionToken()
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-
-        const sessionData: SessionData = {
-          token: sessionToken,
-          userId: confirmedUser.id,
-          organizationId: confirmedUser.defaultOrganizationId,
-          expiresAt,
-        }
-
-        localStorage.setItem("auth_session", JSON.stringify(sessionData))
-        localStorage.setItem("auth_user", JSON.stringify(confirmedUser))
-
-        userDataService.setContext(confirmedUser, confirmedUser.defaultOrganizationId)
-
-        setUser(confirmedUser)
-
-        logAuditEvent("email_confirmed", user.id, { email: user.email })
-        logAuditEvent("login_success", confirmedUser.id, { email: user.email, source: "email_confirmation" })
-
-        console.log("[Auth] Email confirmed successfully and user logged in")
-        return true
+      if (!targetEmail) {
+        return false
       }
 
-      logAuditEvent("email_confirmation_failed", user?.id || null, {
-        email: user?.email,
-        reason: "invalid_code",
-      })
+      const consumeResult = consumeTimedValue(confirmationCodes, targetEmail, code, "code")
+      if (!consumeResult.valid) {
+        logAuditEvent("email_confirmation_failed", user?.id || null, {
+          email: targetEmail,
+          reason: "invalid_code",
+        })
+        return false
+      }
 
-      return false
+      localStorage.setItem("confirmation_codes", JSON.stringify(consumeResult.updatedRecords))
+
+      const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
+      const globalUsers = localStorage.getItem("users")
+      const users = globalUsers ? JSON.parse(globalUsers) : usersData
+
+      const targetUser = users.find((u: { email?: string }) => u.email === targetEmail)
+      if (!targetUser) {
+        return false
+      }
+
+      const updatedUsers = users.map((u: { id: string; userId?: string; isEmailConfirmed?: boolean }) => {
+        if (u.id === targetUser.id) {
+          return { ...u, isEmailConfirmed: true, userId: u.id }
+        }
+        return { ...u, userId: u.id }
+      })
+      localStorage.setItem("users", JSON.stringify(updatedUsers))
+
+      const confirmedUser = updatedUsers.find((u: { id: string }) => u.id === targetUser.id)
+      if (!confirmedUser) {
+        return false
+      }
+
+      const sessionToken = generateSessionToken()
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
+
+      const sessionData: SessionData = {
+        token: sessionToken,
+        userId: confirmedUser.id,
+        organizationId: confirmedUser.defaultOrganizationId,
+        expiresAt,
+      }
+
+      localStorage.setItem("auth_session", JSON.stringify(sessionData))
+      localStorage.setItem("auth_user", JSON.stringify(confirmedUser))
+
+      userDataService.setContext(confirmedUser, confirmedUser.defaultOrganizationId)
+
+      setUser(confirmedUser)
+
+      logAuditEvent("email_confirmed", targetUser.id, { email: targetEmail })
+      logAuditEvent("login_success", confirmedUser.id, { email: targetEmail, source: "email_confirmation" })
+
+      return true
     } catch (error) {
       console.error("[Auth] Error confirming email:", error)
       logAuditEvent("email_confirmation_error", user?.id || null, {
@@ -495,7 +451,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Usuário não encontrado")
       }
 
-      const newCode = "XPX-" + Math.random().toString(36).substring(2, 6).toUpperCase()
+      const newCode = generateConfirmationCode()
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
 
       const confirmationCodesData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []

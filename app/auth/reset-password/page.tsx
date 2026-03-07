@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, TrendingUp, Key } from "lucide-react"
 import { validatePassword } from "@/lib/shared/auth-validations"
 import { hashMockPassword } from "@/lib/shared/mock-auth-password"
+import { consumeTimedValue, findLatestActiveValue, type TimedTokenRecord } from "@/lib/shared/mock-auth-flow"
 import { toast } from "sonner"
 
 type LocalResetUser = {
@@ -34,9 +35,25 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("")
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [isSuccess, setIsSuccess] = useState(false)
+  const [devToken, setDevToken] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get("email")
+
+  useEffect(() => {
+    if (!isDevMode || !email) {
+      setDevToken(null)
+      return
+    }
+
+    try {
+      const stored = localStorage.getItem("reset_tokens")
+      const records = stored ? (JSON.parse(stored) as TimedTokenRecord[]) : []
+      setDevToken(findLatestActiveValue(records, email, "token"))
+    } catch {
+      setDevToken(null)
+    }
+  }, [email, isDevMode])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,11 +67,21 @@ export default function ResetPasswordPage() {
         return
       }
 
-      // Validate reset token
-      if (resetToken.trim().toUpperCase() !== "RESET-123") {
-        setError("Token de recuperação inválido")
+      if (!email) {
+        setError("Email de recuperacao nao informado")
         return
       }
+
+      const rawResetTokens = localStorage.getItem("reset_tokens")
+      const resetTokens = rawResetTokens ? (JSON.parse(rawResetTokens) as TimedTokenRecord[]) : []
+      const consumedToken = consumeTimedValue(resetTokens, email, resetToken.trim().toUpperCase(), "token")
+
+      if (!consumedToken.valid) {
+        setError("Token de recuperação inválido ou expirado")
+        return
+      }
+
+      localStorage.setItem("reset_tokens", JSON.stringify(consumedToken.updatedRecords))
 
       // Validate password
       const passwordValidation = validatePassword(newPassword)
@@ -69,36 +96,33 @@ export default function ResetPasswordPage() {
         return
       }
 
-      // Mock password reset
-      if (email) {
-        const users = JSON.parse(localStorage.getItem("users") || "[]") as LocalResetUser[]
-        const userIndex = users.findIndex((u) => u.email === email)
+      const users = JSON.parse(localStorage.getItem("users") || "[]") as LocalResetUser[]
+      const userIndex = users.findIndex((u) => u.email === email)
 
-        if (userIndex !== -1) {
-          const userToUpdate = users[userIndex]
-          if (!userToUpdate) {
-            setError("Usuário não encontrado para atualização de senha")
-            return
-          }
-
-          userToUpdate.password = await hashMockPassword(newPassword)
-          userToUpdate.failedAttempts = 0
-          userToUpdate.lockedUntil = null
-          localStorage.setItem("users", JSON.stringify(users))
-
-          // Log audit event
-          const auditLogs = JSON.parse(localStorage.getItem(CANONICAL_AUDIT_KEY) || "[]")
-          auditLogs.push({
-            id: "log_" + Math.random().toString(36).substring(2),
-            action: "password_reset_completed",
-            userId: userToUpdate.id,
-            metadata: { email },
-            timestamp: new Date().toISOString(),
-            ip: "mock_ip",
-            userAgent: navigator.userAgent,
-          })
-          localStorage.setItem(CANONICAL_AUDIT_KEY, JSON.stringify(auditLogs))
+      if (userIndex !== -1) {
+        const userToUpdate = users[userIndex]
+        if (!userToUpdate) {
+          setError("Usuário não encontrado para atualização de senha")
+          return
         }
+
+        userToUpdate.password = await hashMockPassword(newPassword)
+        userToUpdate.failedAttempts = 0
+        userToUpdate.lockedUntil = null
+        localStorage.setItem("users", JSON.stringify(users))
+
+        // Log audit event
+        const auditLogs = JSON.parse(localStorage.getItem(CANONICAL_AUDIT_KEY) || "[]")
+        auditLogs.push({
+          id: "log_" + Math.random().toString(36).substring(2),
+          action: "password_reset_completed",
+          userId: userToUpdate.id,
+          metadata: { email },
+          timestamp: new Date().toISOString(),
+          ip: "mock_ip",
+          userAgent: navigator.userAgent,
+        })
+        localStorage.setItem(CANONICAL_AUDIT_KEY, JSON.stringify(auditLogs))
       }
 
       setIsSuccess(true)
@@ -197,11 +221,11 @@ export default function ResetPasswordPage() {
               </Alert>
             )}
 
-            {isDevMode && (
+            {isDevMode && devToken && (
               <Alert className="border-blue-200 bg-blue-50">
                 <Key className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
-                  <strong>Token de teste:</strong> RESET-123
+                  <strong>Token de teste:</strong> {devToken}
                   <br />
                   <span className="text-sm text-blue-600">Use este token para testar a recuperação de senha</span>
                 </AlertDescription>

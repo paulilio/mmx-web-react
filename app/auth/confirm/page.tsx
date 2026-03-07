@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Mail, CheckCircle, AlertCircle, TrendingUp, RefreshCw } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { findLatestActiveValue, type TimedTokenRecord } from "@/lib/shared/mock-auth-flow"
 import { toast } from "sonner"
 
 export default function ConfirmEmailPage() {
@@ -20,6 +21,7 @@ export default function ConfirmEmailPage() {
   const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState("")
   const [isConfirmed, setIsConfirmed] = useState(false)
+  const [devCode, setDevCode] = useState<string | null>(null)
   const { confirmEmail, resendConfirmation, user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -30,6 +32,21 @@ export default function ConfirmEmailPage() {
       router.push("/dashboard")
     }
   }, [user?.isEmailConfirmed, router, isConfirmed])
+
+  useEffect(() => {
+    if (!isDevMode || !email) {
+      setDevCode(null)
+      return
+    }
+
+    try {
+      const stored = localStorage.getItem("confirmation_codes")
+      const records = stored ? (JSON.parse(stored) as TimedTokenRecord[]) : []
+      setDevCode(findLatestActiveValue(records, email, "code"))
+    } catch {
+      setDevCode(null)
+    }
+  }, [email, isDevMode])
 
   const handleConfirmEmail = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -143,11 +160,11 @@ export default function ConfirmEmailPage() {
               </Alert>
             )}
 
-            {isDevMode && (
+            {isDevMode && devCode && (
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertCircle className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
-                  <strong>Código de teste:</strong> XPX-7F5G
+                  <strong>Código de teste:</strong> {devCode}
                   <br />
                   <span className="text-sm text-blue-600">Use este código para testar a confirmação de email</span>
                 </AlertDescription>

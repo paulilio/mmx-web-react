@@ -1,6 +1,9 @@
 import useSWR, { mutate as globalMutate } from "swr"
 import type { Category, CategoryGroup, CategoryGroupFormData } from "@/lib/shared/types"
 import { api } from "@/lib/client/api"
+import { logger } from "@/lib/shared/logger"
+
+const categoryGroupsLogger = logger.scope("CategoryGroupsHook")
 
 export function useCategoryGroups() {
   const { data, error, mutate } = useSWR<CategoryGroup[]>("/category-groups", api.get)
@@ -19,13 +22,13 @@ export function useCategoryGroups() {
 
   const deleteCategoryGroup = async (id: string) => {
     const categories = await api.get<Category[]>("/categories")
-    const associatedCategories = categories.filter((cat: any) => cat.categoryGroupId === id)
+    const associatedCategories = categories.filter((cat) => cat.categoryGroupId === id)
 
     for (const category of associatedCategories) {
       try {
         await api.put(`/categories/${category.id}`, { ...category, categoryGroupId: undefined })
       } catch (error) {
-        console.error("[v0] Error removing categoryGroupId from category:", category.id, error)
+        categoryGroupsLogger.warn("Failed to clear categoryGroupId from category", { categoryId: category.id })
       }
     }
 
