@@ -1,3 +1,5 @@
+import { logger } from "../shared/logger"
+
 interface MigrationResult {
   success: boolean
   migratedEntities: string[]
@@ -36,6 +38,8 @@ const LEGACY_KEY_PATTERNS = [
   /^mmx_auth_sessions_user_(.+)$/,
   /^mmx_audit_log_user_(.+)$/,
 ]
+
+const migrationLogger = logger.scope("Migration")
 
 class MigrationService {
   private isLocalStorageAvailable(): boolean {
@@ -99,7 +103,7 @@ class MigrationService {
 
   private addUserIdToRecords(records: any[], userId: string): EntityRecord[] {
     if (!Array.isArray(records)) {
-      console.warn(`[Migration] Expected array but got ${typeof records}`)
+      migrationLogger.warn(`Expected array but got ${typeof records}`)
       return []
     }
 
@@ -129,15 +133,15 @@ class MigrationService {
       // Save back to unified key
       localStorage.setItem(unifiedKey, JSON.stringify(mergedRecords))
 
-      console.log(`[Migration] Merged ${recordsToAdd.length} new records into ${unifiedKey}`)
+      migrationLogger.info(`Merged ${recordsToAdd.length} new records into ${unifiedKey}`)
     } catch (error) {
-      console.error(`[Migration] Error merging data into ${unifiedKey}:`, error)
+      migrationLogger.error(`Error merging data into ${unifiedKey}`, error)
       throw error
     }
   }
 
   async migrateToUnifiedStructure(): Promise<MigrationResult> {
-    console.log("[Migration] Starting migration to unified localStorage structure...")
+    migrationLogger.info("Starting migration to unified localStorage structure")
 
     const result: MigrationResult = {
       success: true,
@@ -154,10 +158,10 @@ class MigrationService {
 
     try {
       const legacyKeys = this.detectLegacyKeys()
-      console.log(`[Migration] Found ${legacyKeys.length} legacy keys to migrate`)
+      migrationLogger.info(`Found ${legacyKeys.length} legacy keys to migrate`)
 
       if (legacyKeys.length === 0) {
-        console.log("[Migration] No legacy keys found, migration not needed")
+        migrationLogger.info("No legacy keys found, migration not needed")
         return result
       }
 
@@ -200,33 +204,33 @@ class MigrationService {
 
               // Remove legacy key after successful migration
               localStorage.removeItem(key)
-              console.log(`[Migration] Migrated and removed legacy key: ${key}`)
+              migrationLogger.info(`Migrated and removed legacy key: ${key}`)
             } catch (error) {
               const errorMsg = `Failed to migrate key ${key}: ${(error as Error).message}`
               result.errors.push(errorMsg)
-              console.error(`[Migration] ${errorMsg}`)
+              migrationLogger.error(errorMsg)
             }
           }
 
           if (entityRecordCount > 0) {
             result.migratedEntities.push(entityType)
             result.totalRecords += entityRecordCount
-            console.log(`[Migration] Migrated ${entityRecordCount} records for ${entityType}`)
+            migrationLogger.info(`Migrated ${entityRecordCount} records for ${entityType}`)
           }
         } catch (error) {
           const errorMsg = `Failed to migrate entity ${entityType}: ${(error as Error).message}`
           result.errors.push(errorMsg)
-          console.error(`[Migration] ${errorMsg}`)
+          migrationLogger.error(errorMsg)
         }
       }
 
-      console.log(
-        `[Migration] Completed migration: ${result.migratedEntities.length} entities, ${result.totalRecords} total records`,
+      migrationLogger.info(
+        `Completed migration: ${result.migratedEntities.length} entities, ${result.totalRecords} total records`,
       )
     } catch (error) {
       result.success = false
       result.errors.push(`Migration failed: ${(error as Error).message}`)
-      console.error("[Migration] Migration failed:", error)
+      migrationLogger.error("Migration failed", error)
     }
 
     return result
@@ -250,7 +254,7 @@ class MigrationService {
       const allRecords: T[] = JSON.parse(data)
       return allRecords.filter((record) => record.userId === userId)
     } catch (error) {
-      console.error(`[Migration] Error getting user data for ${entityKey}:`, error)
+      migrationLogger.error(`Error getting user data for ${entityKey}`, error)
       return []
     }
   }
@@ -279,9 +283,9 @@ class MigrationService {
       const mergedRecords = [...otherUsersRecords, ...recordsWithUserId]
       localStorage.setItem(entityKey, JSON.stringify(mergedRecords))
 
-      console.log(`[Migration] Saved ${records.length} records for user ${userId} in ${entityKey}`)
+      migrationLogger.info(`Saved ${records.length} records for user ${userId} in ${entityKey}`)
     } catch (error) {
-      console.error(`[Migration] Error saving user data for ${entityKey}:`, error)
+      migrationLogger.error(`Error saving user data for ${entityKey}`, error)
       throw error
     }
   }

@@ -1,4 +1,5 @@
 import type { Transaction } from "../shared/types"
+import { storageLogger } from "../shared/logger"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
 
 interface PersistenceConfig {
@@ -33,7 +34,7 @@ class PersistenceService {
         }
       }
     } catch (error) {
-      console.log("[PersistenceService] Error getting current user ID:", error)
+      storageLogger.error("Error getting current user ID", error)
     }
     return null
   }
@@ -43,13 +44,13 @@ class PersistenceService {
       try {
         const currentUserId = this.getCurrentUserId()
         if (!currentUserId) {
-          console.log("[PersistenceService] No authenticated user, returning empty transactions")
+          storageLogger.warn("No authenticated user, returning empty transactions")
           return []
         }
 
         // Run migration if needed
         if (migrationService.needsMigration()) {
-          console.log("[PersistenceService] Running automatic migration...")
+          storageLogger.info("Running automatic migration")
           await migrationService.migrateToUnifiedStructure()
         }
 
@@ -59,19 +60,20 @@ class PersistenceService {
           currentUserId,
         )
 
-        console.log(
-          `[PersistenceService] Transaction read: ${userData.length} records loaded for user ${currentUserId}`,
-        )
+        storageLogger.info("Transaction read from unified storage", {
+          count: userData.length,
+          userId: currentUserId,
+        })
         return userData as Transaction[]
       } catch (error) {
-        console.log(`[PersistenceService] ERROR: Failed to load from unified storage:`, error)
+        storageLogger.error("Failed to load from unified storage", error)
         return []
       }
     } else {
       // Future API implementation
       const response = await fetch(`${this.config.apiBaseUrl}/transactions`)
       const data = await response.json()
-      console.log(`[PersistenceService] Transaction read: ${data.length} records loaded`)
+      storageLogger.info("Transaction read from API", { count: data.length })
       return data
     }
   }
@@ -96,11 +98,12 @@ class PersistenceService {
         // Save to unified storage
         migrationService.saveUserData(UNIFIED_STORAGE_KEYS.transactions, currentUserId, validTransactions)
 
-        console.log(
-          `[PersistenceService] Persisted ${validTransactions.length} transactions to unified storage for user ${currentUserId}`,
-        )
+        storageLogger.info("Persisted transactions to unified storage", {
+          count: validTransactions.length,
+          userId: currentUserId,
+        })
       } catch (error) {
-        console.log(`[PersistenceService] ERROR: Failed to save to unified storage:`, error)
+        storageLogger.error("Failed to save to unified storage", error)
         throw error
       }
     } else {
@@ -133,7 +136,10 @@ class PersistenceService {
     const updatedTransactions = [...transactions, newTransaction as Transaction]
     await this.saveToStorage(updatedTransactions)
 
-    console.log(`[PersistenceService] Transaction created: ${newTransaction.id} for user: ${currentUserId}`)
+    storageLogger.info("Transaction created", {
+      transactionId: newTransaction.id,
+      userId: currentUserId,
+    })
     return newTransaction as Transaction
   }
 
@@ -143,7 +149,7 @@ class PersistenceService {
 
   async update(id: string, data: Partial<Transaction>): Promise<Transaction> {
     if (!id || id === "undefined") {
-      console.log(`[PersistenceService] ERROR: persistence update failed for transaction ${id}`)
+      storageLogger.error(`Persistence update failed for transaction ${id}`)
       throw new Error("Invalid transaction ID")
     }
 
@@ -164,7 +170,7 @@ class PersistenceService {
       const index = transactions.findIndex((t) => t.id === id)
 
       if (index === -1) {
-        console.log(`[PersistenceService] ERROR: persistence update failed for transaction ${id} - not found`)
+        storageLogger.error(`Persistence update failed for transaction ${id} - not found`)
         throw new Error("Transaction not found")
       }
 
@@ -175,9 +181,11 @@ class PersistenceService {
 
       // Verify user owns this transaction
       if ((existingTransaction as any).userId && (existingTransaction as any).userId !== currentUserId) {
-        console.log(
-          `[PersistenceService] ERROR: user ${currentUserId} attempted to update transaction ${id} owned by ${(existingTransaction as any).userId}`,
-        )
+        storageLogger.error("User attempted to update transaction owned by another user", undefined, {
+          userId: currentUserId,
+          transactionId: id,
+          ownerUserId: (existingTransaction as any).userId,
+        })
         throw new Error("Access denied: transaction belongs to another user")
       }
 
@@ -195,16 +203,17 @@ class PersistenceService {
       ;(updatedTransaction as any).userId = (existingTransaction as any).userId || currentUserId
 
       if (!updatedTransaction.id || !updatedTransaction.createdAt) {
-        console.log(
-          `[PersistenceService] ERROR: persistence update failed for transaction ${id} - missing required fields`,
-        )
+        storageLogger.error(`Persistence update failed for transaction ${id} - missing required fields`)
         throw new Error("Transaction data corruption detected")
       }
 
       transactions[index] = updatedTransaction
       await this.saveToStorage(transactions)
 
-      console.log(`[PersistenceService] Transaction ${id} updated successfully for user: ${currentUserId}`)
+      storageLogger.info("Transaction updated successfully", {
+        transactionId: id,
+        userId: currentUserId,
+      })
       return updatedTransaction
     } finally {
       this.updateLocks.delete(id)
@@ -226,16 +235,21 @@ class PersistenceService {
 
     // Verify user owns this transaction
     if ((transactionToDelete as any).userId && (transactionToDelete as any).userId !== currentUserId) {
-      console.log(
-        `[PersistenceService] ERROR: user ${currentUserId} attempted to delete transaction ${id} owned by ${(transactionToDelete as any).userId}`,
-      )
+      storageLogger.error("User attempted to delete transaction owned by another user", undefined, {
+        userId: currentUserId,
+        transactionId: id,
+        ownerUserId: (transactionToDelete as any).userId,
+      })
       throw new Error("Access denied: transaction belongs to another user")
     }
 
     const filteredTransactions = transactions.filter((t) => t.id !== id)
     await this.saveToStorage(filteredTransactions)
 
-    console.log(`[PersistenceService] Transaction deleted: ${id} for user: ${currentUserId}`)
+    storageLogger.info("Transaction deleted", {
+      transactionId: id,
+      userId: currentUserId,
+    })
   }
 
   async findById(id: string): Promise<Transaction | null> {
@@ -249,9 +263,11 @@ class PersistenceService {
 
     // Verify user owns this transaction
     if (transaction && (transaction as any).userId && (transaction as any).userId !== currentUserId) {
-      console.log(
-        `[PersistenceService] ERROR: user ${currentUserId} attempted to access transaction ${id} owned by ${(transaction as any).userId}`,
-      )
+      storageLogger.error("User attempted to access transaction owned by another user", undefined, {
+        userId: currentUserId,
+        transactionId: id,
+        ownerUserId: (transaction as any).userId,
+      })
       return null
     }
 
@@ -279,7 +295,10 @@ class PersistenceService {
     const updatedTransactions = [...existingTransactions, ...(newTransactions as Transaction[])]
     await this.saveToStorage(updatedTransactions)
 
-    console.log(`[PersistenceService] Bulk created ${newTransactions.length} transactions for user: ${currentUserId}`)
+    storageLogger.info("Bulk transactions created", {
+      count: newTransactions.length,
+      userId: currentUserId,
+    })
     return newTransactions as Transaction[]
   }
 
@@ -328,7 +347,10 @@ class PersistenceService {
 
     if (removedCount > 0) {
       await this.saveToStorage(filteredTransactions)
-      console.log(`[PersistenceService] Cleaned up ${removedCount} old transactions for user: ${currentUserId}`)
+      storageLogger.info("Old transactions cleaned up", {
+        removedCount,
+        userId: currentUserId,
+      })
     }
 
     return removedCount

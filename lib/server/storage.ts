@@ -1,4 +1,5 @@
 import type { Category, Transaction, Contact, Area, CategoryGroup } from "../shared/types"
+import { storageLogger } from "../shared/logger"
 import { transactionPersistence } from "./persistence-service"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
 
@@ -29,7 +30,7 @@ function getCurrentUserId(): string | null {
       }
     }
   } catch (error) {
-    console.log("[v0] Error getting current user ID:", error)
+    storageLogger.error("Error getting current user ID", error)
   }
   return null
 }
@@ -65,7 +66,7 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
 
         // Run migration if needed
         if (migrationService.needsMigration()) {
-          console.log("[v0] Running automatic migration...")
+          storageLogger.info("Running automatic migration")
           await migrationService.migrateToUnifiedStructure()
         }
 
@@ -79,11 +80,11 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
 
       // Fallback for when no user is authenticated - return empty array
       if (!currentUserId) {
-        console.log("[v0] No authenticated user, returning empty data")
+        storageLogger.warn("No authenticated user, returning empty data")
         return []
       }
     } catch (error) {
-      console.log(`[v0] Failed to load user data for ${normalizedPath}:`, error)
+      storageLogger.error(`Failed to load user data for ${normalizedPath}`, error)
     }
 
     // Return empty array in mock mode if no data found
@@ -98,7 +99,7 @@ async function loadFromFile<T>(filePath: string): Promise<T[]> {
       return data
     }
   } catch (error) {
-    console.log(`[v0] Failed to load ${normalizedPath}, using empty array`)
+    storageLogger.warn(`Failed to load ${normalizedPath}, using empty array`)
   }
 
   // Return empty array if file doesn't exist or fails to load
@@ -114,7 +115,10 @@ async function saveToCache<T>(filePath: string, data: T[]): Promise<void> {
       : `/data/${filePath.split("/").pop()}`
 
   const currentUserId = getCurrentUserId()
-  console.log(`[v0] Saving to file: ${normalizedPath} (${data.length} items) for user: ${currentUserId}`)
+  storageLogger.debug(`Saving to file: ${normalizedPath}`, {
+    itemCount: data.length,
+    userId: currentUserId ?? "anonymous",
+  })
 
   // Create cache key that includes userId for proper isolation
   const cacheKey = `${normalizedPath}:${currentUserId || "anonymous"}`
@@ -140,7 +144,7 @@ async function saveToCache<T>(filePath: string, data: T[]): Promise<void> {
         migrationService.saveUserData(unifiedKey, currentUserId, dataWithUserId)
       }
     } catch (error) {
-      console.log(`[v0] Error saving user data: ${normalizedPath}`, error)
+      storageLogger.error(`Error saving user data: ${normalizedPath}`, error)
       throw error
     }
 
@@ -155,18 +159,20 @@ async function saveToCache<T>(filePath: string, data: T[]): Promise<void> {
       })
 
       if (response.ok) {
-        console.log(`[v0] Persisted to file: ${normalizedPath} (${data.length} items)`)
+        storageLogger.info(`Persisted to file: ${normalizedPath}`, {
+          itemCount: data.length,
+        })
       } else {
-        console.log(`[v0] Failed to persist to file: ${normalizedPath}`)
+        storageLogger.warn(`Failed to persist to file: ${normalizedPath}`)
       }
     } catch (error) {
-      console.log(`[v0] Error persisting to file: ${normalizedPath}`, error)
+      storageLogger.error(`Error persisting to file: ${normalizedPath}`, error)
     }
   }
 }
 
 export async function initializeCleanData(): Promise<void> {
-  console.log("[v0] Initializing clean data on startup...")
+  storageLogger.info("Initializing clean data on startup")
 
   const currentUserId = getCurrentUserId()
 
@@ -177,9 +183,9 @@ export async function initializeCleanData(): Promise<void> {
         migrationService.saveUserData(key, currentUserId, [])
       })
 
-      console.log(`[v0] Cleared user data for user: ${currentUserId}`)
+      storageLogger.info(`Cleared user data for user: ${currentUserId}`)
     } catch (error) {
-      console.log("[v0] Error clearing user data:", error)
+      storageLogger.error("Error clearing user data", error)
     }
   }
 
@@ -192,15 +198,15 @@ export async function initializeCleanData(): Promise<void> {
     }),
   )
 
-  console.log("[v0] Clean data initialization completed")
+  storageLogger.info("Clean data initialization completed")
 }
 
 export function bulkLoadData(data: Record<string, any[]>): void {
-  console.log("[v0] Starting bulk data load...")
+  storageLogger.info("Starting bulk data load")
 
   const currentUserId = getCurrentUserId()
   if (!currentUserId) {
-    console.log("[v0] No authenticated user, skipping bulk load")
+    storageLogger.warn("No authenticated user, skipping bulk load")
     return
   }
 
@@ -221,30 +227,33 @@ export function bulkLoadData(data: Record<string, any[]>): void {
       }))
 
       saveToCache(keyToFileMap[key], dataWithUserId)
-      console.log(`[v0] Bulk loaded ${key}: ${value.length} items for user: ${currentUserId}`)
+      storageLogger.info(`Bulk loaded ${key}`, {
+        itemCount: value.length,
+        userId: currentUserId,
+      })
     }
   })
 
-  console.log("[v0] Bulk data load completed")
+  storageLogger.info("Bulk data load completed")
 }
 
 export async function clearAllData(): Promise<void> {
-  console.log("[v0] Clearing all data...")
+  storageLogger.info("Clearing all data")
 
   const currentUserId = getCurrentUserId()
   if (!currentUserId) {
-    console.log("[v0] No authenticated user, skipping clear")
+    storageLogger.warn("No authenticated user, skipping clear")
     return
   }
 
   await Promise.all(
     Object.values(DATA_FILES).map(async (filePath) => {
       await saveToCache(filePath, [])
-      console.log(`[v0] Cleared ${filePath} for user: ${currentUserId}`)
+      storageLogger.info(`Cleared ${filePath} for user: ${currentUserId}`)
     }),
   )
 
-  console.log("[v0] All data cleared")
+  storageLogger.info("All data cleared")
 }
 
 function generateId(): string {
@@ -412,13 +421,15 @@ export const transactionsStorage = {
 
   create: async (data: Omit<Transaction, "id">): Promise<Transaction> => {
     const result = await transactionPersistence.create(data)
-    console.log(`[v0] Created transaction ${result.id}, recurrence enabled: ${result.recurrence?.enabled}`)
+    storageLogger.info(`Created transaction ${result.id}`, {
+      recurrenceEnabled: Boolean(result.recurrence?.enabled),
+    })
     return result
   },
 
   update: async (id: string, data: Partial<Transaction>): Promise<Transaction> => {
     const result = await transactionPersistence.update(id, data)
-    console.log(`[v0] Updated transaction ${id}`)
+    storageLogger.info(`Updated transaction ${id}`)
     return result
   },
 
@@ -502,16 +513,16 @@ export const transactionsStorage = {
     }
 
     if (!transaction.recurrence?.enabled) {
-      console.log(`[v0] Transaction ${id} does not have recurrence enabled`)
+      storageLogger.debug(`Transaction ${id} does not have recurrence enabled`)
       return
     }
 
     if (transaction.recurrence?.generatedFrom) {
-      console.log(`[v0] Transaction ${id} is a generated transaction, cannot generate recurring`)
+      storageLogger.debug(`Transaction ${id} is a generated transaction, cannot generate recurring`)
       return
     }
 
-    console.log(`[v0] Explicitly generating recurring transactions for ${id}`)
+    storageLogger.info(`Explicitly generating recurring transactions for ${id}`)
     await processRecurringTransactions(transaction)
   },
 }
@@ -702,23 +713,29 @@ function generateRecurringTransactions(parentTransaction: Transaction): Transact
 
   const maxIterations = Math.min(count || 30, 99) // Default to 30, max 99 to prevent explosion
 
-  console.log(
-    `[v0] Generating recurring transactions: frequency=${frequency}, count=${count}, maxIterations=${maxIterations}`,
-  )
+  storageLogger.info("Generating recurring transactions", {
+    frequency,
+    count: count ?? null,
+    maxIterations,
+  })
 
   for (let i = 1; i <= maxIterations; i++) {
     currentDate = getNextOccurrence(currentDate, frequency, interval, daysOfWeek, dayOfMonth, weekOfMonth, monthOfYear)
 
     // Check if we've reached the end date
     if (endDateTime && currentDate > endDateTime) {
-      console.log(`[v0] Reached end date ${endDate}, stopping generation at ${i - 1} transactions`)
+      storageLogger.info(`Reached end date ${endDate}, stopping generation`, {
+        generatedTransactions: i - 1,
+      })
       break
     }
 
     // Check if we've reached the count limit
     if (count && generatedCount >= count - 1) {
       // -1 because parent counts as first occurrence
-      console.log(`[v0] Reached count limit ${count}, stopping generation at ${generatedCount + 1} transactions`)
+      storageLogger.info(`Reached count limit ${count}, stopping generation`, {
+        generatedTransactions: generatedCount + 1,
+      })
       break
     }
 
@@ -749,11 +766,11 @@ async function processRecurringTransactions(transaction: Transaction): Promise<v
   }
 
   if (transaction.recurrence?.generatedFrom) {
-    console.log(`[v0] Skipping recurring generation for generated transaction ${transaction.id}`)
+    storageLogger.debug(`Skipping recurring generation for generated transaction ${transaction.id}`)
     return
   }
 
-  console.log(`[v0] Processing recurring transactions for ${transaction.id}`)
+  storageLogger.info(`Processing recurring transactions for ${transaction.id}`)
 
   try {
     const transactions = await loadFromFile<Transaction>(DATA_FILES.transactions)
@@ -765,8 +782,8 @@ async function processRecurringTransactions(transaction: Transaction): Promise<v
     // This function just cleans up existing generated transactions
     await saveToCache(DATA_FILES.transactions, filteredTransactions)
 
-    console.log(`[v0] Cleaned up existing recurring transactions for ${transaction.id}`)
+    storageLogger.info(`Cleaned up existing recurring transactions for ${transaction.id}`)
   } catch (error) {
-    console.error(`[v0] Error processing recurring transactions for ${transaction.id}:`, error)
+    storageLogger.error(`Error processing recurring transactions for ${transaction.id}`, error)
   }
 }
