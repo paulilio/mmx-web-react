@@ -44,6 +44,20 @@ enum ContactStatus {
   INACTIVE
 }
 
+enum AreaType {
+  INCOME
+  EXPENSE
+  FIXED_EXPENSES
+  DAILY_EXPENSES
+  PERSONAL
+  TAXES_FEES
+}
+
+enum AreaStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id                    String        @id @default(cuid())
   email                 String        @unique
@@ -65,6 +79,7 @@ model User {
   contacts              Contact[]
   budgets               Budget[]
   budgetAllocations     BudgetAllocation[]
+  areas                 Area[]
 
   @@index([email])
 }
@@ -162,4 +177,21 @@ model BudgetAllocation {
 
   @@index([userId, budgetGroupId])
   @@index([userId, month])
+}
+
+model Area {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  type        AreaType
+  color       String
+  icon        String
+  status      AreaStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
 }

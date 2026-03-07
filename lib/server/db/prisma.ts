@@ -23,6 +23,7 @@ export interface DbClient {
   contact: Delegate
   budget: Delegate
   budgetAllocation: Delegate
+  area: Delegate
 }
 
 declare global {
