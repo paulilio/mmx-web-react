@@ -3,10 +3,10 @@ import type { BudgetGroup, BudgetGroupFormData, Category } from "@/lib/shared/ty
 import { api } from "@/lib/client/api"
 
 export function useBudgetGroups() {
-  const { data, error, mutate } = useSWR<BudgetGroup[]>("/budget-groups", api.get)
+  const { data, error, mutate } = useSWR<BudgetGroup[]>("/category-groups", api.get)
 
   const createBudgetGroup = async (data: BudgetGroupFormData) => {
-    const result = await api.post<BudgetGroup>("/budget-groups", data)
+    const result = await api.post<BudgetGroup>("/category-groups", data)
 
     if (data.categoryIds && data.categoryIds.length > 0) {
       for (const categoryId of data.categoryIds) {
@@ -30,7 +30,7 @@ export function useBudgetGroups() {
     const currentCategoryIds = categories.filter((cat: any) => cat.budgetGroupId === id).map((cat: any) => cat.id)
     const newCategoryIds = data.categoryIds || []
 
-    const result = await api.put(`/budget-groups/${id}`, data)
+    const result = await api.put(`/category-groups/${id}`, data)
 
     // Remove budgetGroupId from categories no longer in the group
     for (const categoryId of currentCategoryIds) {
@@ -72,7 +72,7 @@ export function useBudgetGroups() {
       }
     }
 
-    await api.delete(`/budget-groups/${id}`)
+    await api.delete(`/category-groups/${id}`)
 
     await globalMutate("/categories")
 

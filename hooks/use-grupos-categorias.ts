@@ -3,16 +3,16 @@ import type { Category, GrupoCategoria, GrupoCategoriaFormData } from "@/lib/sha
 import { api } from "@/lib/client/api"
 
 export function useGruposCategorias() {
-  const { data, error, mutate } = useSWR<GrupoCategoria[]>("/grupos-categorias", api.get)
+  const { data, error, mutate } = useSWR<GrupoCategoria[]>("/category-groups", api.get)
 
   const createGrupoCategoria = async (data: GrupoCategoriaFormData) => {
-    const result = await api.post<GrupoCategoria>("/grupos-categorias", data)
+    const result = await api.post<GrupoCategoria>("/category-groups", data)
     mutate()
     return result
   }
 
   const updateGrupoCategoria = async (id: string, data: GrupoCategoriaFormData) => {
-    const result = await api.put<GrupoCategoria>(`/grupos-categorias/${id}`, data)
+    const result = await api.put<GrupoCategoria>(`/category-groups/${id}`, data)
     mutate()
     return result
   }
@@ -30,7 +30,7 @@ export function useGruposCategorias() {
       }
     }
 
-    await api.delete(`/grupos-categorias/${id}`)
+    await api.delete(`/category-groups/${id}`)
 
     await globalMutate("/categories")
 

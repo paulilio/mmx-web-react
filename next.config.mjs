@@ -1,15 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    // Enable type checking in production builds
-    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+    // Never bypass TypeScript errors during build.
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,
   },
   eslint: {
-    // Enable ESLint in production builds
-    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
+    // Never bypass ESLint during build.
+    ignoreDuringBuilds: false,
   },
   // Optimize for production
   poweredByHeader: false,
