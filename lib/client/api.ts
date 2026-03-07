@@ -1,5 +1,6 @@
 import { USE_API, API_BASE } from "../shared/config"
 import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../server/storage"
+import { apiLogger } from "../shared/logger"
 
 class ApiError extends Error {
   constructor(
@@ -208,8 +209,9 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
 
     if (canonicalEndpoint === "/reports/summary") {
       const transactions = await transactionsStorage.getAll()
-      console.log("[v0] Reports summary - transactions count:", transactions?.length)
-      console.log("[v0] Reports summary - transactions data:", transactions)
+      apiLogger.debug("Reports summary source loaded", {
+        transactionsCount: transactions?.length ?? 0,
+      })
 
       const completedTransactions = transactions?.filter((t) => t.status === "completed") || []
       const pendingTransactions = transactions?.filter((t) => t.status === "pending") || []
@@ -236,13 +238,15 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
           .filter((t) => t.type === "expense")
           .reduce((sum, t) => sum + parseAmount(t.amount), 0),
       }
-      console.log("[v0] Reports summary result:", summary)
+      apiLogger.debug("Reports summary calculated", summary as Record<string, unknown>)
       return summary as T
     }
 
     if (canonicalEndpoint === "/reports/aging") {
       const transactions = await transactionsStorage.getAll()
-      console.log("[v0] Reports aging - transactions count:", transactions?.length)
+      apiLogger.debug("Reports aging source loaded", {
+        transactionsCount: transactions?.length ?? 0,
+      })
 
       const aging = {
         overdue: 0,
@@ -256,7 +260,7 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
         pendingNext7Days: 0,
         pendingNext30Days: 0,
       }
-      console.log("[v0] Reports aging result:", aging)
+      apiLogger.debug("Reports aging calculated", aging as Record<string, unknown>)
       return aging as T
     }
 
@@ -265,11 +269,13 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
       const statusFilter = url.searchParams.get("status") // all, completed, pending, cancelled
 
       const transactions = await transactionsStorage.getAll()
-      console.log("[v0] Reports cashflow - transactions count:", transactions?.length)
-      console.log("[v0] Reports cashflow - status filter:", statusFilter)
+      apiLogger.debug("Reports cashflow source loaded", {
+        transactionsCount: transactions?.length ?? 0,
+        statusFilter: statusFilter ?? "all",
+      })
 
       if (!transactions || transactions.length === 0) {
-        console.log("[v0] Reports cashflow result: 0 items")
+        apiLogger.debug("Reports cashflow calculated", { itemCount: 0 })
         return [] as T
       }
 
@@ -352,8 +358,9 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
         }
       })
 
-      console.log("[v0] Reports cashflow result:", cashflowData.length, "items")
-      console.log("[v0] Reports cashflow data structure:", cashflowData)
+      apiLogger.debug("Reports cashflow calculated", {
+        itemCount: cashflowData.length,
+      })
       return cashflowData as T
     }
 
@@ -489,37 +496,40 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
     await mockDelay()
     const canonicalEndpoint = resolveCanonicalEndpoint(endpoint)
 
-    console.log("[v0] PUT endpoint:", canonicalEndpoint)
-    console.log("[v0] PUT data:", data)
+    apiLogger.debug("PUT request received", {
+      endpoint: canonicalEndpoint,
+    })
 
     const id = canonicalEndpoint.split("/").pop()!
-    console.log("[v0] Extracted ID:", id)
+    apiLogger.debug("PUT request parsed id", { id })
 
     if (canonicalEndpoint.includes("/areas/")) {
-      console.log("[v0] Routing to areas update")
+      apiLogger.debug("Routing PUT to areas storage")
       return areasStorage.update(id, data) as T
     }
     if (canonicalEndpoint.includes("/category-groups/")) {
-      console.log("[v0] Routing to category groups update")
+      apiLogger.debug("Routing PUT to category groups storage")
       return categoryGroupsStorage.update(id, data) as T
     }
     if (canonicalEndpoint.includes("/categories/")) {
-      console.log("[v0] Routing to categories update")
+      apiLogger.debug("Routing PUT to categories storage")
       try {
         const result = categoriesStorage.update(id, data)
-        console.log("[v0] Categories update successful:", result)
+        apiLogger.debug("Categories update successful", {
+          id,
+        })
         return result as T
       } catch (error) {
-        console.log("[v0] Categories update error:", error)
+        apiLogger.error("Categories update failed", error, { id })
         throw error
       }
     }
     if (canonicalEndpoint.includes("/contacts/")) {
-      console.log("[v0] Routing to contacts update")
+      apiLogger.debug("Routing PUT to contacts storage")
       return contactsStorage.update(id, data) as T
     }
     if (canonicalEndpoint.includes("/transactions/")) {
-      console.log("[v0] Routing to transactions update")
+      apiLogger.debug("Routing PUT to transactions storage")
       return transactionsStorage.update(id, data) as T
     }
 
@@ -589,7 +599,9 @@ export async function putJSON<T>(endpoint: string, data: any): Promise<T> {
       } as T
     }
 
-    console.log("[v0] No matching endpoint found for:", canonicalEndpoint)
+    apiLogger.warn("No matching mock endpoint found", {
+      endpoint: canonicalEndpoint,
+    })
     throw new Error(`Mock endpoint not implemented: ${canonicalEndpoint}`)
   }
 

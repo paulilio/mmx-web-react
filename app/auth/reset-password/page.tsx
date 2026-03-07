@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, TrendingUp, Key } from "lucide-react"
 import { validatePassword } from "@/lib/shared/auth-validations"
+import { hashMockPassword } from "@/lib/shared/mock-auth-password"
 import { toast } from "sonner"
 
 type LocalResetUser = {
@@ -19,6 +20,8 @@ type LocalResetUser = {
   failedAttempts?: number
   lockedUntil?: string | null
 }
+
+const CANONICAL_AUDIT_KEY = "mmx_audit_log"
 
 export default function ResetPasswordPage() {
   const isDevMode = process.env.NODE_ENV !== "production"
@@ -78,13 +81,13 @@ export default function ResetPasswordPage() {
             return
           }
 
-          userToUpdate.password = newPassword // In real app, hash this
+          userToUpdate.password = await hashMockPassword(newPassword)
           userToUpdate.failedAttempts = 0
           userToUpdate.lockedUntil = null
           localStorage.setItem("users", JSON.stringify(users))
 
           // Log audit event
-          const auditLogs = JSON.parse(localStorage.getItem("audit_logs") || "[]")
+          const auditLogs = JSON.parse(localStorage.getItem(CANONICAL_AUDIT_KEY) || "[]")
           auditLogs.push({
             id: "log_" + Math.random().toString(36).substring(2),
             action: "password_reset_completed",
@@ -94,7 +97,7 @@ export default function ResetPasswordPage() {
             ip: "mock_ip",
             userAgent: navigator.userAgent,
           })
-          localStorage.setItem("audit_logs", JSON.stringify(auditLogs))
+          localStorage.setItem(CANONICAL_AUDIT_KEY, JSON.stringify(auditLogs))
         }
       }
 

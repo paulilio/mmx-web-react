@@ -19,6 +19,42 @@ interface AuditEvent {
   ip: string
 }
 
+const CANONICAL_AUDIT_KEY = "mmx_audit_log"
+const LEGACY_AUDIT_KEYS = ["audit_log", "audit_logs"]
+
+function loadAuditLogsFromStorage(): AuditEvent[] {
+  const canonicalData = localStorage.getItem(CANONICAL_AUDIT_KEY)
+  if (canonicalData) {
+    try {
+      const parsed = JSON.parse(canonicalData)
+      if (Array.isArray(parsed)) {
+        return parsed as AuditEvent[]
+      }
+    } catch {
+      // fallback to legacy keys
+    }
+  }
+
+  for (const key of LEGACY_AUDIT_KEYS) {
+    const legacyData = localStorage.getItem(key)
+    if (!legacyData) {
+      continue
+    }
+
+    try {
+      const parsed = JSON.parse(legacyData)
+      if (Array.isArray(parsed)) {
+        localStorage.setItem(CANONICAL_AUDIT_KEY, JSON.stringify(parsed))
+        return parsed as AuditEvent[]
+      }
+    } catch {
+      // continue reading next key
+    }
+  }
+
+  return []
+}
+
 export default function AuditLogsPage() {
   const [auditLogs, setAuditLogs] = useState<AuditEvent[]>([])
   const [filteredLogs, setFilteredLogs] = useState<AuditEvent[]>([])
@@ -28,7 +64,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     // Load audit logs from localStorage
-    const logs = JSON.parse(localStorage.getItem("audit_log") || "[]")
+    const logs = loadAuditLogsFromStorage()
     setAuditLogs(logs.reverse()) // Show newest first
     setFilteredLogs(logs.reverse())
   }, [])

@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { validateRegistrationForm, validateEmail, validatePassword } from "@/lib/shared/auth-validations"
+import { hashMockPassword } from "@/lib/shared/mock-auth-password"
 import { toast } from "sonner"
 
 type LocalAuthUser = {
@@ -132,6 +133,7 @@ export default function AuthPage() {
     try {
       const testEmail = "paulilio.ferreira@gmail.com"
       const testPassword = "123456"
+      const testPasswordHash = await hashMockPassword(testPassword)
 
       // Check if localStorage is available
       const isLocalStorageAvailable = (() => {
@@ -174,7 +176,7 @@ export default function AuthPage() {
           lastName: "Ferreira",
           phone: "(11) 99999-9999",
           cpfCnpj: "123.456.789-00",
-          password: testPassword,
+          password: testPasswordHash,
           isEmailConfirmed: true, // confirmed=true as required
           defaultOrganizationId: organizationId,
           organizations: [
@@ -210,7 +212,7 @@ export default function AuthPage() {
         users.push(testUser)
       } else {
         // Ensure password is correct and reset any failed attempts
-        testUser.password = testPassword
+        testUser.password = testPasswordHash
         testUser.failedAttempts = 0
         testUser.lockedUntil = null
         testUser.updatedAt = new Date().toISOString()

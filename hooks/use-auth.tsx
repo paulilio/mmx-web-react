@@ -8,6 +8,7 @@ import { toast } from "react-toastify"
 import type { User, SessionData, RegisterData } from "@/types/auth"
 import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEvent } from "@/lib/shared/utils"
 import { validateRegistrationForm } from "@/lib/shared/auth-validations"
+import { hashMockPassword, isHashedMockPassword, verifyMockPassword } from "@/lib/shared/mock-auth-password"
 import { userDataService } from "@/lib/server/user-data-service"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/server/migration-service"
 
@@ -91,7 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Conta bloqueada devido a muitas tentativas de login")
       }
 
-      if (user.password !== password) {
+      const isValidPassword = await verifyMockPassword(user.password, password)
+
+      if (!isValidPassword) {
         user.failedAttempts = (user.failedAttempts || 0) + 1
 
         if (user.failedAttempts >= 5) {
@@ -103,6 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("users", JSON.stringify(updatedUsers))
 
         throw new Error("Senha incorreta")
+      }
+
+      if (!isHashedMockPassword(user.password)) {
+        user.password = await hashMockPassword(password)
       }
 
       if (!user.isEmailConfirmed) {
@@ -218,7 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userWithPassword = {
         ...newUser,
         userId: newUser.id,
-        password: data.password,
+        password: await hashMockPassword(data.password),
         failedAttempts: 0,
         lockedUntil: null,
       }

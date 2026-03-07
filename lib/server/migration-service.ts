@@ -310,8 +310,9 @@ class MigrationService {
       const categoryIds = new Set(categories.map((c) => c.id))
 
       transactions.forEach((tx) => {
-        if (tx.category_id && !categoryIds.has(tx.category_id)) {
-          issues.push(`Transaction ${tx.id} references non-existent category ${tx.category_id}`)
+        const transactionCategoryId = tx.categoryId || tx.category_id
+        if (transactionCategoryId && !categoryIds.has(transactionCategoryId)) {
+          issues.push(`Transaction ${tx.id} references non-existent category ${transactionCategoryId}`)
         }
       })
     } catch (error) {

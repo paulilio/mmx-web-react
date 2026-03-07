@@ -1,3 +1,5 @@
+import { logger } from "./logger"
+
 export interface AuditEvent {
   id: string
   action: string
@@ -10,6 +12,10 @@ export interface AuditEvent {
   severity: "low" | "medium" | "high" | "critical"
   category: "auth" | "data" | "system" | "security"
 }
+
+const CANONICAL_AUDIT_KEY = "mmx_audit_log"
+const LEGACY_AUDIT_KEYS = ["audit_log", "audit_logs"]
+const auditAppLogger = logger.scope("Audit")
 
 export class AuditLogger {
   private static instance: AuditLogger
@@ -50,7 +56,7 @@ export class AuditLogger {
     this.persistEvent(auditEvent)
     this.handleCriticalEvents(auditEvent)
 
-    console.log("[v0] Audit event logged:", auditEvent)
+    auditAppLogger.info("Audit event logged", { action: auditEvent.action, id: auditEvent.id })
   }
 
   private getSeverityFromAction(action: string): AuditEvent["severity"] {
@@ -79,7 +85,7 @@ export class AuditLogger {
 
   private persistEvent(event: AuditEvent): void {
     try {
-      const auditLog = JSON.parse(localStorage.getItem("audit_log") || "[]")
+      const auditLog = this.readAuditLog()
       auditLog.push(event)
 
       // Keep only the most recent events
@@ -87,10 +93,48 @@ export class AuditLogger {
         auditLog.splice(0, auditLog.length - this.maxLogSize)
       }
 
-      localStorage.setItem("audit_log", JSON.stringify(auditLog))
+      this.writeAuditLog(auditLog)
     } catch (error) {
-      console.error("Failed to persist audit event:", error)
+      auditAppLogger.error("Failed to persist audit event", error)
     }
+  }
+
+  private readAuditLog(): AuditEvent[] {
+    const canonicalData = localStorage.getItem(CANONICAL_AUDIT_KEY)
+    if (canonicalData) {
+      try {
+        const parsed = JSON.parse(canonicalData)
+        if (Array.isArray(parsed)) {
+          return parsed as AuditEvent[]
+        }
+      } catch {
+        // fall through to legacy keys
+      }
+    }
+
+    for (const key of LEGACY_AUDIT_KEYS) {
+      const legacyData = localStorage.getItem(key)
+      if (!legacyData) {
+        continue
+      }
+
+      try {
+        const parsed = JSON.parse(legacyData)
+        if (Array.isArray(parsed)) {
+          // Promote legacy logs to canonical key.
+          this.writeAuditLog(parsed as AuditEvent[])
+          return parsed as AuditEvent[]
+        }
+      } catch {
+        // continue reading next key
+      }
+    }
+
+    return []
+  }
+
+  private writeAuditLog(events: AuditEvent[]): void {
+    localStorage.setItem(CANONICAL_AUDIT_KEY, JSON.stringify(events))
   }
 
   private handleCriticalEvents(event: AuditEvent): void {
@@ -99,7 +143,7 @@ export class AuditLogger {
       // - Send alerts to administrators
       // - Trigger security protocols
       // - Log to external monitoring systems
-      console.warn("CRITICAL AUDIT EVENT:", event)
+      auditAppLogger.warn("Critical audit event detected", { action: event.action, id: event.id })
     }
   }
 
@@ -116,7 +160,7 @@ export class AuditLogger {
     } = {},
   ): AuditEvent[] {
     try {
-      let events: AuditEvent[] = JSON.parse(localStorage.getItem("audit_log") || "[]")
+      let events = this.readAuditLog()
 
       // Apply filters
       if (filters.userId) {
@@ -151,7 +195,7 @@ export class AuditLogger {
 
       return events
     } catch (error) {
-      console.error("Failed to retrieve audit events:", error)
+      auditAppLogger.error("Failed to retrieve audit events", error)
       return []
     }
   }
@@ -161,10 +205,10 @@ export class AuditLogger {
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - olderThanDays)
 
-      const auditLog = JSON.parse(localStorage.getItem("audit_log") || "[]")
+      const auditLog = this.readAuditLog()
       const filteredLog = auditLog.filter((event: AuditEvent) => new Date(event.timestamp) > cutoffDate)
 
-      localStorage.setItem("audit_log", JSON.stringify(filteredLog))
+      this.writeAuditLog(filteredLog)
 
       this.log(
         "audit_cleanup",
@@ -176,7 +220,7 @@ export class AuditLogger {
         { category: "system", severity: "low" },
       )
     } catch (error) {
-      console.error("Failed to clear old audit events:", error)
+      auditAppLogger.error("Failed to clear old audit events", error)
     }
   }
 }

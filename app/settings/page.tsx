@@ -194,8 +194,8 @@ export default function SettingsPage() {
 
   const clearDataButton = useActionButton({
     actionName: "Dados mock limpos",
-    onAction: () => {
-      clearAllData()
+    onAction: async () => {
+      await clearAllData()
     },
     successMessage: "Dados mock limpos com sucesso. Recarregue a página manualmente para ver as mudanças.",
   })

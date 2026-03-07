@@ -228,7 +228,7 @@ export function bulkLoadData(data: Record<string, any[]>): void {
   console.log("[v0] Bulk data load completed")
 }
 
-export function clearAllData(): void {
+export async function clearAllData(): Promise<void> {
   console.log("[v0] Clearing all data...")
 
   const currentUserId = getCurrentUserId()
@@ -237,10 +237,12 @@ export function clearAllData(): void {
     return
   }
 
-  Object.values(DATA_FILES).forEach(async (filePath) => {
-    await saveToCache(filePath, [])
-    console.log(`[v0] Cleared ${filePath} for user: ${currentUserId}`)
-  })
+  await Promise.all(
+    Object.values(DATA_FILES).map(async (filePath) => {
+      await saveToCache(filePath, [])
+      console.log(`[v0] Cleared ${filePath} for user: ${currentUserId}`)
+    }),
+  )
 
   console.log("[v0] All data cleared")
 }

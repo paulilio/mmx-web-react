@@ -38,7 +38,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
 | `mmx_budget_allocations` | Orcamento | `userId` |
 | `mmx_contacts` | Contatos | `userId` |
 | `mmx_sessions` | Sessoes | `userId` |
-| `mmx_audit_logs` | Logs de auditoria | `userId` |
+| `mmx_audit_log` | Logs de auditoria | `userId` |
 
 ## Interfaces TypeScript (referencia)
 
