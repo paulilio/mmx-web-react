@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
 import { userRepository } from "../../../../lib/server/repositories"
+import { hashPassword } from "../../../../lib/server/security/password-hash"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
 
 export const runtime = "nodejs"
@@ -37,9 +38,11 @@ export async function POST(request: NextRequest) {
       return fail(409, "USER_ALREADY_EXISTS", "Email ja esta em uso")
     }
 
+    const passwordHash = await hashPassword(body.password)
+
     const created = await userRepository.create({
       email: body.email,
-      passwordHash: body.password,
+      passwordHash,
       firstName: body.firstName,
       lastName: body.lastName,
       phone: body.phone ?? null,

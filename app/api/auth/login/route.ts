@@ -3,6 +3,7 @@ import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
 import { userRepository } from "../../../../lib/server/repositories"
 import { setAuthCookies } from "../../../../lib/server/security/auth-cookies"
+import { verifyPassword } from "../../../../lib/server/security/password-hash"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
 
 export const runtime = "nodejs"
@@ -32,7 +33,10 @@ export async function POST(request: NextRequest) {
 
     const user = await userRepository.findByEmail(body.email)
 
-    if (!user || !user.passwordHash || user.passwordHash !== body.password) {
+    const isValidPassword =
+      user && user.passwordHash ? await verifyPassword(body.password, user.passwordHash) : false
+
+    if (!user || !isValidPassword) {
       return fail(401, "INVALID_CREDENTIALS", "Credenciais invalidas")
     }
 

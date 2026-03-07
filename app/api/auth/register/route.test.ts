@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { userRepositoryMock, limiterMock } = vi.hoisted(() => ({
+const { userRepositoryMock, limiterMock, passwordHashMock } = vi.hoisted(() => ({
   userRepositoryMock: {
     findByEmail: vi.fn(),
     create: vi.fn(),
@@ -9,6 +9,9 @@ const { userRepositoryMock, limiterMock } = vi.hoisted(() => ({
     applyRateLimit: vi.fn(),
     resolveClientIp: vi.fn(),
   },
+  passwordHashMock: {
+    hashPassword: vi.fn(),
+  },
 }))
 
 vi.mock("../../../../lib/server/repositories", () => ({
@@ -16,6 +19,7 @@ vi.mock("../../../../lib/server/repositories", () => ({
 }))
 
 vi.mock("../../../../lib/server/security/rate-limit", () => limiterMock)
+vi.mock("../../../../lib/server/security/password-hash", () => passwordHashMock)
 
 import { POST } from "./route"
 
@@ -31,6 +35,7 @@ describe("/api/auth/register", () => {
     vi.clearAllMocks()
     limiterMock.resolveClientIp.mockReturnValue("127.0.0.1")
     limiterMock.applyRateLimit.mockReturnValue({ allowed: true, retryAfterSeconds: 0, remaining: 4 })
+    passwordHashMock.hashPassword.mockResolvedValue("hashed-password")
   })
 
   it("retorna 429 quando limite estoura", async () => {
@@ -59,5 +64,11 @@ describe("/api/auth/register", () => {
     )
 
     expect(response.status).toBe(201)
+    expect(passwordHashMock.hashPassword).toHaveBeenCalledWith("12345678")
+    expect(userRepositoryMock.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        passwordHash: "hashed-password",
+      }),
+    )
   })
 })
