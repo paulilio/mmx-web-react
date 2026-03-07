@@ -2,6 +2,7 @@ import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../../../lib/server/http/api-response"
 import { userRepository } from "../../../../../../lib/server/repositories"
+import { setAuthCookies } from "../../../../../../lib/server/security/auth-cookies"
 import { exchangeGoogleCodeForProfile, resolveGoogleOAuthConfig } from "../../../../../../lib/server/services/google-oauth-service"
 
 export const runtime = "nodejs"
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
       })
 
       response.cookies.delete("mmx_oauth_state")
-      return response
+      return setAuthCookies(response, accessToken, refreshToken)
     }
 
     const nameFromProfile = splitName(profile.fullName)
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
     })
 
     response.cookies.delete("mmx_oauth_state")
-    return response
+    return setAuthCookies(response, accessToken, refreshToken)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro no callback OAuth Google"
     return fail(400, "GOOGLE_OAUTH_CALLBACK_ERROR", message)

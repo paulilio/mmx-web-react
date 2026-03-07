@@ -2,6 +2,7 @@ import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../../../lib/server/http/api-response"
 import { userRepository } from "../../../../../../lib/server/repositories"
+import { setAuthCookies } from "../../../../../../lib/server/security/auth-cookies"
 import { exchangeMicrosoftCodeForProfile, resolveMicrosoftOAuthConfig } from "../../../../../../lib/server/services/microsoft-oauth-service"
 
 export const runtime = "nodejs"
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
       })
 
       response.cookies.delete("mmx_oauth_state_microsoft")
-      return response
+      return setAuthCookies(response, accessToken, refreshToken)
     }
 
     const nameFromProfile = splitName(profile.fullName)
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
     })
 
     response.cookies.delete("mmx_oauth_state_microsoft")
-    return response
+    return setAuthCookies(response, accessToken, refreshToken)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro no callback OAuth Microsoft"
     return fail(400, "MICROSOFT_OAUTH_CALLBACK_ERROR", message)

@@ -19,6 +19,9 @@ pnpm lint
 
 # Build (validar antes de enviar)
 pnpm build
+
+# Validacao de env/secrets (por ambiente)
+pnpm validate:env -- --env=production
 \`\`\`
 
 **Atalho de login direto** (somente mock): em `/auth`, use o botao "Login Direto" para autenticar como `paulilio.ferreira@gmail.com`. Remova esse botao antes de producao.
@@ -60,6 +63,15 @@ MICROSOFT_TENANT_ID=common
 \`\`\`
 
 Na Vercel, configure em **Project Settings -> Environment Variables** por ambiente.
+
+Checklist rapido de producao (obrigatorio):
+- `DATABASE_URL`
+- `MMX_APP_ENV=production`
+- `NEXT_PUBLIC_USE_API=true`
+- `NEXT_PUBLIC_API_BASE`
+- `CORS_ORIGINS_PROD` com ao menos uma origem
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+- `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI`
 
 ## Pipeline de CI (GitHub Actions)
 

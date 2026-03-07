@@ -2,6 +2,21 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { evaluateCorsRequest, resolveCorsOriginMatrix, resolveRuntimeEnvironment } from "./lib/server/security/cors"
 
+function applySecurityHeaders(response: NextResponse): NextResponse {
+  response.headers.set("X-Frame-Options", "DENY")
+  response.headers.set("X-Content-Type-Options", "nosniff")
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+  response.headers.set("Cross-Origin-Opener-Policy", "same-origin")
+  response.headers.set("Cross-Origin-Resource-Policy", "same-site")
+
+  if (process.env.NODE_ENV === "production") {
+    response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+  }
+
+  return response
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -15,7 +30,7 @@ export function middleware(request: NextRequest) {
     })
 
     if (!corsDecision.allowed) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           data: null,
           error: {
@@ -28,13 +43,17 @@ export function middleware(request: NextRequest) {
           headers: corsDecision.headers,
         },
       )
+
+      return applySecurityHeaders(response)
     }
 
     if (request.method.toUpperCase() === "OPTIONS") {
-      return new NextResponse(null, {
+      const response = new NextResponse(null, {
         status: corsDecision.status,
         headers: corsDecision.headers,
       })
+
+      return applySecurityHeaders(response)
     }
 
     const response = NextResponse.next()
@@ -42,7 +61,7 @@ export function middleware(request: NextRequest) {
       response.headers.set(header, value)
     }
 
-    return response
+    return applySecurityHeaders(response)
   }
 
   // Public routes that don't require authentication
@@ -55,20 +74,11 @@ export function middleware(request: NextRequest) {
   if (!isPublicRoute) {
     // Protected route - check if user has valid session
     // Since we can't access localStorage in middleware, we'll handle this client-side
-    // This middleware mainly handles redirects and sets security headers
-
-    const response = NextResponse.next()
-
-    // Add security headers
-    response.headers.set("X-Frame-Options", "DENY")
-    response.headers.set("X-Content-Type-Options", "nosniff")
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-
-    return response
+    return applySecurityHeaders(NextResponse.next())
   }
 
-  // Public route - allow access
-  return NextResponse.next()
+  // Public route - allow access with security headers as well
+  return applySecurityHeaders(NextResponse.next())
 }
 
 export const config = {

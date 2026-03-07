@@ -2,6 +2,7 @@ import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
 import { userRepository } from "../../../../lib/server/repositories"
+import { setAuthCookies } from "../../../../lib/server/security/auth-cookies"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
 
 export const runtime = "nodejs"
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     await userRepository.update(user.id, { lastLogin: new Date() })
 
-    return ok({
+    const response = ok({
       accessToken,
       refreshToken,
       expiresIn: 1800,
@@ -52,6 +53,8 @@ export async function POST(request: NextRequest) {
         planType: user.planType,
       },
     })
+
+    return setAuthCookies(response, accessToken, refreshToken)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro no login"
     return fail(400, "AUTH_LOGIN_ERROR", message)

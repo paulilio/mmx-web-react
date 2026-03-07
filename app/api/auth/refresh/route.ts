@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../lib/server/http/api-response"
+import { setAuthCookies } from "../../../../lib/server/security/auth-cookies"
 import { applyRateLimit, resolveClientIp } from "../../../../lib/server/security/rate-limit"
 
 export const runtime = "nodejs"
@@ -33,10 +34,12 @@ export async function POST(request: NextRequest) {
 
     const accessToken = `at_${randomUUID()}`
 
-    return ok({
+    const response = ok({
       accessToken,
       expiresIn: 1800,
     })
+
+    return setAuthCookies(response, accessToken)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro no refresh"
     return fail(400, "AUTH_REFRESH_ERROR", message)

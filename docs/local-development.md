@@ -70,6 +70,9 @@ pnpm test:unit
 # build de validacao
 pnpm build
 
+# validacao de env/secrets por ambiente
+pnpm validate:env -- --env=development
+
 # prisma
 pnpm prisma:generate
 pnpm prisma:migrate:dev
