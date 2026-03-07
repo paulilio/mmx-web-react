@@ -6,7 +6,7 @@ Todas as chamadas de API passam por `lib/client/api.ts`.
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
 - Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, contacts, budget, budget-allocations, areas e auth.
-- A migracao incremental continua para dominios/fluxos ainda nao cobertos (ex.: JWT completo, OAuth).
+- A migracao incremental continua para dominios/fluxos ainda nao cobertos (ex.: JWT completo, OAuth Microsoft).
 
 ```ts
 // lib/client/api.ts (pattern)
@@ -110,12 +110,16 @@ DELETE /api/areas/:id           -> { data: Area, error: null } | { data: null, e
 POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }
 POST   /api/auth/register       -> { data: AuthRegisterResponse, error: null } | { data: null, error }
 POST   /api/auth/refresh        -> { data: AuthRefreshResponse, error: null } | { data: null, error }
+GET    /api/auth/oauth/google   -> redirect para consentimento Google
+GET    /api/auth/oauth/google/callback -> { data: OAuthLoginResponse, error: null } | { data: null, error }
 ```
 
 ## Endpoints Planejados (proximas fases)
 
 ```text
 POST     /api/auth/logout
+GET      /api/auth/oauth/microsoft
+GET      /api/auth/oauth/microsoft/callback
 ```
 
 ## Hardening Ativo em API

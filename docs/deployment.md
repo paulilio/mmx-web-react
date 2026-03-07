@@ -33,6 +33,9 @@ pnpm build
 | `CORS_ORIGINS_DEV` | Recomendado | CSV de origens permitidas para `/api` em desenvolvimento |
 | `CORS_ORIGINS_STAGING` | Recomendado | CSV de origens permitidas para `/api` em staging |
 | `CORS_ORIGINS_PROD` | Recomendado | CSV de origens permitidas para `/api` em producao |
+| `GOOGLE_CLIENT_ID` | Obrigatorio para OAuth Google | Client ID do app Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Obrigatorio para OAuth Google | Client secret do app Google OAuth |
+| `GOOGLE_REDIRECT_URI` | Opcional | URI de callback (padrao: `/api/auth/oauth/google/callback`) |
 
 Crie um `.env.local` para overrides locais (nunca commitar este arquivo):
 
@@ -43,6 +46,9 @@ MMX_APP_ENV=development
 CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
 CORS_ORIGINS_STAGING=
 CORS_ORIGINS_PROD=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth/google/callback
 \`\`\`
 
 Na Vercel, configure em **Project Settings -> Environment Variables** por ambiente.

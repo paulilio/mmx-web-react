@@ -89,5 +89,6 @@ CORS_ORIGINS_PROD=
 - Fluxo completo em transacoes, categories, contacts, budget e areas: `API -> Service -> Domain -> Repository -> Prisma`
 - Contrato HTTP padronizado com envelope `{ data, error }`
 - Endpoints de auth backend: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
+- OAuth Google backend: `GET /api/auth/oauth/google` + `GET /api/auth/oauth/google/callback`
 - Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
-- Auth backend completo (hash/JWT/OAuth): em andamento no plano
+- Auth backend completo (hash/JWT/OAuth Microsoft): em andamento no plano

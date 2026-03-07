@@ -26,6 +26,7 @@ export interface CreateUserRecordInput {
   lastName: string
   phone?: string | null
   cpfCnpj?: string | null
+  isEmailConfirmed?: boolean
   defaultOrganizationId?: string | null
   planType?: "FREE" | "PREMIUM" | "PRO"
   profilePhoto?: string | null

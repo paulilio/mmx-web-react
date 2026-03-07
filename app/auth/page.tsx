@@ -268,7 +268,12 @@ export default function AuthPage() {
   }
 
   const handleOAuthLogin = (provider: "google" | "microsoft") => {
-    toast.info(`Login com ${provider === "google" ? "Google" : "Microsoft"} será implementado em breve.`)
+    if (provider === "google") {
+      window.location.href = "/api/auth/oauth/google"
+      return
+    }
+
+    toast.info("Login com Microsoft sera implementado em breve.")
   }
 
   return (

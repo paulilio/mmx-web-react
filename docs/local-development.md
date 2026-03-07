@@ -23,6 +23,9 @@ MMX_APP_ENV=development
 CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
 CORS_ORIGINS_STAGING=
 CORS_ORIGINS_PROD=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth/google/callback
 ```
 
 Variaveis principais:
@@ -31,6 +34,7 @@ Variaveis principais:
 - `NEXT_PUBLIC_API_BASE`: URL base para endpoints quando `NEXT_PUBLIC_USE_API=true`
 - `MMX_APP_ENV`: ambiente efetivo para politicas server (`development|staging|production`)
 - `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
+- `GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|GOOGLE_REDIRECT_URI`: configuracao do OAuth Google (`BE-06.1`)
 
 ## Como rodar localmente
 
