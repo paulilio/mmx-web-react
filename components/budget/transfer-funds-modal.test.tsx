@@ -86,11 +86,13 @@ function mockFormSubmit(data: { fromBudgetGroupId: string; toBudgetGroupId: stri
 describe("TransferFundsModal", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     vi.stubGlobal("alert", vi.fn())
   })
 
   afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
   })
 
   it("transfere fundos com sucesso e fecha modal", async () => {

@@ -58,11 +58,13 @@ const budgetGroup = {
 describe("RolloverModal", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     vi.stubGlobal("alert", vi.fn())
   })
 
   afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
   })
 
   it("transfere valor para proximo mes e atualiza mes atual", async () => {
