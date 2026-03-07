@@ -28,6 +28,7 @@ function resolveApiUrl(endpoint: string): string {
     endpoint.startsWith("/transactions") ||
     endpoint.startsWith("/categories") ||
     endpoint.startsWith("/contacts") ||
+    endpoint.startsWith("/auth") ||
     endpoint.startsWith("/areas") ||
     endpoint.startsWith("/budget") ||
     endpoint.startsWith("/budget-allocations")
