@@ -1,12 +1,43 @@
 import type { NextRequest } from "next/server"
 
+type NumericLike = number | string
+
+interface BudgetLikeRecord {
+  id: string
+  userId: string
+  categoryGroupId: string
+  month: number
+  year: number
+  planned: NumericLike
+  funded: NumericLike
+  spent: NumericLike
+  rolloverEnabled: boolean
+  rolloverAmount?: NumericLike | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface BudgetAllocationLikeRecord {
+  id: string
+  userId: string
+  budgetGroupId: string
+  categoryGroupId?: string | null
+  month: string
+  plannedAmount: NumericLike
+  fundedAmount: NumericLike
+  spentAmount: NumericLike
+  availableAmount: NumericLike
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export function resolveUserId(request: NextRequest, bodyUserId?: string): string | null {
   const queryUserId = request.nextUrl.searchParams.get("userId")
   const headerUserId = request.headers.get("x-user-id")
   return bodyUserId ?? queryUserId ?? headerUserId
 }
 
-export function mapBudget(record: any) {
+export function mapBudget(record: BudgetLikeRecord) {
   return {
     id: record.id,
     userId: record.userId,
@@ -23,7 +54,7 @@ export function mapBudget(record: any) {
   }
 }
 
-export function mapBudgetAllocation(record: any) {
+export function mapBudgetAllocation(record: BudgetAllocationLikeRecord) {
   return {
     id: record.id,
     userId: record.userId,

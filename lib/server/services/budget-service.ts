@@ -1,12 +1,18 @@
 import { BudgetEntity, type CreateBudgetInput, type UpdateBudgetInput } from "../../domain/budgets/budget-entity"
 import type { PaginatedResult } from "../repositories/base-repository"
-import { BudgetRepository } from "../repositories/budget-repository"
-import { BudgetAllocationRepository } from "../repositories/budget-allocation-repository"
+import { BudgetRepository, type BudgetFilters, type BudgetRecord } from "../repositories/budget-repository"
+import {
+  BudgetAllocationRepository,
+  type BudgetAllocationFilters,
+  type BudgetAllocationRecord,
+  type CreateBudgetAllocationInput,
+  type UpdateBudgetAllocationInput,
+} from "../repositories/budget-allocation-repository"
 
 export class BudgetService {
   constructor(private readonly repository = new BudgetRepository(), private readonly allocationRepo = new BudgetAllocationRepository()) {}
 
-  async list(filters: any, pagination?: { page?: number; pageSize?: number }): Promise<PaginatedResult<any>> {
+  async list(filters: BudgetFilters, pagination?: { page?: number; pageSize?: number }): Promise<PaginatedResult<BudgetRecord>> {
     return this.repository.findMany(filters, pagination)
   }
 
@@ -42,7 +48,7 @@ export class BudgetService {
       funded: Number(existing.funded),
       spent: Number(existing.spent),
       rolloverEnabled: existing.rolloverEnabled,
-      rolloverAmount: existing.rolloverAmount ?? null,
+      rolloverAmount: existing.rolloverAmount != null ? Number(existing.rolloverAmount) : null,
     })
 
     const data = entity.buildUpdatePayload(input)
@@ -60,7 +66,10 @@ export class BudgetService {
   }
 
   // Budget allocations
-  async listAllocations(filters: any, pagination?: { page?: number; pageSize?: number }) {
+  async listAllocations(
+    filters: BudgetAllocationFilters,
+    pagination?: { page?: number; pageSize?: number },
+  ): Promise<PaginatedResult<BudgetAllocationRecord>> {
     return this.allocationRepo.findMany(filters, pagination)
   }
 
@@ -68,11 +77,11 @@ export class BudgetService {
     return this.allocationRepo.findById(id, userId)
   }
 
-  async createAllocation(input: any) {
+  async createAllocation(input: CreateBudgetAllocationInput) {
     return this.allocationRepo.create(input)
   }
 
-  async updateAllocation(id: string, userId: string, input: any) {
+  async updateAllocation(id: string, userId: string, input: UpdateBudgetAllocationInput) {
     const updated = await this.allocationRepo.update(id, userId, input)
     if (!updated) throw new Error("Alocação não encontrada para este usuário")
     return updated
@@ -91,7 +100,16 @@ export class BudgetService {
     const newFunded = Number(alloc.fundedAmount) + amount
     const newAvailable = newFunded - Number(alloc.spentAmount)
 
-    return this.allocationRepo.update(allocationId, userId, { fundedAmount: newFunded, availableAmount: newAvailable })
+    const updated = await this.allocationRepo.update(allocationId, userId, {
+      fundedAmount: newFunded,
+      availableAmount: newAvailable,
+    })
+
+    if (!updated) {
+      throw new Error("Alocação não encontrada")
+    }
+
+    return updated
   }
 
   async transferFunds(fromId: string, toId: string, amount: number, userId: string) {

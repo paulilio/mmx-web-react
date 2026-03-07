@@ -7,7 +7,10 @@ export const runtime = "nodejs"
 
 export async function POST(request: NextRequest, { params }: { params: { groupId: string; year: string; month: string } }) {
   try {
-    const body = (await request.json()) as any
+    const body = (await request.json()) as {
+      userId?: string
+      amount?: number
+    }
     const userId = resolveUserId(request, body.userId)
     if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
 

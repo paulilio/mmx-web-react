@@ -7,7 +7,17 @@ export const runtime = "nodejs"
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const body = (await request.json()) as any
+    const body = (await request.json()) as {
+      userId?: string
+      planned_amount?: number
+      plannedAmount?: number
+      funded_amount?: number
+      fundedAmount?: number
+      spent_amount?: number
+      spentAmount?: number
+      available_amount?: number
+      availableAmount?: number
+    }
     const userId = resolveUserId(request, body.userId)
     if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
 

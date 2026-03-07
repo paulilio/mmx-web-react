@@ -1,17 +1,19 @@
 import { prisma } from "../db/prisma"
 import { BaseRepository } from "./base-repository"
 
+type NumericLike = number | string
+
 export interface BudgetRecord {
   id: string
   userId: string
   categoryGroupId: string
   month: number
   year: number
-  planned: any
-  funded: any
-  spent: any
+  planned: NumericLike
+  funded: NumericLike
+  spent: NumericLike
   rolloverEnabled: boolean
-  rolloverAmount?: any | null
+  rolloverAmount?: NumericLike | null
   createdAt: Date
   updatedAt: Date
 }
@@ -21,17 +23,17 @@ export interface CreateBudgetRecordInput {
   categoryGroupId: string
   month: number
   year: number
-  planned: any
-  funded: any
+  planned: NumericLike
+  funded: NumericLike
   rolloverEnabled?: boolean
-  rolloverAmount?: any | null
+  rolloverAmount?: NumericLike | null
 }
 
 export interface UpdateBudgetRecordInput {
-  planned?: any
-  funded?: any
+  planned?: NumericLike
+  funded?: NumericLike
   rolloverEnabled?: boolean
-  rolloverAmount?: any | null
+  rolloverAmount?: NumericLike | null
 }
 
 export interface BudgetFilters {
@@ -53,7 +55,7 @@ export class BudgetRepository extends BaseRepository {
   async findMany(filters: BudgetFilters, pagination?: { page?: number; pageSize?: number }) {
     const { skip, take, page, pageSize } = this.getPagination(pagination)
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId: filters.userId,
       categoryGroupId: filters.categoryGroupId,
       month: filters.month,

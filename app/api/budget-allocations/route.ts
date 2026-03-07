@@ -23,7 +23,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as any
+    const body = (await request.json()) as {
+      userId?: string
+      budgetGroupId?: string
+      categoryGroupId?: string | null
+      month?: string
+      planned_amount?: number
+      plannedAmount?: number
+      funded_amount?: number
+      fundedAmount?: number
+    }
     const userId = resolveUserId(request, body.userId)
     if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
 

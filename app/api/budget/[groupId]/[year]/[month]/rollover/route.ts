@@ -7,7 +7,11 @@ export const runtime = "nodejs"
 
 export async function PUT(request: NextRequest, { params }: { params: { groupId: string; year: string; month: string } }) {
   try {
-    const body = (await request.json()) as any
+    const body = (await request.json()) as {
+      userId?: string
+      enabled?: boolean
+      amount?: number
+    }
     const userId = resolveUserId(request, body.userId)
     if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
 
@@ -16,9 +20,10 @@ export async function PUT(request: NextRequest, { params }: { params: { groupId:
 
     const existing = await budgetService.list({ userId, categoryGroupId: params.groupId, month: monthNum, year: yearNum })
 
-    if (!existing.data || existing.data.length === 0) return fail(404, "BUDGET_NOT_FOUND", "Orçamento não encontrado para este mês")
+    const currentBudget = existing.data?.[0]
+    if (!currentBudget) return fail(404, "BUDGET_NOT_FOUND", "Orçamento não encontrado para este mês")
 
-    const id = existing.data[0].id
+    const id = currentBudget.id
     const updated = await budgetService.update(id, userId, { rolloverEnabled: body.enabled, rolloverAmount: body.amount })
 
     return ok(mapBudget(updated))

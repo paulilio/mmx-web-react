@@ -1,16 +1,18 @@
 import { prisma } from "../db/prisma"
 import { BaseRepository } from "./base-repository"
 
+type NumericLike = number | string
+
 export interface BudgetAllocationRecord {
   id: string
   userId: string
   budgetGroupId: string
   categoryGroupId?: string | null
   month: string
-  plannedAmount: any
-  fundedAmount: any
-  spentAmount: any
-  availableAmount: any
+  plannedAmount: NumericLike
+  fundedAmount: NumericLike
+  spentAmount: NumericLike
+  availableAmount: NumericLike
   createdAt: Date
   updatedAt: Date
 }
@@ -20,15 +22,15 @@ export interface CreateBudgetAllocationInput {
   budgetGroupId: string
   categoryGroupId?: string | null
   month: string
-  plannedAmount: any
-  fundedAmount: any
+  plannedAmount: NumericLike
+  fundedAmount: NumericLike
 }
 
 export interface UpdateBudgetAllocationInput {
-  plannedAmount?: any
-  fundedAmount?: any
-  spentAmount?: any
-  availableAmount?: any
+  plannedAmount?: NumericLike
+  fundedAmount?: NumericLike
+  spentAmount?: NumericLike
+  availableAmount?: NumericLike
 }
 
 export interface BudgetAllocationFilters {
@@ -49,7 +51,7 @@ export class BudgetAllocationRepository extends BaseRepository {
   async findMany(filters: BudgetAllocationFilters, pagination?: { page?: number; pageSize?: number }) {
     const { skip, take, page, pageSize } = this.getPagination(pagination)
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId: filters.userId,
       month: filters.month,
       budgetGroupId: filters.budgetGroupId,

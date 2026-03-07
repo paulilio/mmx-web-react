@@ -7,7 +7,13 @@ export const runtime = "nodejs"
 
 export async function PUT(request: NextRequest, { params }: { params: { groupId: string; year: string; month: string } }) {
   try {
-    const body = (await request.json()) as any
+    const body = (await request.json()) as {
+      userId?: string
+      planned?: number
+      funded?: number
+      rolloverEnabled?: boolean
+      rolloverAmount?: number | null
+    }
     const userId = resolveUserId(request, body.userId)
     if (!userId) return fail(400, "USER_ID_REQUIRED", "Informe o userId no body, query ou header x-user-id")
 
@@ -17,8 +23,10 @@ export async function PUT(request: NextRequest, { params }: { params: { groupId:
     // try to find existing budget for this group/month/year
     const existing = await budgetService.list({ userId, categoryGroupId: params.groupId, month: monthNum, year: yearNum })
 
-    if (existing.data && existing.data.length > 0) {
-      const id = existing.data[0].id
+    const currentBudget = existing.data?.[0]
+
+    if (currentBudget) {
+      const id = currentBudget.id
       const updated = await budgetService.update(id, userId, {
         planned: body.planned,
         funded: body.funded,
