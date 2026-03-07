@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 
 export default function ConfirmEmailPage() {
+  const isDevMode = process.env.NODE_ENV !== "production"
   const [confirmationCode, setConfirmationCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -142,14 +143,16 @@ export default function ConfirmEmailPage() {
               </Alert>
             )}
 
-            <Alert className="border-blue-200 bg-blue-50">
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                <strong>Código de teste:</strong> XPX-7F5G
-                <br />
-                <span className="text-sm text-blue-600">Use este código para testar a confirmação de email</span>
-              </AlertDescription>
-            </Alert>
+            {isDevMode && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Código de teste:</strong> XPX-7F5G
+                  <br />
+                  <span className="text-sm text-blue-600">Use este código para testar a confirmação de email</span>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <form onSubmit={handleConfirmEmail} className="space-y-4">
               <div className="space-y-2">
@@ -157,7 +160,7 @@ export default function ConfirmEmailPage() {
                 <Input
                   id="confirmationCode"
                   type="text"
-                  placeholder="Digite o código (ex: XPX-7F5G)"
+                  placeholder={isDevMode ? "Digite o código (ex: XPX-7F5G)" : "Digite o código recebido"}
                   value={confirmationCode}
                   onChange={(e) => setConfirmationCode(e.target.value.toUpperCase())}
                   className="text-center text-lg font-mono tracking-wider"

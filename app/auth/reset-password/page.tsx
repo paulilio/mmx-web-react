@@ -6,7 +6,6 @@ import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, TrendingUp, Key } from "lucide-react"
@@ -22,6 +21,7 @@ type LocalResetUser = {
 }
 
 export default function ResetPasswordPage() {
+  const isDevMode = process.env.NODE_ENV !== "production"
   const [resetToken, setResetToken] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -42,6 +42,11 @@ export default function ResetPasswordPage() {
     setValidationErrors([])
 
     try {
+      if (!isDevMode) {
+        setError("Recuperacao de senha indisponivel neste ambiente")
+        return
+      }
+
       // Validate reset token
       if (resetToken.trim().toUpperCase() !== "RESET-123") {
         setError("Token de recuperação inválido")
@@ -189,24 +194,28 @@ export default function ResetPasswordPage() {
               </Alert>
             )}
 
-            <Alert className="border-blue-200 bg-blue-50">
-              <Key className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                <strong>Token de teste:</strong> RESET-123
-                <br />
-                <span className="text-sm text-blue-600">Use este token para testar a recuperação de senha</span>
-              </AlertDescription>
-            </Alert>
+            {isDevMode && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Key className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Token de teste:</strong> RESET-123
+                  <br />
+                  <span className="text-sm text-blue-600">Use este token para testar a recuperação de senha</span>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="resetToken">Token de Recuperação</Label>
+                <label htmlFor="resetToken" className="text-sm font-medium">
+                  Token de Recuperação
+                </label>
                 <div className="relative">
                   <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="resetToken"
                     type="text"
-                    placeholder="Digite o token (ex: RESET-123)"
+                    placeholder={isDevMode ? "Digite o token (ex: RESET-123)" : "Digite o token recebido"}
                     className="pl-10 text-center font-mono tracking-wider"
                     value={resetToken}
                     onChange={(e) => setResetToken(e.target.value.toUpperCase())}
@@ -217,7 +226,9 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Nova Senha</Label>
+                <label htmlFor="newPassword" className="text-sm font-medium">
+                  Nova Senha
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -240,7 +251,9 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirmar Nova Senha
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input

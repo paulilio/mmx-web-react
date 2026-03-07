@@ -25,6 +25,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+const IS_DEV_MODE = process.env.NODE_ENV !== "production"
+const DEV_CONFIRMATION_CODE = "XPX-7F5G"
+const DEV_RESET_TOKEN = "RESET-123"
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -71,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      console.log("[v0] Login attempt - email:", email, "password:", password)
+      console.log("[Auth] Login attempt")
 
       const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
       const globalUsers = localStorage.getItem("users")
@@ -83,20 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Usuário não encontrado")
       }
 
-      console.log("[v0] Found user:", user.email, "stored password:", user.password)
-
       if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
         throw new Error("Conta bloqueada devido a muitas tentativas de login")
       }
-
-      console.log(
-        "[v0] Password comparison - stored:",
-        user.password,
-        "provided:",
-        password,
-        "match:",
-        user.password === password,
-      )
 
       if (user.password !== password) {
         user.failedAttempts = (user.failedAttempts || 0) + 1
@@ -145,25 +138,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(user)
 
-      console.log("[v0] Login successful, redirecting to dashboard...")
-      console.log("[v0] Current router state:", { pathname: window.location.pathname })
+      console.log("[Auth] Login successful, redirecting to dashboard")
 
       try {
         router.replace("/dashboard")
-        console.log("[v0] Router.replace executed")
 
         setTimeout(() => {
           if (window.location.pathname === "/auth") {
-            console.log("[v0] Still on auth page, forcing navigation with window.location")
+            console.log("[Auth] Fallback navigation to dashboard")
             window.location.href = "/dashboard"
           }
         }, 500)
       } catch (routerError) {
-        console.error("[v0] Router error:", routerError)
+        console.error("[Auth] Router error:", routerError)
         window.location.href = "/dashboard"
       }
-
-      console.log("[v0] Redirect commands executed")
     } catch (error) {
       logAuditEvent("login_failure", null, { email, error: (error as Error).message })
       throw error
@@ -299,7 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = users.find((u: any) => u.email === email)
 
       if (user) {
-        const resetToken = "RESET-123"
+        const resetToken = IS_DEV_MODE ? DEV_RESET_TOKEN : generateSessionToken().slice(0, 10).toUpperCase()
         const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
         const resetTokensData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
@@ -317,7 +306,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("reset_tokens", JSON.stringify(resetTokens))
 
         logAuditEvent("password_reset_requested", user.id, { email })
-        toast.success("Instruções de recuperação enviadas para seu email.")
+
+        if (IS_DEV_MODE) {
+          toast.success(`Instrucoes de recuperacao enviadas. Token de teste: ${resetToken}`)
+        } else {
+          toast.success("Instruções de recuperação enviadas para seu email.")
+        }
       } else {
         toast.success("Se o email existir em nossa base, você receberá instruções de recuperação.")
       }
@@ -328,16 +322,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const confirmEmail = async (code: string): Promise<boolean> => {
     try {
-      console.log("[v0] Attempting to confirm email with code:", code)
-
-      if (code === "XPX-7F5G") {
-        console.log("[v0] Test code detected, confirming email")
+      if (IS_DEV_MODE && code === DEV_CONFIRMATION_CODE) {
+        console.log("[Auth] Development confirmation code detected")
 
         let targetUser = user
         let targetEmail = user?.email
 
         if (!user) {
-          console.log("[v0] No user found in context, checking URL params")
           const urlParams = new URLSearchParams(window.location.search)
           targetEmail = urlParams.get("email") ?? undefined
 
@@ -347,12 +338,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const users = globalUsers ? JSON.parse(globalUsers) : usersData
 
             targetUser = users.find((u: any) => u.email === targetEmail)
-            console.log("[v0] Found user by email:", targetUser?.email)
           }
         }
 
         if (!targetUser || !targetEmail) {
-          console.log("[v0] No user or email found")
           return false
         }
 
@@ -394,10 +383,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(confirmedUser)
 
-        logAuditEvent("email_confirmed", targetUser.id, { email: targetEmail, code })
+        logAuditEvent("email_confirmed", targetUser.id, { email: targetEmail })
         logAuditEvent("login_success", confirmedUser.id, { email: targetEmail, source: "email_confirmation" })
 
-        console.log("[v0] Email confirmed successfully and user logged in")
+        console.log("[Auth] Email confirmed successfully and user logged in")
         return true
       }
 
@@ -410,7 +399,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       )
 
       if (validCode && user) {
-        console.log("[v0] Valid confirmation code found")
 
         const updatedCodes = confirmationCodes.map((c: any) =>
           c.code === code ? { ...c, used: true, userId: c.userId || user.id } : { ...c, userId: c.userId || user.id },
@@ -449,26 +437,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(confirmedUser)
 
-        logAuditEvent("email_confirmed", user.id, { email: user.email, code })
+        logAuditEvent("email_confirmed", user.id, { email: user.email })
         logAuditEvent("login_success", confirmedUser.id, { email: user.email, source: "email_confirmation" })
 
-        console.log("[v0] Email confirmed successfully and user logged in")
+        console.log("[Auth] Email confirmed successfully and user logged in")
         return true
       }
 
-      console.log("[v0] Invalid or expired confirmation code")
       logAuditEvent("email_confirmation_failed", user?.id || null, {
         email: user?.email,
-        code,
         reason: "invalid_code",
       })
 
       return false
     } catch (error) {
-      console.error("[v0] Error confirming email:", error)
+      console.error("[Auth] Error confirming email:", error)
       logAuditEvent("email_confirmation_error", user?.id || null, {
         email: user?.email,
-        code,
         error: (error as Error).message,
       })
       return false
@@ -477,7 +462,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendConfirmation = async (email?: string): Promise<void> => {
     try {
-      console.log("[v0] Resending confirmation code")
+      console.log("[Auth] Resending confirmation code")
 
       let targetEmail = email || user?.email
       let targetUser = user
@@ -503,8 +488,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Usuário não encontrado")
       }
 
-      console.log("[v0] Resending confirmation for email:", targetEmail)
-
       const newCode = "XPX-" + Math.random().toString(36).substring(2, 6).toUpperCase()
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
 
@@ -527,14 +510,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       logAuditEvent("confirmation_code_resent", targetUser.id, {
         email: targetEmail,
-        newCode,
       })
 
-      console.log("[v0] New confirmation code generated:", newCode)
-
-      toast.success(`Novo código enviado! Código de teste: ${newCode}`)
+      if (IS_DEV_MODE) {
+        toast.success(`Novo codigo enviado. Codigo de teste: ${newCode}`)
+      } else {
+        toast.success("Novo codigo enviado com sucesso")
+      }
     } catch (error) {
-      console.error("[v0] Error resending confirmation:", error)
+      console.error("[Auth] Error resending confirmation:", error)
       logAuditEvent("confirmation_resend_error", null, {
         email: email || user?.email,
         error: (error as Error).message,

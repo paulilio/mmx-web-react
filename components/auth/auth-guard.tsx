@@ -19,7 +19,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const { isSessionValid } = useSession()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
-  const [dataInitialized, setDataInitialized] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -52,25 +51,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
     checkAuth()
   }, [user, authLoading, isSessionValid, router])
-
-  useEffect(() => {
-    const initializeData = async () => {
-      if (!isChecking && user && user.isEmailConfirmed && isSessionValid && !dataInitialized) {
-        // Only initialize clean data in mock mode and when user is authenticated
-        if (process.env.NEXT_PUBLIC_USE_API !== "true") {
-          try {
-            const { initializeCleanData } = await import("../../lib/server/storage")
-            await initializeCleanData()
-          } catch {
-            // Keep auth flow resilient if mock initialization fails.
-          }
-        }
-        setDataInitialized(true)
-      }
-    }
-
-    initializeData()
-  }, [isChecking, user, isSessionValid, dataInitialized])
 
   // Show loading state while checking authentication
   if (authLoading || isChecking) {

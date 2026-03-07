@@ -70,6 +70,7 @@ type LocalAuthUser = {
 }
 
 export default function AuthPage() {
+  const isDevMode = process.env.NODE_ENV !== "production"
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -122,6 +123,11 @@ export default function AuthPage() {
   }
 
   const handleDirectLogin = async () => {
+    if (!isDevMode) {
+      toast.error("Login direto indisponivel neste ambiente")
+      return
+    }
+
     setIsLoading(true)
     try {
       const testEmail = "paulilio.ferreira@gmail.com"
@@ -443,16 +449,18 @@ export default function AuthPage() {
                         {isLoading ? "Entrando..." : "Entrar"}
                       </Button>
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        onClick={handleDirectLogin}
-                        disabled={isLoading}
-                      >
-                        <Zap className="mr-2 h-4 w-4" />
-                        Login Direto (Teste)
-                      </Button>
+                      {isDevMode && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full bg-transparent"
+                          onClick={handleDirectLogin}
+                          disabled={isLoading}
+                        >
+                          <Zap className="mr-2 h-4 w-4" />
+                          Login Direto (Teste)
+                        </Button>
+                      )}
 
                       <div className="text-center">
                         <button
