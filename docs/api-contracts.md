@@ -129,6 +129,9 @@ POST     /api/auth/logout
 - CORS por ambiente aplicado no `middleware.ts` para `/api`
   - Preflight `OPTIONS`: `204` com headers `Access-Control-Allow-*`
   - Origem bloqueada: `403` com `error.code = "CORS_ORIGIN_BLOCKED"`
+- Cookies de auth emitidos nas rotas de login/refresh/OAuth callback:
+  - `mmx_access_token` e `mmx_refresh_token`
+  - `HttpOnly`, `SameSite=Lax`, `Secure` em producao
 
 ## Formato Padrao de Resposta
 

@@ -120,6 +120,18 @@ Para trocar para API de producao:
 3. Remover o botao "Login Direto" de `app/auth/page.tsx`
 4. Remover a logica de `lib/server/migration-service.ts` apos migracao completa dos dados para o banco
 
+## Hardening de seguranca (backend)
+
+- Headers de seguranca aplicados no `middleware.ts`:
+  - `X-Frame-Options: DENY`
+  - `X-Content-Type-Options: nosniff`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+  - `Cross-Origin-Opener-Policy: same-origin`
+  - `Cross-Origin-Resource-Policy: same-site`
+  - `Strict-Transport-Security` em producao
+- Cookies de auth (`mmx_access_token`, `mmx_refresh_token`) emitidos com `HttpOnly`, `SameSite=Lax` e `Secure` em producao.
+
 ## Versao da Aplicacao
 
 A versao e controlada em `package.json` e lida em runtime via `lib/shared/config.ts`. Atualize a versao no `package.json` a cada release; o footer exibe automaticamente.
