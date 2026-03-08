@@ -88,6 +88,7 @@ CORS_ORIGINS_PROD=
 
 - Fluxo completo em transacoes, categories, contacts, budget e areas: `API -> Service -> Domain -> Repository -> Prisma`
 - Contrato HTTP padronizado com envelope `{ data, error }`
+- Adapter cliente (`lib/client/api.ts`) em `NEXT_PUBLIC_USE_API=true`: desembrulha envelope, aceita payload legado sem envelope temporariamente e lanca erro explicito de conectividade (`ApiError`, `status: 0`) sem fallback automatico para mock
 - Endpoints de auth backend: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
 - OAuth Google backend: `GET /api/auth/oauth/google` + `GET /api/auth/oauth/google/callback`
 - OAuth Microsoft backend: `GET /api/auth/oauth/microsoft` + `GET /api/auth/oauth/microsoft/callback`

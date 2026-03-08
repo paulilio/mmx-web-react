@@ -38,6 +38,7 @@
 - Keep API envelope contract stable:
   - success: `{ data, error: null }`
   - failure: `{ data: null, error }`
+- In `NEXT_PUBLIC_USE_API=true`, preserve explicit adapter errors (`ApiError`, including connectivity `status: 0`) and no automatic fallback to mock.
 - Use typed errors where possible (for example `ApiError`) and avoid exposing raw technical errors in UI.
 
 ## Security Baseline (Do Not Regress)

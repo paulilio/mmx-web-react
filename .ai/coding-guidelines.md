@@ -31,6 +31,7 @@
 - Keep date fields in `YYYY-MM-DD` for transactions/forms.
 - Preserve existing union literals for status/type fields.
 - Keep server responses in envelope format `{ data, error }`.
+- In API mode, keep envelope parsing and legacy compatibility constrained to `lib/client/api.ts`; hooks/components should consume typed data only.
 
 ## Validation and Forms
 - Use React Hook Form + Zod.
@@ -46,6 +47,7 @@
 - Use typed errors where available (for example `ApiError`).
 - Do not surface raw technical errors directly to users.
 - Keep technical logs namespaced when needed (`[transactions] ...`).
+- In `NEXT_PUBLIC_USE_API=true`, do not fallback automatically to mock on connectivity failures; return explicit adapter errors.
 
 ## API and Security Rules
 - Prefer implementing backend behavior in `app/api/**` + `lib/server/**` layers.

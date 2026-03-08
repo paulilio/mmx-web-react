@@ -14,6 +14,7 @@
 
 ## Important Files
 - `lib/client/api.ts`: canonical data adapter boundary.
+- `lib/client/api.ts` (API mode): unwraps `{ data, error }`, supports temporary legacy non-envelope payloads, and throws explicit `ApiError` for envelope/network errors (no auto mock fallback).
 - `hooks/use-auth.tsx`: auth context and login/register flows.
 - `hooks/use-session.ts`: session validity and extension behavior.
 - `lib/server/storage.ts`: mock storage helpers and cache behavior.

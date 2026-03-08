@@ -39,6 +39,8 @@
 ## Runtime Modes
 - Mock mode: `NEXT_PUBLIC_USE_API=false`.
 - API mode: `NEXT_PUBLIC_USE_API=true` + `NEXT_PUBLIC_API_BASE`.
+- In API mode, `lib/client/api.ts` unwraps `{ data, error }`, keeps temporary legacy non-envelope compatibility, and throws explicit `ApiError` on envelope/network errors.
+- In `NEXT_PUBLIC_USE_API=true`, there is no automatic fallback to mock on connectivity failure.
 - Rule: feature code should not branch by mode directly; use hooks + `lib/client/api.ts`.
 
 ## Environment Variables (Important)

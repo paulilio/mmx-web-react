@@ -46,6 +46,8 @@
 ## Data Flow Rules
 - Keep fetch/mutation in hooks or dedicated services, not in page components.
 - Keep storage/API branching inside `lib/client/api.ts` and lower server/client boundaries.
+- In `NEXT_PUBLIC_USE_API=true`, handle API payloads via envelope `{ data, error }` first, with temporary legacy non-envelope compatibility only inside the adapter.
+- Do not reintroduce automatic mock fallback for API connectivity errors in API mode.
 - Keep entities user-scoped (`userId`) for read/write operations.
 - Keep API response envelope consistent: `{ data, error }`.
 

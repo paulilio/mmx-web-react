@@ -98,6 +98,8 @@ docs/                 # This folder
 ## Hardening HTTP (estado atual)
 
 - Envelope padrao de resposta: `{ data, error }` em `lib/server/http/api-response.ts`
+- Adapter cliente em `NEXT_PUBLIC_USE_API=true` desembrulha envelope e mantem compatibilidade legada temporaria (sem envelope) apenas no proprio adapter.
+- Erros de envelope e indisponibilidade de API sao explicitos (`ApiError`), sem fallback automatico para mock em API mode.
 - Rate limiting de auth em `lib/server/security/rate-limit.ts`
 - CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`
 - Gate de autorizacao central no `middleware.ts` para APIs protegidas (`401 AUTH_REQUIRED` sem access token)
