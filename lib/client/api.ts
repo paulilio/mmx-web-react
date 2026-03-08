@@ -12,12 +12,65 @@ class ApiError extends Error {
   }
 }
 
+type ApiEnvelope<T> = {
+  data: T | null
+  error: {
+    code?: string
+    message?: string
+  } | null
+}
+
+function isApiEnvelope<T>(value: unknown): value is ApiEnvelope<T> {
+  if (!value || typeof value !== "object") return false
+  const maybeEnvelope = value as Record<string, unknown>
+  return "data" in maybeEnvelope && "error" in maybeEnvelope
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorText = await response.text()
     throw new ApiError(response.status, errorText || response.statusText)
   }
-  return response.json()
+
+  const payload = (await response.json()) as unknown
+
+  if (isApiEnvelope<T>(payload)) {
+    if (payload.error) {
+      const message = payload.error.message || "Erro na resposta da API"
+      throw new ApiError(response.status, message)
+    }
+
+    return payload.data as T
+  }
+
+  return payload as T
+}
+
+async function requestApi<T>(
+  endpoint: string,
+  init?: {
+    method?: "GET" | "POST" | "PUT" | "DELETE"
+    body?: unknown
+  },
+): Promise<T> {
+  try {
+    const response = await fetch(resolveApiUrl(endpoint), {
+      method: init?.method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...(init?.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
+    })
+
+    return handleResponse<T>(response)
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+
+    const message = error instanceof Error ? error.message : "API indisponivel"
+    throw new ApiError(0, `Erro de conectividade com a API: ${message}`)
+  }
 }
 
 // Mock delay to simulate API calls
@@ -369,12 +422,7 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${canonicalEndpoint}`)
   }
 
-  const response = await fetch(resolveApiUrl(endpoint), {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-  return handleResponse<T>(response)
+  return requestApi<T>(endpoint, { method: "GET" })
 }
 
 export async function postJSON<T>(endpoint: string, data: unknown): Promise<T> {
@@ -484,14 +532,7 @@ export async function postJSON<T>(endpoint: string, data: unknown): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${canonicalEndpoint}`)
   }
 
-  const response = await fetch(resolveApiUrl(endpoint), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-  return handleResponse<T>(response)
+  return requestApi<T>(endpoint, { method: "POST", body: data })
 }
 
 export async function putJSON<T>(endpoint: string, data: unknown): Promise<T> {
@@ -627,14 +668,7 @@ export async function putJSON<T>(endpoint: string, data: unknown): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${canonicalEndpoint}`)
   }
 
-  const response = await fetch(resolveApiUrl(endpoint), {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-  return handleResponse<T>(response)
+  return requestApi<T>(endpoint, { method: "PUT", body: data })
 }
 
 export async function deleteJSON<T>(endpoint: string): Promise<T> {
@@ -674,13 +708,7 @@ export async function deleteJSON<T>(endpoint: string): Promise<T> {
     throw new Error(`Mock endpoint not implemented: ${canonicalEndpoint}`)
   }
 
-  const response = await fetch(resolveApiUrl(endpoint), {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-  return handleResponse<T>(response)
+  return requestApi<T>(endpoint, { method: "DELETE" })
 }
 
 export const api = {

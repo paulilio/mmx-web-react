@@ -75,7 +75,7 @@
 - Run:
   - `pnpm test:unit`
   - `pnpm lint`
-  - `pnpm tsc --noEmit` (or `pnpm type-check`)
+  - `pnpm type-check` (`tsc --noEmit` equivalent)
   - `pnpm build`
   - `pnpm validate:env -- --env=development`
 - For release/hardening changes, also run:

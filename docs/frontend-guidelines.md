@@ -75,6 +75,7 @@ export const transactionSchema = z.object({
 - Testes unitarios: Vitest + Testing Library
 - Convencao de arquivo: `*.test.tsx` co-localizado com o componente
 - Testar interacoes do usuario, nao detalhes de implementacao
+- Para testes de componente que dependem de DOM/browser APIs, use `/** @vitest-environment jsdom */` no arquivo de teste
 - E2E: Playwright (opcional) na pasta `/e2e`
 
 \`\`\`ts

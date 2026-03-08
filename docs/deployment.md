@@ -12,7 +12,7 @@ pnpm install
 pnpm dev
 
 # Verificacao de tipos
-pnpm tsc --noEmit
+pnpm type-check
 
 # Lint
 pnpm lint
@@ -88,7 +88,7 @@ jobs:
         with: { node-version: 22 }
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm tsc --noEmit
+      - run: pnpm type-check
       - run: pnpm build
 \`\`\`
 

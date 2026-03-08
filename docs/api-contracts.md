@@ -10,21 +10,31 @@ Todas as chamadas de API passam por `lib/client/api.ts`.
 - Auth JWT ja ativo com access+refresh token, rotacao/revogacao de refresh e logout.
 
 ```ts
-// lib/client/api.ts (pattern)
-export async function getTransactions(userId: string): Promise<Transaction[]> {
-  const response = await fetch(`/api/transactions?userId=${userId}`)
-  const payload = (await response.json()) as {
-    data: { data: Transaction[] }
-    error: { code: string; message: string } | null
+// lib/client/api.ts (pattern atual resumido)
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) throw new ApiError(response.status, await response.text())
+
+  const payload = (await response.json()) as unknown
+
+  // Envelope padrao
+  if (isApiEnvelope<T>(payload)) {
+    if (payload.error) throw new ApiError(response.status, payload.error.message || "Erro na resposta da API")
+    return payload.data as T
   }
 
-  if (payload.error) {
-    throw new Error(payload.error.message)
-  }
-
-  return payload.data.data
+  // Compatibilidade legada (sem envelope)
+  return payload as T
 }
 ```
+
+### Comportamento atual do adapter cliente
+
+- Em `NEXT_PUBLIC_USE_API=true`, o adapter aceita:
+  - payload com envelope `{ data, error }` (padrao atual)
+  - payload legado sem envelope (compatibilidade temporaria)
+- Se vier `error` no envelope, o adapter lanca `ApiError` explicitamente.
+- Se a API estiver indisponivel (erro de rede), o adapter lanca erro explicito de conectividade (`ApiError` com `status: 0`).
+- Nao ha fallback automatico para mock em indisponibilidade de API no modo `USE_API=true`.
 
 ## Chaves de localStorage
 

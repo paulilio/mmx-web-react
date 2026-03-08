@@ -10,6 +10,7 @@
 - `config/`: app-level config JSON.
 - `docs/`: architecture, API contracts, deployment, frontend conventions.
 - `scripts/`: local validation/migration utility scripts.
+- `.dev-workspace/tsk/`: local task/workspace artifacts (developer-local, not product runtime).
 
 ## Important Files
 - `lib/client/api.ts`: canonical data adapter boundary.

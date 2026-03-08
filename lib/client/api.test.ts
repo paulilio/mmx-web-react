@@ -35,6 +35,12 @@ async function loadApiModule() {
   return import("./api")
 }
 
+async function loadApiModuleApiMode() {
+  vi.resetModules()
+  process.env.NEXT_PUBLIC_USE_API = "true"
+  return import("./api")
+}
+
 function seedAuthenticatedUser(userId = "user_test_1") {
   localStorage.setItem(
     "auth_user",
@@ -163,5 +169,99 @@ describe("lib/client/api mock budget adapter", () => {
 
     expect(from?.available_amount).toBe(750)
     expect(to?.funded_amount).toBe(350)
+  })
+})
+
+describe("lib/client/api API mode compatibility", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it("should preserve compatibility with legacy payloads without envelope", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify([{ id: "area_1", name: "Area Legacy" }]), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    )
+
+    const { getJSON } = await loadApiModuleApiMode()
+    const result = await getJSON<Array<{ id: string; name: string }>>("/areas")
+
+    expect(Array.isArray(result)).toBe(true)
+    expect(result[0]?.id).toBe("area_1")
+    expect(result[0]?.name).toBe("Area Legacy")
+  })
+
+  it("should unwrap successful envelope payload", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: [{ id: "area_2", name: "Area Envelope" }],
+            error: null,
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    )
+
+    const { getJSON } = await loadApiModuleApiMode()
+    const result = await getJSON<Array<{ id: string; name: string }>>("/areas")
+
+    expect(Array.isArray(result)).toBe(true)
+    expect(result[0]?.id).toBe("area_2")
+    expect(result[0]?.name).toBe("Area Envelope")
+  })
+
+  it("should throw explicit error when envelope contains error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: null,
+            error: {
+              code: "AUTH_REQUIRED",
+              message: "Autenticacao obrigatoria",
+            },
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    )
+
+    const { getJSON } = await loadApiModuleApiMode()
+
+    await expect(getJSON("/areas")).rejects.toMatchObject({
+      name: "ApiError",
+      status: 200,
+      message: "Autenticacao obrigatoria",
+    })
+  })
+
+  it("should throw explicit connectivity error when API is unavailable (no fallback)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("Failed to fetch")),
+    )
+
+    const { getJSON } = await loadApiModuleApiMode()
+
+    await expect(getJSON("/areas")).rejects.toMatchObject({
+      name: "ApiError",
+      status: 0,
+      message: expect.stringContaining("Erro de conectividade com a API"),
+    })
   })
 })

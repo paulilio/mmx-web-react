@@ -37,6 +37,7 @@ Comandos principais:
 pnpm lint
 pnpm type-check
 pnpm test:unit
+pnpm test:unit:watch
 pnpm build
 ```
 
