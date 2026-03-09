@@ -76,6 +76,10 @@ docs/                 # This folder
 | Audit log | `lib/shared/audit-logger.ts` |
 | Route protection | `middleware.ts` + `components/auth/auth-guard.tsx` |
 
+Estado atual de auth no frontend:
+- Em `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` usa `POST /api/auth/login` para autenticacao.
+- A migracao completa de `logout/refresh` para backend ainda esta em progresso.
+
 ## Backend de Primeira Parte (estado atual)
 
 - Vertical slices completos no fluxo `API -> Service -> Domain -> Repository -> Prisma`:

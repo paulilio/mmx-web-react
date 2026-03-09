@@ -12,6 +12,10 @@
 - OAuth providers implemented: Google and Microsoft.
 - API hardening implemented: rate limiting on auth endpoints, CORS by environment, security headers, secure auth cookies, and central middleware auth gate for protected APIs.
 
+## Current Frontend Auth Status
+- In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` login already integrates with `POST /api/auth/login`.
+- Logout/refresh full migration is still in progress; some local auth compatibility remains temporarily.
+
 ## Business Terms
 - `Area`: top-level financial grouping.
 - `CategoryGroup`: group inside an area.

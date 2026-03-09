@@ -6,6 +6,8 @@ import { useState } from "react"
 import type { ReactNode } from "react"
 import { toast } from "react-toastify"
 import type { User, SessionData, RegisterData } from "@/types/auth"
+import { api } from "@/lib/client/api"
+import { USE_API } from "@/lib/shared/config"
 import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEvent } from "@/lib/shared/utils"
 import { validateRegistrationForm } from "@/lib/shared/auth-validations"
 import { hashMockPassword, isHashedMockPassword, verifyMockPassword } from "@/lib/shared/mock-auth-password"
@@ -28,6 +30,57 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const IS_DEV_MODE = process.env.NODE_ENV !== "production"
+
+type ApiLoginResponse = {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+  user: {
+    id: string
+    email: string
+    firstName: string
+    lastName: string
+    planType?: User["planType"]
+  }
+}
+
+function parseApiErrorMessage(rawMessage: string): string {
+  try {
+    const parsed = JSON.parse(rawMessage) as {
+      error?: {
+        message?: string
+      }
+    }
+    return parsed.error?.message || rawMessage
+  } catch {
+    return rawMessage
+  }
+}
+
+function mapApiLoginUser(data: ApiLoginResponse["user"]): User {
+  return {
+    id: data.id,
+    email: data.email,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    isEmailConfirmed: true,
+    createdAt: new Date().toISOString(),
+    planType: data.planType || "free",
+    preferences: {
+      theme: "system",
+      language: "pt-BR",
+      notifications: {
+        email: true,
+        push: true,
+        sms: false,
+      },
+      layout: {
+        sidebarCollapsed: false,
+        compactMode: false,
+      },
+    },
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -76,6 +129,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       console.log("[Auth] Login attempt")
+
+      if (USE_API) {
+        const response = await api.post<ApiLoginResponse>("/auth/login", {
+          email,
+          password,
+        })
+
+        const authenticatedUser = mapApiLoginUser(response.user)
+
+        localStorage.removeItem("auth_session")
+        localStorage.setItem("auth_user", JSON.stringify(authenticatedUser))
+
+        userDataService.setContext(authenticatedUser, authenticatedUser.defaultOrganizationId)
+
+        logAuditEvent("login_success", authenticatedUser.id, { email })
+
+        setUser(authenticatedUser)
+
+        router.replace("/dashboard")
+        return
+      }
 
       const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
       const globalUsers = localStorage.getItem("users")
@@ -160,7 +234,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = "/dashboard"
       }
     } catch (error) {
-      logAuditEvent("login_failure", null, { email, error: (error as Error).message })
+      const message = error instanceof Error ? error.message : "Erro no login"
+      const parsedMessage = parseApiErrorMessage(message)
+      const errorWithStatus = error as { status?: number }
+
+      if (USE_API) {
+        logAuditEvent("login_failure", null, { email, error: parsedMessage })
+
+        if (errorWithStatus.status === 401) {
+          throw new Error("Email ou senha inválidos")
+        }
+
+        if (errorWithStatus.status === 429) {
+          throw new Error("Muitas tentativas de login. Tente novamente em instantes")
+        }
+
+        if (errorWithStatus.status === 0) {
+          throw new Error("Não foi possível conectar com o servidor")
+        }
+
+        throw new Error(parsedMessage || "Erro ao realizar login")
+      }
+
+      logAuditEvent("login_failure", null, { email, error: parsedMessage })
       throw error
     } finally {
       setIsLoading(false)

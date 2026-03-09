@@ -39,6 +39,7 @@
   - success: `{ data, error: null }`
   - failure: `{ data: null, error }`
 - In `NEXT_PUBLIC_USE_API=true`, preserve explicit adapter errors (`ApiError`, including connectivity `status: 0`) and no automatic fallback to mock.
+- Current frontend auth migration status: `use-auth` login already uses `POST /api/auth/login` in API mode; logout/refresh migration remains pending.
 - Use typed errors where possible (for example `ApiError`) and avoid exposing raw technical errors in UI.
 
 ## Security Baseline (Do Not Regress)
