@@ -18,6 +18,10 @@
 - In `NEXT_PUBLIC_USE_API=true`, `hooks/use-session.ts` refresh now integrates with `POST /api/auth/refresh`.
 - In `NEXT_PUBLIC_USE_API=true`, auth bootstrap no longer depends on `auth_session` local persistence.
 
+## Current Frontend Budget Status
+- Budget frontend convergence is in E3 mode: `hooks/use-budget-allocations.ts` is the primary path for active product flows.
+- `hooks/use-budget.ts` is kept only as legacy compatibility during transition and should not be used by new flows.
+
 ## Business Terms
 - `Area`: top-level financial grouping.
 - `CategoryGroup`: group inside an area.

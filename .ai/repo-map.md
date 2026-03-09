@@ -19,6 +19,8 @@
 - `hooks/use-auth.test.tsx`: unit coverage for login/logout success/failure, friendly API error mapping, and local-mode expired session cleanup.
 - `hooks/use-session.ts`: session validity and extension behavior; in `USE_API=true` refreshes session via `POST /api/auth/refresh`.
 - `hooks/use-session.test.tsx`: unit coverage for API refresh bootstrap/extension and failure handling (`401` cleanup + `429` warning path).
+- `hooks/use-budget-allocations.ts`: primary budget hook for active flows (add funds, transfer, rollover, allocation CRUD).
+- `hooks/use-budget.ts`: legacy compatibility hook; do not use for new product flows.
 - `components/auth/auth-guard.test.tsx`: coverage for protected navigation redirects and valid-session rendering behavior.
 - `middleware.test.ts`: validates `AUTH_REQUIRED` without token and allow-list behavior for bearer/cookie access tokens.
 - `lib/server/storage.ts`: mock storage helpers and cache behavior.

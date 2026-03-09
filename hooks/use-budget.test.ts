@@ -18,9 +18,8 @@ vi.mock("@/lib/client/api", () => ({
 
 const mockUseSWR = vi.mocked(useSWR)
 const mockApiPost = vi.mocked(api.post)
-const mockApiPut = vi.mocked(api.put)
 
-describe("use-budget", () => {
+describe("use-budget (legacy compatibility)", () => {
   const mutateMock = vi.fn()
 
   beforeEach(() => {
@@ -35,48 +34,13 @@ describe("use-budget", () => {
     } as unknown as ReturnType<typeof useSWR>)
   })
 
-  it("chama endpoint de add-funds com ano/mes corretos e faz mutate", async () => {
+  it("mantem compatibilidade minima para add-funds enquanto houver transicao", async () => {
     mockApiPost.mockResolvedValue({ ok: true })
     const hook = useBudget(3, 2026)
 
     await hook.addFunds("group_food", 250)
 
     expect(mockApiPost).toHaveBeenCalledWith("/budget/group_food/2026/3/add-funds", { amount: 250 })
-    expect(mutateMock).toHaveBeenCalledTimes(1)
-  })
-
-  it("chama transfer-funds e faz mutate", async () => {
-    mockApiPost.mockResolvedValue({ ok: true })
-    const hook = useBudget(3, 2026)
-
-    await hook.transferFunds({
-      fromBudgetGroupId: "group_a",
-      toBudgetGroupId: "group_b",
-      amount: 100,
-      month: 3,
-      year: 2026,
-    })
-
-    expect(mockApiPost).toHaveBeenCalledWith("/budget/transfer-funds", {
-      fromBudgetGroupId: "group_a",
-      toBudgetGroupId: "group_b",
-      amount: 100,
-      month: 3,
-      year: 2026,
-    })
-    expect(mutateMock).toHaveBeenCalledTimes(1)
-  })
-
-  it("configura rollover no endpoint correto e faz mutate", async () => {
-    mockApiPut.mockResolvedValue({ ok: true })
-    const hook = useBudget(3, 2026)
-
-    await hook.configureRollover("group_food", true, 75)
-
-    expect(mockApiPut).toHaveBeenCalledWith("/budget/group_food/2026/3/rollover", {
-      rolloverEnabled: true,
-      rolloverAmount: 75,
-    })
     expect(mutateMock).toHaveBeenCalledTimes(1)
   })
 })

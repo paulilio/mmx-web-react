@@ -40,6 +40,7 @@
   - failure: `{ data: null, error }`
 - In `NEXT_PUBLIC_USE_API=true`, preserve explicit adapter errors (`ApiError`, including connectivity `status: 0`) and no automatic fallback to mock.
 - Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout`, `use-session` refresh uses `POST /api/auth/refresh`, and auth bootstrap no longer depends on local `auth_session`.
+- Current budget hook convergence status (E3): `use-budget-allocations` is the primary path for active product flows; `use-budget.ts` remains only as legacy compatibility during transition.
 - Use typed errors where possible (for example `ApiError`) and avoid exposing raw technical errors in UI.
 
 ## Security Baseline (Do Not Regress)

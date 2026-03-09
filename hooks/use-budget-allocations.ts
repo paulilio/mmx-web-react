@@ -4,6 +4,7 @@ import useSWR from "swr"
 import { api } from "@/lib/client/api"
 import type { BudgetAllocation, BudgetAllocationFormData } from "@/lib/shared/types"
 
+// E3 convergence rule: this is the primary budget hook for active product flows.
 export function useBudgetAllocations(month?: string) {
   const endpoint = month ? `/budget-allocations?month=${month}` : "/budget-allocations"
   const { data, error, mutate } = useSWR<BudgetAllocation[]>(endpoint, api.get)

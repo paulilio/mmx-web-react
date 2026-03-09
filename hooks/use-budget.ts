@@ -2,6 +2,10 @@ import useSWR from "swr"
 import type { BudgetSummary, BudgetFormData, FundTransferFormData } from "@/lib/shared/types"
 import { api } from "@/lib/client/api"
 
+/**
+ * @deprecated Hook legado de compatibilidade.
+ * Use `useBudgetAllocations` para novos fluxos de produto.
+ */
 export function useBudget(month: number, year: number) {
   const { data, error, mutate } = useSWR<BudgetSummary[]>(`/budget/${year}/${month}`, api.get)
 

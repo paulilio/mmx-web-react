@@ -35,7 +35,8 @@ Exemplos:
 - `hooks/use-session.test.tsx`
 - `components/auth/auth-guard.test.tsx`
 - `hooks/use-transactions.ts`
-- `hooks/use-budget.ts`
+- `hooks/use-budget-allocations.ts` (principal para fluxos de budget)
+- `hooks/use-budget.ts` (legado de compatibilidade transitoria)
 
 ### `server/` (equivalente logico)
 

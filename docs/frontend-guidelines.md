@@ -58,7 +58,8 @@ export const transactionSchema = z.object({
 
 ## Diretrizes de Hooks
 
-- Um hook por entidade de dominio: `use-transactions.ts`, `use-budget.ts`, etc.
+- Um hook por entidade de dominio: `use-transactions.ts`, `use-budget-allocations.ts`, etc.
+- Para budget, preferir `use-budget-allocations.ts` como fluxo principal; `use-budget.ts` e um legado de compatibilidade.
 - Hooks nunca devem conter JSX
 - Expor retorno tipado: `{ data, isLoading, error, create, update, remove }`
 - Sempre tratar estados de loading e erro

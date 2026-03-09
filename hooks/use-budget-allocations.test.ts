@@ -55,6 +55,12 @@ describe("use-budget-allocations", () => {
     } as unknown as ReturnType<typeof useSWR>)
   })
 
+  it("mantem endpoint e fetcher do fluxo principal", () => {
+    useBudgetAllocations("2026-03")
+
+    expect(mockUseSWR).toHaveBeenCalledWith("/budget-allocations?month=2026-03", api.get)
+  })
+
   it("createBudgetAllocation injeta spent/available e chama mutate", async () => {
     mockApiPost.mockResolvedValue({ id: "alloc_3" })
     const hook = useBudgetAllocations("2026-03")
@@ -116,6 +122,20 @@ describe("use-budget-allocations", () => {
     const hook = useBudgetAllocations("2026-03")
 
     await expect(hook.transferFunds("alloc_1", "alloc_2", 900)).rejects.toThrow("Insufficient funds")
+    expect(mockApiPut).not.toHaveBeenCalled()
+  })
+
+  it("addFunds falha quando alocacao nao existe", async () => {
+    const hook = useBudgetAllocations("2026-03")
+
+    await expect(hook.addFunds("alloc_404", 100)).rejects.toThrow("Budget allocation not found")
+    expect(mockApiPut).not.toHaveBeenCalled()
+  })
+
+  it("transferFunds falha quando origem ou destino nao existe", async () => {
+    const hook = useBudgetAllocations("2026-03")
+
+    await expect(hook.transferFunds("alloc_1", "alloc_404", 50)).rejects.toThrow("Budget allocation not found")
     expect(mockApiPut).not.toHaveBeenCalled()
   })
 

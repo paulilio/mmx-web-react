@@ -88,6 +88,7 @@ CORS_ORIGINS_PROD=
 ## Status atual (resumo)
 
 - Fluxo completo em transacoes, categories, category-groups, contacts, budget e areas: `API -> Service -> Domain -> Repository -> Prisma`
+- Budget no frontend convergido em E3: `use-budget-allocations` como caminho principal; `use-budget.ts` mantido apenas como legado de compatibilidade transitoria
 - Reports first-party ativos em `app/api/reports/summary`, `app/api/reports/aging` e `app/api/reports/cashflow`
 - Contrato HTTP padronizado com envelope `{ data, error }`
 - Adapter cliente (`lib/client/api.ts`) em `NEXT_PUBLIC_USE_API=true`: desembrulha envelope, aceita payload legado sem envelope temporariamente e lanca erro explicito de conectividade (`ApiError`, `status: 0`) sem fallback automatico para mock

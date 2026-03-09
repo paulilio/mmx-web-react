@@ -49,6 +49,7 @@
 
 ## Data Flow Rules
 - Keep fetch/mutation in hooks or dedicated services, not in page components.
+- For budget feature flows, prefer `hooks/use-budget-allocations.ts` as the primary hook; keep `hooks/use-budget.ts` only for legacy compatibility.
 - Keep storage/API branching inside `lib/client/api.ts` and lower server/client boundaries.
 - In `NEXT_PUBLIC_USE_API=true`, handle API payloads via envelope `{ data, error }` first, with temporary legacy non-envelope compatibility only inside the adapter.
 - Do not reintroduce automatic mock fallback for API connectivity errors in API mode.
