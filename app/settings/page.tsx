@@ -5,7 +5,6 @@ import { DialogDescription } from "@/components/ui/dialog"
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { mutate } from "swr"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,7 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useAreas } from "@/hooks/use-areas"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useActionButton } from "@/hooks/use-action-button"
-import { bulkLoadData, clearAllData } from "@/lib/server/storage"
+import { useSettingsMaintenance, type SeedTableKey } from "@/hooks/use-settings-maintenance"
 import {
   Settings,
   Link2,
@@ -46,24 +45,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-type SeedTableKey = "mmx_areas" | "mmx_category_groups" | "mmx_categories" | "mmx_transactions" | "mmx_contacts"
-
-type SeedData = Record<SeedTableKey, unknown[]>
-
-const parseStorageArray = (key: SeedTableKey): unknown[] => {
-  const raw = localStorage.getItem(key)
-  if (!raw) {
-    return []
-  }
-
-  try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
 export default function SettingsPage() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -74,6 +55,8 @@ export default function SettingsPage() {
 
   const [selectedAreaId, setSelectedAreaId] = useState<string>("")
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
+
+  const { exportData, importData, clearData } = useSettingsMaintenance()
 
   const { areas } = useAreas()
   const { categoryGroups, updateCategoryGroup } = useCategoryGroups()
@@ -87,31 +70,7 @@ export default function SettingsPage() {
       }
 
       try {
-        const backupData: Partial<SeedData> = {}
-
-        for (const table of selectedTables) {
-          let data: unknown[] = []
-
-          switch (table) {
-            case "mmx_areas":
-              data = parseStorageArray("mmx_areas")
-              break
-            case "mmx_category_groups":
-              data = parseStorageArray("mmx_category_groups")
-              break
-            case "mmx_categories":
-              data = parseStorageArray("mmx_categories")
-              break
-            case "mmx_transactions":
-              data = parseStorageArray("mmx_transactions")
-              break
-            case "mmx_contacts":
-              data = parseStorageArray("mmx_contacts")
-              break
-          }
-
-          backupData[table] = data
-        }
+        const backupData = await exportData(selectedTables)
 
         // Generate filename with timestamp
         const now = new Date()
@@ -162,25 +121,7 @@ export default function SettingsPage() {
       const text = await selectedFile.text()
       const data: unknown = JSON.parse(text)
 
-      if (!validateSeedJSON(data)) {
-        toast.error(
-          "JSON inválido. Verifique se contém todas as chaves obrigatórias: mmx_areas, mmx_category_groups, mmx_categories, mmx_transactions, mmx_contacts",
-        )
-        return
-      }
-
-      bulkLoadData(data)
-
-      await Promise.all([
-        mutate("/areas"),
-        mutate("/category-groups"),
-        mutate("/categories"),
-        mutate("/transactions"),
-        mutate("/contacts"),
-        mutate("/reports/summary"),
-        mutate("/reports/aging"),
-        mutate("/reports/cashflow"),
-      ])
+      await importData(data)
 
       await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -195,7 +136,7 @@ export default function SettingsPage() {
   const clearDataButton = useActionButton({
     actionName: "Dados mock limpos",
     onAction: async () => {
-      await clearAllData()
+      await clearData()
     },
     successMessage: "Dados mock limpos com sucesso. Recarregue a página manualmente para ver as mudanças.",
   })
@@ -332,27 +273,6 @@ export default function SettingsPage() {
         fileInputRef.current.value = ""
       }
     }
-  }
-
-  const validateSeedJSON = (data: unknown): data is SeedData => {
-    if (!data || typeof data !== "object") {
-      return false
-    }
-
-    const requiredKeys: SeedTableKey[] = [
-      "mmx_areas",
-      "mmx_category_groups",
-      "mmx_categories",
-      "mmx_transactions",
-      "mmx_contacts",
-    ]
-
-    const parsedData = data as Partial<Record<SeedTableKey, unknown>>
-    const isValidStructure = requiredKeys.every((key) => Array.isArray(parsedData[key]))
-
-    if (!isValidStructure) return false
-
-    return true
   }
 
   const selectedArea = areas?.find((a) => a.id === selectedAreaId)

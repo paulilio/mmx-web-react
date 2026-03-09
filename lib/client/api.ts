@@ -190,6 +190,7 @@ function resolveApiUrl(endpoint: string): string {
     endpoint.startsWith("/areas") ||
     endpoint.startsWith("/budget") ||
     endpoint.startsWith("/budget-allocations") ||
+    endpoint.startsWith("/settings") ||
     endpoint.startsWith("/reports")
   ) {
     return `/api${endpoint}`

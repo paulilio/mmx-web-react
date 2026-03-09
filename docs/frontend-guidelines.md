@@ -60,6 +60,7 @@ export const transactionSchema = z.object({
 
 - Um hook por entidade de dominio: `use-transactions.ts`, `use-budget-allocations.ts`, etc.
 - Para budget, preferir `use-budget-allocations.ts` como fluxo principal; `use-budget.ts` e um legado de compatibilidade.
+- Para settings maintenance (import/export/clear), usar `use-settings-maintenance.ts`; nao acessar storage/localStorage diretamente na pagina.
 - Hooks nunca devem conter JSX
 - Expor retorno tipado: `{ data, isLoading, error, create, update, remove }`
 - Sempre tratar estados de loading e erro

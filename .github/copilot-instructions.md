@@ -5,7 +5,7 @@
 - Stack: Next.js 14 App Router, React 19, TypeScript 5, Tailwind CSS v4, SWR, React Hook Form, Zod, Radix/shadcn.
 - Runtime: Node.js 22+, pnpm.
 - Current mode: hybrid mock-first + first-party API routes, with client boundary in `lib/client/api.ts`.
-- First-party domains currently active: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
+- First-party domains currently active: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 
 ## Architecture Rules
 - Keep this layered flow:
@@ -41,6 +41,7 @@
 - In `NEXT_PUBLIC_USE_API=true`, preserve explicit adapter errors (`ApiError`, including connectivity `status: 0`) and no automatic fallback to mock.
 - Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout`, `use-session` refresh uses `POST /api/auth/refresh`, and auth bootstrap no longer depends on local `auth_session`.
 - Current budget hook convergence status (E3): `use-budget-allocations` is the primary path for active product flows; `use-budget.ts` remains only as legacy compatibility during transition.
+- Current settings maintenance status: `import/export/clear` now run via first-party routes (`/api/settings/*`) and `hooks/use-settings-maintenance.ts`; `app/settings/page.tsx` must not access storage/localStorage directly for these flows.
 - Use typed errors where possible (for example `ApiError`) and avoid exposing raw technical errors in UI.
 
 ## Security Baseline (Do Not Regress)

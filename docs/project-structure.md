@@ -37,6 +37,7 @@ Exemplos:
 - `hooks/use-transactions.ts`
 - `hooks/use-budget-allocations.ts` (principal para fluxos de budget)
 - `hooks/use-budget.ts` (legado de compatibilidade transitoria)
+- `hooks/use-settings-maintenance.ts` (principal para import/export/clear em settings)
 
 ### `server/` (equivalente logico)
 
@@ -51,6 +52,17 @@ Exemplos:
 - `lib/server/security/rate-limit.ts`
 - `lib/server/security/cors.ts`
 - `lib/server/security/password-hash.ts`
+- `lib/server/services/settings-maintenance-service.ts`
+
+### `app/api/settings/` (first-party)
+
+Rotas de manutencao de dados da tela de settings em API mode.
+
+Exemplos:
+
+- `app/api/settings/import/route.ts`
+- `app/api/settings/export/route.ts`
+- `app/api/settings/clear/route.ts`
 
 ### `domain/` (equivalente logico)
 

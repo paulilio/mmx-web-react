@@ -85,4 +85,4 @@ pnpm prisma:studio
 ## Observacoes rapidas
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), o projeto funciona sem backend completo.
-- Dominios com rotas de primeira parte ja ativos: transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, auth, reports/summary, reports/aging e reports/cashflow.
+- Dominios com rotas de primeira parte ja ativos: transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, settings, auth, reports/summary, reports/aging e reports/cashflow.

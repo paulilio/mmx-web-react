@@ -35,7 +35,7 @@ localStorage (mock) | REST API (production)
 
 1. A pagina renderiza e chama o hook de dominio (ex.: `useTransactions`)
 2. O hook chama o servico de persistencia, que chama `lib/client/api.ts`
-3. `lib/client/api.ts` le/escreve adapters locais e roteia para endpoints de primeira parte ja conectados no adapter (`/api/transactions`, `/api/categories`, `/api/category-groups`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/auth`, `/api/reports/*`)
+3. `lib/client/api.ts` le/escreve adapters locais e roteia para endpoints de primeira parte ja conectados no adapter (`/api/transactions`, `/api/categories`, `/api/category-groups`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/settings/*`, `/api/auth`, `/api/reports/*`)
 4. Rotas first-party para `category-groups` e `reports` (`summary`, `aging`, `cashflow`) estao implementadas em `app/api/**` e ja convergidas no adapter (`resolveApiUrl`).
 4. O hook retorna dados tipados e o componente re-renderiza
 
@@ -95,6 +95,10 @@ Estado atual de auth no frontend:
         - `summary` ativo (`/api/reports/summary`)
         - `aging` ativo (`/api/reports/aging`)
         - `cashflow` ativo (`/api/reports/cashflow`)
+- Settings maintenance first-party:
+        - `import` ativo (`/api/settings/import`)
+        - `export` ativo (`/api/settings/export`)
+        - `clear` ativo (`/api/settings/clear`)
 - Auth backend base concluido:
         - `POST /api/auth/login`
         - `POST /api/auth/register`
@@ -111,6 +115,7 @@ Estado atual de auth no frontend:
 - Envelope padrao de resposta: `{ data, error }` em `lib/server/http/api-response.ts`
 - Adapter cliente em `NEXT_PUBLIC_USE_API=true` desembrulha envelope e mantem compatibilidade legada temporaria (sem envelope) apenas no proprio adapter.
 - Erros de envelope e indisponibilidade de API sao explicitos (`ApiError`), sem fallback automatico para mock em API mode.
+- Em settings, manutencao de dados no frontend foi convergida para `hooks/use-settings-maintenance.ts` + `lib/client/api.ts` (sem bypass direto para storage/localStorage na pagina).
 - Rate limiting de auth em `lib/server/security/rate-limit.ts`
 - CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`
 - Gate de autorizacao central no `middleware.ts` para APIs protegidas (`401 AUTH_REQUIRED` sem access token)

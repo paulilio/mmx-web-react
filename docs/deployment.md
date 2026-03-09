@@ -129,7 +129,7 @@ Para trocar para API de producao:
 4. Remover a logica de `lib/server/migration-service.ts` apos migracao completa dos dados para o banco
 
 Dominios first-party atualmente ativos no adapter (`NEXT_PUBLIC_USE_API=true`):
-- `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
+- `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 
 ## Hardening de seguranca (backend)
 

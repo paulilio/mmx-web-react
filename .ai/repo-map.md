@@ -18,6 +18,7 @@
 - `hooks/use-auth.tsx`: auth context; in `USE_API=true` login/logout use `POST /api/auth/login|logout`.
 - `hooks/use-auth.test.tsx`: unit coverage for login/logout success/failure, friendly API error mapping, and local-mode expired session cleanup.
 - `hooks/use-session.ts`: session validity and extension behavior; in `USE_API=true` refreshes session via `POST /api/auth/refresh`.
+- `hooks/use-settings-maintenance.ts`: settings maintenance hook for import/export/clear via `lib/client/api.ts`.
 - `hooks/use-session.test.tsx`: unit coverage for API refresh bootstrap/extension and failure handling (`401` cleanup + `429` warning path).
 - `hooks/use-budget-allocations.ts`: primary budget hook for active flows (add funds, transfer, rollover, allocation CRUD).
 - `hooks/use-budget.ts`: legacy compatibility hook; do not use for new product flows.
@@ -40,7 +41,7 @@
   - `GET /reports/aging`
   - `GET /reports/cashflow?days=&status=`
 - Resolved to first-party Next.js routes by `resolveApiUrl` in `lib/client/api.ts` when `NEXT_PUBLIC_USE_API=true`:
-  - `/transactions`, `/categories`, `/category-groups`, `/contacts`, `/auth`, `/areas`, `/budget`, `/budget-allocations`, `/reports/*`
+  - `/transactions`, `/categories`, `/category-groups`, `/contacts`, `/auth`, `/areas`, `/budget`, `/budget-allocations`, `/settings/*`, `/reports/*`
 - Note: first-party routes for `category-groups` and `reports` (`summary`, `aging`, `cashflow`) are implemented under `app/api/**` and adapter routing in `resolveApiUrl` is converged.
 
 ## First-Party API Routes (Active)
@@ -54,6 +55,10 @@
   - `app/api/reports/summary/route.ts`
   - `app/api/reports/aging/route.ts`
   - `app/api/reports/cashflow/route.ts`
+- Settings:
+  - `app/api/settings/import/route.ts`
+  - `app/api/settings/export/route.ts`
+  - `app/api/settings/clear/route.ts`
 - Auth:
   - `app/api/auth/login/route.ts`
   - `app/api/auth/register/route.ts`
@@ -73,6 +78,7 @@
 - `lib/server/user-data-service.ts`: user-context data operations.
 - `lib/server/migration-service.ts`: key migration + user data isolation helper.
 - `lib/server/services/auth-service.ts`: auth register/login orchestration and `lastLogin` update.
+- `lib/server/services/settings-maintenance-service.ts`: server-side maintenance orchestration for settings import/export/clear.
 - `lib/server/security/rate-limit.ts`: auth rate limiting.
 - `lib/server/security/cors.ts`: CORS by environment.
 - `lib/server/security/auth-cookies.ts`: secure auth cookie helpers.

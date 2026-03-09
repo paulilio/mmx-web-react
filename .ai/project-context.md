@@ -6,7 +6,7 @@
 - Current mode: hybrid mock-first + first-party backend routes.
 
 ## Current Backend Coverage
-- Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
+- Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 - Auth base is implemented with `AuthService` (`register/login`), password hashing via `bcryptjs`, and `lastLogin` update on successful login.
 - JWT auth is active with access+refresh tokens, refresh rotation/revocation, and logout route (`POST /api/auth/logout`).
 - OAuth providers implemented: Google and Microsoft.
@@ -21,6 +21,10 @@
 ## Current Frontend Budget Status
 - Budget frontend convergence is in E3 mode: `hooks/use-budget-allocations.ts` is the primary path for active product flows.
 - `hooks/use-budget.ts` is kept only as legacy compatibility during transition and should not be used by new flows.
+
+## Current Frontend Settings Status
+- In `NEXT_PUBLIC_USE_API=true`, settings maintenance (`import/export/clear`) now uses first-party routes under `/api/settings/*`.
+- `app/settings/page.tsx` now uses `hooks/use-settings-maintenance.ts` and should not access storage/localStorage directly for maintenance flows.
 
 ## Business Terms
 - `Area`: top-level financial grouping.
