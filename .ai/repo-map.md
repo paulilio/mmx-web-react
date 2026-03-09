@@ -39,13 +39,18 @@
   - `GET /reports/cashflow?days=&status=`
 - Resolved to first-party Next.js routes by `resolveApiUrl` in `lib/client/api.ts` when `NEXT_PUBLIC_USE_API=true`:
   - `/transactions`, `/categories`, `/contacts`, `/auth`, `/areas`, `/budget`, `/budget-allocations`
+- Note: first-party routes for `category-groups` and `reports/summary` are already implemented under `app/api/**`, but explicit adapter routing in `resolveApiUrl` is still pending in the dedicated convergence task.
 
 ## First-Party API Routes (Active)
 - Transactions: `app/api/transactions/**`
 - Categories: `app/api/categories/**`
+- Category Groups: `app/api/category-groups/**`
 - Contacts: `app/api/contacts/**`
 - Budget: `app/api/budget/**`, `app/api/budget-allocations/**`
 - Areas: `app/api/areas/**`
+- Reports:
+  - `app/api/reports/summary/route.ts`
+  - `reports/aging` e `reports/cashflow` ainda pendentes de first-party route
 - Auth:
   - `app/api/auth/login/route.ts`
   - `app/api/auth/register/route.ts`

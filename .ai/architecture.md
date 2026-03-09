@@ -27,11 +27,13 @@
 - First-party API domains already migrated:
   - transactions
   - categories
+  - category-groups
   - contacts
   - budget
   - budget-allocations
   - areas
   - auth
+  - reports/summary
 
 ## Security Architecture
 - CORS policy: `lib/server/security/cors.ts` wired in `middleware.ts` for `/api`.

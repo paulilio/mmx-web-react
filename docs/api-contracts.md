@@ -5,7 +5,7 @@
 Todas as chamadas de API passam por `lib/client/api.ts`.
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
-- Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, contacts, budget, budget-allocations, areas e auth.
+- Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, auth e reports/summary.
 - Auth base em backend ja ativo: `register/login` com hash de senha (`bcryptjs`) e update de `lastLogin` no login.
 - Auth JWT ja ativo com access+refresh token, rotacao/revogacao de refresh e logout.
 
@@ -124,6 +124,18 @@ POST   /api/areas               -> { data: Area, error: null } | { data: null, e
 GET    /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
 PUT    /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
 DELETE /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
+
+GET    /api/category-groups     -> { data: { data: CategoryGroup[]; total; page; pageSize }, error: null } | { data: null, error }
+POST   /api/category-groups     -> { data: CategoryGroup, error: null } | { data: null, error }
+GET    /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
+PUT    /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
+DELETE /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
+
+GET    /api/reports/summary     -> { data: DashboardSummary, error: null } | { data: null, error }
+
+# Pendentes (first-party)
+GET    /api/reports/aging
+GET    /api/reports/cashflow
 
 POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }
 POST   /api/auth/register       -> { data: AuthRegisterResponse, error: null } | { data: null, error }

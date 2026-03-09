@@ -80,8 +80,27 @@ model User {
   budgets               Budget[]
   budgetAllocations     BudgetAllocation[]
   areas                 Area[]
+  categoryGroups        CategoryGroup[]
 
   @@index([email])
+}
+
+model CategoryGroup {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  color       String
+  icon        String
+  status      CategoryStatus @default(ACTIVE)
+  areaId      String?
+  categoryIds Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, areaId])
 }
 
 model Contact {

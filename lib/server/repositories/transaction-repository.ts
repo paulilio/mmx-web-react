@@ -105,6 +105,15 @@ export class TransactionRepository extends BaseRepository {
     return this.toPaginatedResult(data, total, page, pageSize)
   }
 
+  async findAllByUser(userId: string): Promise<TransactionRecord[]> {
+    return this.prisma.transaction.findMany({
+      where: { userId },
+      orderBy: {
+        date: "desc",
+      },
+    }) as Promise<TransactionRecord[]>
+  }
+
   async create(data: CreateTransactionRecordInput): Promise<TransactionRecord> {
     return this.prisma.transaction.create({
       data,

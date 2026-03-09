@@ -20,6 +20,7 @@ export interface DbClient {
   user: Delegate
   transaction: Delegate
   category: Delegate
+  categoryGroup: Delegate
   contact: Delegate
   budget: Delegate
   budgetAllocation: Delegate
