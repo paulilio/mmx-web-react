@@ -33,6 +33,7 @@ Exemplos:
 - `hooks/use-auth.tsx`
 - `hooks/use-auth.test.tsx`
 - `hooks/use-session.test.tsx`
+- `components/auth/auth-guard.test.tsx`
 - `hooks/use-transactions.ts`
 - `hooks/use-budget.ts`
 

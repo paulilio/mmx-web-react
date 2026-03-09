@@ -19,6 +19,8 @@
 - `hooks/use-auth.test.tsx`: unit coverage for login/logout success/failure, friendly API error mapping, and local-mode expired session cleanup.
 - `hooks/use-session.ts`: session validity and extension behavior; in `USE_API=true` refreshes session via `POST /api/auth/refresh`.
 - `hooks/use-session.test.tsx`: unit coverage for API refresh bootstrap/extension and failure handling (`401` cleanup + `429` warning path).
+- `components/auth/auth-guard.test.tsx`: coverage for protected navigation redirects and valid-session rendering behavior.
+- `middleware.test.ts`: validates `AUTH_REQUIRED` without token and allow-list behavior for bearer/cookie access tokens.
 - `lib/server/storage.ts`: mock storage helpers and cache behavior.
 - `lib/server/migration-service.ts`: legacy key migration and user-scoped storage helpers.
 - `middleware.ts`: `/api` CORS handling (including preflight), origin enforcement, centralized auth gate for protected APIs, and security headers.
