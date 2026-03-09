@@ -16,6 +16,7 @@
 - In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` login already integrates with `POST /api/auth/login`.
 - In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` logout already integrates with `POST /api/auth/logout`.
 - In `NEXT_PUBLIC_USE_API=true`, `hooks/use-session.ts` refresh now integrates with `POST /api/auth/refresh`.
+- In `NEXT_PUBLIC_USE_API=true`, auth bootstrap no longer depends on `auth_session` local persistence.
 
 ## Business Terms
 - `Area`: top-level financial grouping.

@@ -107,6 +107,31 @@ describe("use-auth login API mode", () => {
     expect(localStorage.getItem("auth_user")).toContain("user@test.com")
   })
 
+  it("restaura usuario no bootstrap em API mode sem depender de auth_session", async () => {
+    localStorage.clear()
+    localStorage.setItem(
+      "auth_user",
+      JSON.stringify({
+        id: "api_user",
+        email: "api@test.com",
+        firstName: "Api",
+        lastName: "User",
+        isEmailConfirmed: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        planType: "free",
+      }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.user?.email).toBe("api@test.com")
+    expect(mocked.setContextMock).toHaveBeenCalled()
+  })
+
   it("mapeia erro 401 para mensagem amigavel", async () => {
     mocked.apiPostMock.mockRejectedValueOnce(Object.assign(new Error("Credenciais invalidas"), { status: 401 }))
 
@@ -133,6 +158,24 @@ describe("use-auth login API mode", () => {
     await act(async () => {
       await expect(result.current.login("user@test.com", "123456")).rejects.toThrow(
         "Não foi possível conectar com o servidor",
+      )
+    })
+  })
+
+  it("nao expoe erro tecnico bruto em falha inesperada de login", async () => {
+    mocked.apiPostMock.mockRejectedValueOnce(
+      Object.assign(new Error("Database connection failed: timeout at shard 3"), { status: 500 }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    await act(async () => {
+      await expect(result.current.login("user@test.com", "123456")).rejects.toThrow(
+        "Serviço de autenticação indisponível. Tente novamente em instantes",
       )
     })
   })

@@ -176,9 +176,7 @@ export function useSession(): SessionHook {
         return
       }
 
-      const sessionString = localStorage.getItem("auth_session")
-
-      if (!sessionString && USE_API) {
+      if (USE_API) {
         const currentSession = sessionDataRef.current
 
         if (currentSession) {
@@ -192,6 +190,8 @@ export function useSession(): SessionHook {
         await refreshSession()
         return
       }
+
+      const sessionString = localStorage.getItem("auth_session")
 
       if (!sessionString) {
         resetSessionState()

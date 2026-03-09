@@ -95,6 +95,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await migrationService.migrateToUnifiedStructure()
         }
 
+        if (USE_API) {
+          const userData = localStorage.getItem("auth_user")
+          if (!userData) {
+            return
+          }
+
+          const apiUser = JSON.parse(userData) as User
+          setUser(apiUser)
+          userDataService.setContext(apiUser, apiUser.defaultOrganizationId)
+          return
+        }
+
         const sessionData = localStorage.getItem("auth_session")
         if (sessionData) {
           const session: SessionData = JSON.parse(sessionData)
@@ -253,7 +265,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error("Não foi possível conectar com o servidor")
         }
 
-        throw new Error(parsedMessage || "Erro ao realizar login")
+        if (typeof errorWithStatus.status === "number" && errorWithStatus.status >= 500) {
+          throw new Error("Serviço de autenticação indisponível. Tente novamente em instantes")
+        }
+
+        throw new Error("Não foi possível realizar login. Verifique seus dados e tente novamente")
       }
 
       logAuditEvent("login_failure", null, { email, error: parsedMessage })
@@ -387,6 +403,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const switchOrganization = async (organizationId: string) => {
     if (!user) return
+
+    if (USE_API) {
+      userDataService.setContext(user, organizationId)
+      logAuditEvent("organization_switched", user.id, { organizationId, source: "api_mode" })
+      toast.success("Organização alterada com sucesso!")
+      window.location.reload()
+      return
+    }
 
     try {
       const sessionData = localStorage.getItem("auth_session")
