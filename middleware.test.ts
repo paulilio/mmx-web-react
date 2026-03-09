@@ -52,6 +52,12 @@ describe("middleware auth for protected api", () => {
     expect(response.status).toBe(200)
   })
 
+  it("permite rota protegida com access token em cookie", () => {
+    const response = middleware(makeRequest("/api/transactions", { cookieToken: "cookie-token-123" }) as never)
+
+    expect(response.status).toBe(200)
+  })
+
   it("permite rota publica de auth sem access token", () => {
     const response = middleware(makeRequest("/api/auth/login") as never)
 

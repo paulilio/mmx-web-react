@@ -78,7 +78,8 @@ docs/                 # This folder
 
 Estado atual de auth no frontend:
 - Em `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` usa `POST /api/auth/login|logout` para autenticacao e encerramento de sessao.
-- A migracao de `refresh` para backend ainda esta em progresso.
+- Em `NEXT_PUBLIC_USE_API=true`, `hooks/use-session.ts` usa `POST /api/auth/refresh` para renovacao de sessao.
+- Em `NEXT_PUBLIC_USE_API=true`, o bootstrap de auth nao depende de `auth_session` local.
 
 ## Backend de Primeira Parte (estado atual)
 

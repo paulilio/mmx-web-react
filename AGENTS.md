@@ -28,7 +28,7 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
 - Keep transaction/form dates in `YYYY-MM-DD`.
 - Keep API response envelope consistent: `{ data, error }`.
 - In `NEXT_PUBLIC_USE_API=true`, keep explicit adapter error behavior (including connectivity errors) and do not add automatic mock fallback.
-- Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout` and `use-session` refresh uses `POST /api/auth/refresh`.
+- Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout`, `use-session` refresh uses `POST /api/auth/refresh`, and auth bootstrap no longer depends on local `auth_session`.
 - Keep server cross-cutting security centralized in `lib/server/security/**` + `middleware.ts`.
 
 ## Security Baseline (Current)

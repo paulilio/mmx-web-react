@@ -11,6 +11,7 @@ const mocked = vi.hoisted(() => ({
   setContextMock: vi.fn(),
   cleanupUserDataMock: vi.fn(),
   logAuditEventMock: vi.fn(),
+  useApiMode: true,
 }))
 
 vi.mock("next/navigation", () => ({
@@ -21,7 +22,9 @@ vi.mock("next/navigation", () => ({
 }))
 
 vi.mock("@/lib/shared/config", () => ({
-  USE_API: true,
+  get USE_API() {
+    return mocked.useApiMode
+  },
 }))
 
 vi.mock("@/lib/client/api", () => ({
@@ -65,6 +68,7 @@ function wrapper({ children }: { children: ReactNode }) {
 describe("use-auth login API mode", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocked.useApiMode = true
     localStorage.clear()
     localStorage.setItem(
       "auth_session",
@@ -246,5 +250,38 @@ describe("use-auth login API mode", () => {
     expect(localStorage.getItem("auth_user")).toBeNull()
     expect(result.current.user).toBeNull()
     expect(mocked.pushMock).toHaveBeenCalledWith("/auth")
+  })
+
+  it("remove sessao expirada no bootstrap em modo local", async () => {
+    mocked.useApiMode = false
+
+    localStorage.setItem(
+      "auth_session",
+      JSON.stringify({
+        token: "expired",
+        userId: "user_exp",
+        organizationId: "org_1",
+        expiresAt: "2000-01-01T00:00:00.000Z",
+      }),
+    )
+    localStorage.setItem(
+      "auth_user",
+      JSON.stringify({
+        id: "user_exp",
+        email: "expired@test.com",
+        firstName: "Exp",
+        lastName: "Ired",
+      }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.user).toBeNull()
+    expect(localStorage.getItem("auth_session")).toBeNull()
+    expect(localStorage.getItem("auth_user")).toBeNull()
   })
 })

@@ -121,4 +121,31 @@ describe("use-session refresh API mode", () => {
     expect(mocked.toastErrorMock).toHaveBeenCalledWith("Sessão expirada. Faça login novamente.")
     expect(mocked.pushMock).toHaveBeenCalledWith("/auth")
   })
+
+  it("exibe aviso amigavel quando refresh retorna 429", async () => {
+    mocked.apiPostMock
+      .mockResolvedValueOnce({
+        accessToken: "access",
+        refreshToken: "refresh",
+        expiresIn: 60,
+      })
+      .mockRejectedValueOnce(Object.assign(new Error("rate-limited"), { status: 429 }))
+
+    const { result } = renderHook(() => useSession())
+
+    await waitFor(() => {
+      expect(result.current.isSessionValid).toBe(true)
+    })
+
+    await act(async () => {
+      await result.current.refreshSession()
+    })
+
+    expect(result.current.isSessionValid).toBe(false)
+    expect(result.current.sessionData).toBeNull()
+    expect(localStorage.getItem("auth_user")).toBeNull()
+    expect(mocked.toastWarningMock).toHaveBeenCalledWith("Muitas tentativas de renovação. Tente novamente em instantes")
+    expect(mocked.toastErrorMock).not.toHaveBeenCalled()
+    expect(mocked.pushMock).not.toHaveBeenCalled()
+  })
 })

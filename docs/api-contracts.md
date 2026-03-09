@@ -41,6 +41,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 - Em `NEXT_PUBLIC_USE_API=true`, `login/logout` de `hooks/use-auth.tsx` ja usam `POST /api/auth/login|logout`.
 - Em `NEXT_PUBLIC_USE_API=true`, `refresh` de `hooks/use-session.ts` ja usa `POST /api/auth/refresh`.
 - Em `NEXT_PUBLIC_USE_API=true`, a restauracao de sessao no frontend usa `auth_user` + refresh backend (sem dependencia de `auth_session` local).
+- Em `NEXT_PUBLIC_USE_API=true`, erros de login no frontend sao normalizados para mensagens amigaveis em portugues (sem exposicao de erro tecnico bruto).
 
 ## Chaves de localStorage
 
