@@ -9,6 +9,7 @@ const mocked = vi.hoisted(() => ({
   pushMock: vi.fn(),
   apiPostMock: vi.fn(),
   setContextMock: vi.fn(),
+  cleanupUserDataMock: vi.fn(),
   logAuditEventMock: vi.fn(),
 }))
 
@@ -32,7 +33,7 @@ vi.mock("@/lib/client/api", () => ({
 vi.mock("@/lib/server/user-data-service", () => ({
   userDataService: {
     setContext: mocked.setContextMock,
-    cleanupUserData: vi.fn(),
+    cleanupUserData: mocked.cleanupUserDataMock,
   },
 }))
 
@@ -134,5 +135,73 @@ describe("use-auth login API mode", () => {
         "Não foi possível conectar com o servidor",
       )
     })
+  })
+
+  it("faz logout via /api/auth/logout e limpa estado local", async () => {
+    localStorage.setItem(
+      "auth_user",
+      JSON.stringify({
+        id: "user_1",
+        email: "user@test.com",
+        firstName: "Ana",
+        lastName: "Silva",
+      }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    mocked.apiPostMock.mockResolvedValueOnce({ success: true })
+
+    act(() => {
+      result.current.logout()
+    })
+
+    await waitFor(() => {
+      expect(mocked.apiPostMock).toHaveBeenCalledWith("/auth/logout", {})
+    })
+
+    expect(mocked.cleanupUserDataMock).toHaveBeenCalledTimes(1)
+    expect(localStorage.getItem("auth_session")).toBeNull()
+    expect(localStorage.getItem("auth_user")).toBeNull()
+    expect(result.current.user).toBeNull()
+    expect(mocked.pushMock).toHaveBeenCalledWith("/auth")
+  })
+
+  it("mantem limpeza local mesmo com falha no /api/auth/logout", async () => {
+    localStorage.setItem(
+      "auth_user",
+      JSON.stringify({
+        id: "user_2",
+        email: "fail@test.com",
+        firstName: "Bia",
+        lastName: "Souza",
+      }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    mocked.apiPostMock.mockRejectedValueOnce(new Error("network"))
+
+    act(() => {
+      result.current.logout()
+    })
+
+    await waitFor(() => {
+      expect(mocked.apiPostMock).toHaveBeenCalledWith("/auth/logout", {})
+    })
+
+    expect(mocked.cleanupUserDataMock).toHaveBeenCalledTimes(1)
+    expect(localStorage.getItem("auth_session")).toBeNull()
+    expect(localStorage.getItem("auth_user")).toBeNull()
+    expect(result.current.user).toBeNull()
+    expect(mocked.pushMock).toHaveBeenCalledWith("/auth")
   })
 })

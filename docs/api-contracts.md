@@ -38,8 +38,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 ### Estado atual da migracao de auth no frontend
 
-- Em `NEXT_PUBLIC_USE_API=true`, o `login` de `hooks/use-auth.tsx` ja usa `POST /api/auth/login`.
-- A migracao de `logout/refresh` para backend segue como etapa posterior.
+- Em `NEXT_PUBLIC_USE_API=true`, `login/logout` de `hooks/use-auth.tsx` ja usam `POST /api/auth/login|logout`.
+- A migracao de `refresh` para backend segue como etapa posterior.
 
 ## Chaves de localStorage
 

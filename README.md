@@ -96,5 +96,5 @@ CORS_ORIGINS_PROD=
 - Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
 - Auth backend base concluido: hash de senha com `bcryptjs`, `AuthService` e atualizacao de `lastLogin` no login
 - Auth JWT concluido: emissao/validacao de access+refresh token, `POST /api/auth/logout` e gate central de autorizacao para APIs protegidas no `middleware.ts`
-- Frontend auth (migracao incremental): em `NEXT_PUBLIC_USE_API=true`, `use-auth` ja usa `POST /api/auth/login`; migracao de `logout/refresh` segue em andamento
-- Cobertura de teste de auth frontend atualizada: `hooks/use-auth.test.tsx` valida login API e mapeamento de erros amigaveis
+- Frontend auth (migracao incremental): em `NEXT_PUBLIC_USE_API=true`, `use-auth` ja usa `POST /api/auth/login|logout`; migracao de `refresh` segue em andamento
+- Cobertura de teste de auth frontend atualizada: `hooks/use-auth.test.tsx` valida login/logout em API mode e mapeamento de erros amigaveis

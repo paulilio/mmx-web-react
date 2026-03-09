@@ -370,6 +370,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
+    if (USE_API) {
+      // Keep logout signature sync while still revoking server refresh session/cookies.
+      void api.post<{ success: boolean }>("/auth/logout", {}).catch(() => {
+        // Local cleanup must still happen even when backend logout is unavailable.
+      })
+    }
+
     userDataService.cleanupUserData()
 
     localStorage.removeItem("auth_session")

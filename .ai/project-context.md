@@ -14,7 +14,8 @@
 
 ## Current Frontend Auth Status
 - In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` login already integrates with `POST /api/auth/login`.
-- Logout/refresh full migration is still in progress; some local auth compatibility remains temporarily.
+- In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` logout already integrates with `POST /api/auth/logout`.
+- Refresh migration is still in progress; some local auth compatibility remains temporarily.
 
 ## Business Terms
 - `Area`: top-level financial grouping.
