@@ -14,7 +14,7 @@
 
 ## Important Files
 - `lib/client/api.ts`: canonical data adapter boundary.
-- `lib/client/api.ts` (API mode): unwraps `{ data, error }`, supports temporary legacy non-envelope payloads, and throws explicit `ApiError` for envelope/network errors (no auto mock fallback).
+- `lib/client/api.ts` (API mode): unwraps `{ data, error }`, supports temporary legacy non-envelope payloads, uses `credentials: "include"` for external `NEXT_PUBLIC_API_BASE` requests, and throws explicit `ApiError` for envelope/network errors (no auto mock fallback).
 - `hooks/use-auth.tsx`: auth context; in `USE_API=true` login/logout use `POST /api/auth/login|logout`.
 - `hooks/use-auth.test.tsx`: unit coverage for login/logout success/failure, friendly API error mapping, and local-mode expired session cleanup.
 - `hooks/use-session.ts`: session validity and extension behavior; in `USE_API=true` refreshes session via `POST /api/auth/refresh`.

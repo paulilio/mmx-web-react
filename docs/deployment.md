@@ -122,6 +122,10 @@ NEXT_PUBLIC_USE_API=true   -> lib/client/api.ts chama `/api/*` para dominios fir
 MMX_APP_ENV               -> escolhe matriz de CORS para `/api`
 \`\`\`
 
+Observacao importante de credenciais em API mode:
+- chamadas externas resolvidas para `NEXT_PUBLIC_API_BASE` usam `credentials: "include"` (cookie-based auth)
+- chamadas first-party (`/api/*`) mantem comportamento atual
+
 Para trocar para API de producao:
 1. Definir `NEXT_PUBLIC_USE_API=true` e `NEXT_PUBLIC_API_BASE=<url>` nas variaveis de ambiente da Vercel
 2. Garantir que novos dominios first-party sejam roteados em `resolveApiUrl` de `lib/client/api.ts`

@@ -93,7 +93,7 @@ CORS_ORIGINS_PROD=
 - Settings maintenance first-party ativo em `app/api/settings/import`, `app/api/settings/export` e `app/api/settings/clear`
 - Settings no frontend convergido para boundary: `app/settings/page.tsx` usa `hooks/use-settings-maintenance.ts` + `lib/client/api.ts` (sem acesso direto a storage/localStorage)
 - Contrato HTTP padronizado com envelope `{ data, error }`
-- Adapter cliente (`lib/client/api.ts`) em `NEXT_PUBLIC_USE_API=true`: desembrulha envelope, aceita payload legado sem envelope temporariamente e lanca erro explicito de conectividade (`ApiError`, `status: 0`) sem fallback automatico para mock
+- Adapter cliente (`lib/client/api.ts`) em `NEXT_PUBLIC_USE_API=true`: desembrulha envelope, aceita payload legado sem envelope temporariamente, envia `credentials: "include"` para chamadas externas via `API_BASE` e lanca erro explicito de conectividade (`ApiError`, `status: 0`) sem fallback automatico para mock
 - Endpoints de auth backend: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
 - OAuth Google backend: `GET /api/auth/oauth/google` + `GET /api/auth/oauth/google/callback`
 - OAuth Microsoft backend: `GET /api/auth/oauth/microsoft` + `GET /api/auth/oauth/microsoft/callback`

@@ -39,6 +39,7 @@
   - success: `{ data, error: null }`
   - failure: `{ data: null, error }`
 - In `NEXT_PUBLIC_USE_API=true`, preserve explicit adapter errors (`ApiError`, including connectivity `status: 0`) and no automatic fallback to mock.
+- In `NEXT_PUBLIC_USE_API=true`, external requests routed to `NEXT_PUBLIC_API_BASE` must use `credentials: "include"` for cookie-based auth, while first-party `/api/*` routing behavior remains unchanged.
 - Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout`, `use-session` refresh uses `POST /api/auth/refresh`, and auth bootstrap no longer depends on local `auth_session`.
 - Current budget hook convergence status (E3): `use-budget-allocations` is the primary path for active product flows; `use-budget.ts` remains only as legacy compatibility during transition.
 - Current settings maintenance status: `import/export/clear` now run via first-party routes (`/api/settings/*`) and `hooks/use-settings-maintenance.ts`; `app/settings/page.tsx` must not access storage/localStorage directly for these flows.

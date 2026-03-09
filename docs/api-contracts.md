@@ -32,6 +32,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
 - Em `NEXT_PUBLIC_USE_API=true`, o adapter aceita:
   - payload com envelope `{ data, error }` (padrao atual)
   - payload legado sem envelope (compatibilidade temporaria)
+- Em `NEXT_PUBLIC_USE_API=true`, chamadas externas roteadas para `NEXT_PUBLIC_API_BASE` enviam `credentials: "include"` para suportar auth cookie-based cross-origin.
+- Em `NEXT_PUBLIC_USE_API=true`, chamadas first-party (`/api/*`) mantem comportamento atual de roteamento interno.
 - Se vier `error` no envelope, o adapter lanca `ApiError` explicitamente.
 - Se a API estiver indisponivel (erro de rede), o adapter lanca erro explicito de conectividade (`ApiError` com `status: 0`).
 - Nao ha fallback automatico para mock em indisponibilidade de API no modo `USE_API=true`.

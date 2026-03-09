@@ -323,4 +323,57 @@ describe("lib/client/api API mode compatibility", () => {
       expect.objectContaining({ method: "GET" }),
     )
   })
+
+  it("should include credentials for external API_BASE requests in USE_API=true", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: { ok: true },
+          error: null,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { getJSON } = await loadApiModuleApiMode()
+    await getJSON("/external-health")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://127.0.0.1:8000/external-health",
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+      }),
+    )
+  })
+
+  it("should preserve first-party requests without explicit credentials override", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [],
+          error: null,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { getJSON } = await loadApiModuleApiMode()
+    await getJSON("/areas")
+
+    const firstCallArgs = fetchMock.mock.calls[0]
+    expect(firstCallArgs?.[0]).toBe("/api/areas")
+
+    const requestInit = firstCallArgs?.[1] as Record<string, unknown>
+    expect(requestInit.method).toBe("GET")
+    expect("credentials" in requestInit).toBe(false)
+  })
 })

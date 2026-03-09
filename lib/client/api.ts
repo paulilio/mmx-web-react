@@ -54,11 +54,15 @@ async function requestApi<T>(
   },
 ): Promise<T> {
   try {
-    const response = await fetch(resolveApiUrl(endpoint), {
+    const resolvedUrl = resolveApiUrl(endpoint)
+    const isExternalApiBaseRequest = !resolvedUrl.startsWith("/api")
+
+    const response = await fetch(resolvedUrl, {
       method: init?.method,
       headers: {
         "Content-Type": "application/json",
       },
+      ...(isExternalApiBaseRequest ? { credentials: "include" as const } : {}),
       ...(init?.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
     })
 
