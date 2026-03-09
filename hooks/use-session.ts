@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { api } from "@/lib/client/api"
+import { USE_API } from "@/lib/shared/config"
 import { logAuditEvent } from "@/lib/shared/utils"
 
 interface SessionData {
@@ -10,6 +12,15 @@ interface SessionData {
   userId: string
   expiresAt: string
 }
+
+type ApiRefreshResponse = {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
+
+const DEFAULT_API_ACCESS_EXPIRES_IN_SECONDS = 15 * 60
+const API_SESSION_TOKEN = "cookie-session"
 
 interface SessionHook {
   isSessionValid: boolean
@@ -28,6 +39,7 @@ export function useSession(): SessionHook {
 
   const sessionDataRef = useRef<SessionData | null>(null)
   const isSessionValidRef = useRef(false)
+  const isRefreshingRef = useRef(false)
 
   // Update refs when state changes
   useEffect(() => {
@@ -38,29 +50,151 @@ export function useSession(): SessionHook {
     isSessionValidRef.current = isSessionValid
   }, [isSessionValid])
 
+  const getCurrentUserId = useCallback((): string | null => {
+    try {
+      const userData = localStorage.getItem("auth_user")
+      if (!userData) return null
+
+      const parsedUser = JSON.parse(userData) as { id?: string }
+      return parsedUser.id || null
+    } catch {
+      return null
+    }
+  }, [])
+
+  const buildApiSession = useCallback((userId: string, expiresInSeconds?: number): SessionData => {
+    const ttlSeconds = expiresInSeconds && expiresInSeconds > 0 ? expiresInSeconds : DEFAULT_API_ACCESS_EXPIRES_IN_SECONDS
+    return {
+      token: API_SESSION_TOKEN,
+      userId,
+      expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
+    }
+  }, [])
+
+  const applySessionState = useCallback((session: SessionData) => {
+    const expiryTime = new Date(session.expiresAt).getTime()
+    const timeLeft = Math.max(0, expiryTime - Date.now())
+
+    setSessionData(session)
+    setIsSessionValid(timeLeft > 0)
+    setTimeUntilExpiry(Math.floor(timeLeft / 1000))
+  }, [])
+
+  const resetSessionState = useCallback(() => {
+    setSessionData(null)
+    setIsSessionValid(false)
+    setTimeUntilExpiry(null)
+  }, [])
+
   const clearSession = useCallback(() => {
     const currentSession = sessionDataRef.current
     localStorage.removeItem("auth_session")
     localStorage.removeItem("auth_user")
-    setSessionData(null)
-    setIsSessionValid(false)
-    setTimeUntilExpiry(null)
+    resetSessionState()
 
     if (currentSession) {
       logAuditEvent("session_cleared", currentSession.userId, {
-        sessionToken: currentSession.token.substring(0, 8) + "...", // Only log partial token for security
+        sessionToken: `${currentSession.token.substring(0, 8)}...`,
         clearedAt: new Date().toISOString(),
       })
     }
-  }, [])
+  }, [resetSessionState])
 
-  const checkSession = useCallback(() => {
+  const refreshSession = useCallback(async () => {
+    if (isRefreshingRef.current) {
+      return
+    }
+
+    if (!USE_API) {
+      const currentSessionData = sessionDataRef.current
+      if (!currentSessionData) return
+
+      try {
+        const newExpiryTime = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
+        const updatedSession: SessionData = {
+          ...currentSessionData,
+          expiresAt: newExpiryTime,
+        }
+
+        localStorage.setItem("auth_session", JSON.stringify(updatedSession))
+        applySessionState(updatedSession)
+
+        logAuditEvent("session_extended", currentSessionData.userId, {
+          previousExpiry: currentSessionData.expiresAt,
+          newExpiry: newExpiryTime,
+          extensionDuration: "30 minutes",
+        })
+      } catch (error) {
+        console.error("Error extending session:", error)
+      }
+
+      return
+    }
+
+    const userId = getCurrentUserId()
+    if (!userId) {
+      clearSession()
+      return
+    }
+
+    isRefreshingRef.current = true
     try {
+      const response = await api.post<ApiRefreshResponse>("/auth/refresh", {})
+      const refreshedSession = buildApiSession(userId, response.expiresIn)
+      applySessionState(refreshedSession)
+
+      logAuditEvent("session_extended", userId, {
+        source: "api_refresh",
+        newExpiry: refreshedSession.expiresAt,
+      })
+    } catch (error) {
+      const status = (error as { status?: number }).status
+
+      logAuditEvent("session_refresh_failed", userId, {
+        status: status ?? null,
+      })
+
+      clearSession()
+
+      if (status === 429) {
+        toast.warning("Muitas tentativas de renovação. Tente novamente em instantes")
+        return
+      }
+
+      toast.error("Sessão expirada. Faça login novamente.")
+      router.push("/auth")
+    } finally {
+      isRefreshingRef.current = false
+    }
+  }, [applySessionState, buildApiSession, clearSession, getCurrentUserId, router])
+
+  const checkSession = useCallback(async () => {
+    try {
+      const userId = getCurrentUserId()
+      if (!userId) {
+        resetSessionState()
+        return
+      }
+
       const sessionString = localStorage.getItem("auth_session")
+
+      if (!sessionString && USE_API) {
+        const currentSession = sessionDataRef.current
+
+        if (currentSession) {
+          const currentSessionTimeLeft = new Date(currentSession.expiresAt).getTime() - Date.now()
+          if (currentSessionTimeLeft > 0) {
+            applySessionState(currentSession)
+            return
+          }
+        }
+
+        await refreshSession()
+        return
+      }
+
       if (!sessionString) {
-        setIsSessionValid(false)
-        setSessionData(null)
-        setTimeUntilExpiry(null)
+        resetSessionState()
         return
       }
 
@@ -75,15 +209,19 @@ export function useSession(): SessionHook {
           expiryTime: session.expiresAt,
           currentTime: new Date().toISOString(),
         })
-        clearSession()
-        toast.error("Sessão expirada. Faça login novamente.")
-        router.push("/auth")
+
+        if (USE_API) {
+          await refreshSession()
+        } else {
+          clearSession()
+          toast.error("Sessão expirada. Faça login novamente.")
+          router.push("/auth")
+        }
+
         return
       }
 
-      setSessionData(session)
-      setIsSessionValid(true)
-      setTimeUntilExpiry(Math.floor(timeLeft / 1000)) // Convert to seconds
+      applySessionState(session)
 
       // Warn user when session is about to expire (5 minutes before)
       if (timeLeft <= 5 * 60 * 1000 && timeLeft > 4 * 60 * 1000) {
@@ -93,43 +231,20 @@ export function useSession(): SessionHook {
       console.error("Error checking session:", error)
       clearSession()
     }
-  }, [clearSession, router])
+  }, [applySessionState, clearSession, getCurrentUserId, refreshSession, resetSessionState, router])
 
   const extendSession = useCallback(() => {
-    const currentSessionData = sessionDataRef.current
-    if (!currentSessionData) return
-
-    try {
-      const newExpiryTime = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-      const updatedSession: SessionData = {
-        ...currentSessionData,
-        expiresAt: newExpiryTime,
-      }
-
-      localStorage.setItem("auth_session", JSON.stringify(updatedSession))
-      setSessionData(updatedSession)
-
-      logAuditEvent("session_extended", currentSessionData.userId, {
-        previousExpiry: currentSessionData.expiresAt,
-        newExpiry: newExpiryTime,
-        extensionDuration: "30 minutes",
-      })
-    } catch (error) {
-      console.error("Error extending session:", error)
-    }
-  }, [])
-
-  const refreshSession = useCallback(async () => {
-    // In a real app, this would make an API call to refresh the token
-    extendSession()
-  }, [extendSession])
+    void refreshSession()
+  }, [refreshSession])
 
   useEffect(() => {
     // Initial session check
-    checkSession()
+    void checkSession()
 
     // Check session every minute
-    const sessionInterval = setInterval(checkSession, 60 * 1000)
+    const sessionInterval = setInterval(() => {
+      void checkSession()
+    }, 60 * 1000)
 
     // Track user activity for session extension
     let activityTimer: NodeJS.Timeout
@@ -140,7 +255,7 @@ export function useSession(): SessionHook {
         () => {
           // Extend session if user has been active
           if (isSessionValidRef.current) {
-            extendSession()
+            void refreshSession()
           }
         },
         5 * 60 * 1000,
@@ -167,7 +282,7 @@ export function useSession(): SessionHook {
         document.removeEventListener(event, handleActivity)
       })
     }
-  }, [checkSession, extendSession])
+  }, [checkSession, refreshSession])
 
   useEffect(() => {
     if (!sessionData) return
@@ -180,6 +295,11 @@ export function useSession(): SessionHook {
       setTimeUntilExpiry(timeLeft)
 
       if (timeLeft === 0) {
+        if (USE_API) {
+          void refreshSession()
+          return
+        }
+
         clearSession()
         toast.error("Sessão expirada. Faça login novamente.")
         router.push("/auth")
@@ -187,7 +307,7 @@ export function useSession(): SessionHook {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [sessionData, clearSession, router])
+  }, [sessionData, clearSession, refreshSession, router])
 
   return {
     isSessionValid,
