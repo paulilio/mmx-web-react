@@ -264,4 +264,63 @@ describe("lib/client/api API mode compatibility", () => {
       message: expect.stringContaining("Erro de conectividade com a API"),
     })
   })
+
+  it("should route category-groups to first-party API in USE_API=true", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [],
+          error: null,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { getJSON } = await loadApiModuleApiMode()
+    await getJSON("/category-groups")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/category-groups",
+      expect.objectContaining({ method: "GET" }),
+    )
+  })
+
+  it("should route reports to first-party API in USE_API=true", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: {
+            totalOpen: 0,
+            totalOverdue: 0,
+            totalNext7Days: 0,
+            totalNext30Days: 0,
+            totalReceivables: 0,
+            totalPayables: 0,
+            completedReceivables: 0,
+            completedPayables: 0,
+            pendingReceivables: 0,
+            pendingPayables: 0,
+          },
+          error: null,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { getJSON } = await loadApiModuleApiMode()
+    await getJSON("/reports/summary")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/reports/summary",
+      expect.objectContaining({ method: "GET" }),
+    )
+  })
 })

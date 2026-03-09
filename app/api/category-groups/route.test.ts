@@ -100,6 +100,18 @@ describe("/api/category-groups route", () => {
     expect(payload.data.data[0].status).toBe("active")
   })
 
+  it("GET retorna 400 quando filtro de status e invalido", async () => {
+    const response = await GET(
+      makeRequest({
+        url: "http://localhost/api/category-groups?userId=user-1&status=foo",
+      }) as never,
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload.error.code).toBe("CATEGORY_GROUP_LIST_ERROR")
+  })
+
   it("POST retorna 400 quando campos obrigatorios faltam", async () => {
     const response = await POST(
       makeRequest({
@@ -154,5 +166,27 @@ describe("/api/category-groups route", () => {
     )
     expect(payload.error).toBeNull()
     expect(payload.data.status).toBe("active")
+  })
+
+  it("POST retorna erro interno quando service falha", async () => {
+    serviceMock.create.mockRejectedValueOnce(new Error("Falha inesperada"))
+
+    const response = await POST(
+      makeRequest({
+        url: "http://localhost/api/category-groups",
+        method: "POST",
+        body: {
+          userId: "user-1",
+          name: "Fixas",
+          color: "#3b82f6",
+          icon: "home",
+          status: "active",
+        },
+      }) as never,
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload.error.code).toBe("CATEGORY_GROUP_CREATE_ERROR")
   })
 })

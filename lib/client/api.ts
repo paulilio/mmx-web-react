@@ -184,11 +184,13 @@ function resolveApiUrl(endpoint: string): string {
   if (
     endpoint.startsWith("/transactions") ||
     endpoint.startsWith("/categories") ||
+    endpoint.startsWith("/category-groups") ||
     endpoint.startsWith("/contacts") ||
     endpoint.startsWith("/auth") ||
     endpoint.startsWith("/areas") ||
     endpoint.startsWith("/budget") ||
-    endpoint.startsWith("/budget-allocations")
+    endpoint.startsWith("/budget-allocations") ||
+    endpoint.startsWith("/reports")
   ) {
     return `/api${endpoint}`
   }

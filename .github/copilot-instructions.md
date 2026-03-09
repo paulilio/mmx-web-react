@@ -5,7 +5,7 @@
 - Stack: Next.js 14 App Router, React 19, TypeScript 5, Tailwind CSS v4, SWR, React Hook Form, Zod, Radix/shadcn.
 - Runtime: Node.js 22+, pnpm.
 - Current mode: hybrid mock-first + first-party API routes, with client boundary in `lib/client/api.ts`.
-- First-party domains currently active: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`.
+- First-party domains currently active: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 
 ## Architecture Rules
 - Keep this layered flow:

@@ -34,6 +34,8 @@
   - areas
   - auth
   - reports/summary
+  - reports/aging
+  - reports/cashflow
 
 ## Security Architecture
 - CORS policy: `lib/server/security/cors.ts` wired in `middleware.ts` for `/api`.

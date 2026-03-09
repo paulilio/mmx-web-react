@@ -119,6 +119,21 @@ describe("/api/category-groups/[id] route", () => {
     expect(payload.error.code).toBe("CATEGORY_GROUP_NOT_FOUND")
   })
 
+  it("PUT retorna 400 quando status informado e invalido", async () => {
+    const response = await PUT(
+      makeRequest({
+        url: "http://localhost/api/category-groups/cg-1",
+        method: "PUT",
+        body: { userId: "user-1", status: "foo" },
+      }) as never,
+      { params: { id: "cg-1" } },
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload.error.code).toBe("CATEGORY_GROUP_UPDATE_ERROR")
+  })
+
   it("DELETE remove grupo e retorna payload mapeado", async () => {
     serviceMock.remove.mockResolvedValueOnce({
       id: "cg-1",
@@ -146,5 +161,21 @@ describe("/api/category-groups/[id] route", () => {
     expect(response.status).toBe(200)
     expect(serviceMock.remove).toHaveBeenCalledWith("cg-1", "user-1")
     expect(payload.data.status).toBe("inactive")
+  })
+
+  it("DELETE retorna erro interno quando service falha", async () => {
+    serviceMock.remove.mockRejectedValueOnce(new Error("Falha ao excluir"))
+
+    const response = await DELETE(
+      makeRequest({
+        url: "http://localhost/api/category-groups/cg-1?userId=user-1",
+        method: "DELETE",
+      }) as never,
+      { params: { id: "cg-1" } },
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload.error.code).toBe("CATEGORY_GROUP_DELETE_ERROR")
   })
 })

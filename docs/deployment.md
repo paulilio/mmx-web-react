@@ -36,7 +36,7 @@ pnpm validate:env -- --env=production
 
 | Variavel | Obrigatoria | Descricao |
 |---|---|---|
-| `NEXT_PUBLIC_API_BASE` | Nao | URL base para chamadas de API (vazio = modo mock) |
+| `NEXT_PUBLIC_API_BASE` | Nao | URL base para chamadas externas ainda nao first-party (em dominios first-party, o adapter usa `/api/*`) |
 | `NEXT_PUBLIC_USE_API` | Nao | `"true"` troca de localStorage para API real |
 | `MMX_APP_ENV` | Recomendado | Ambiente efetivo para politicas server (`development|staging|production`) |
 | `CORS_ORIGINS_DEV` | Recomendado | CSV de origens permitidas para `/api` em desenvolvimento |
@@ -118,15 +118,18 @@ jobs:
 
 \`\`\`
 NEXT_PUBLIC_USE_API=false  -> localStorage (mock, padrao)
-NEXT_PUBLIC_USE_API=true   -> lib/client/api.ts chama endpoints reais
+NEXT_PUBLIC_USE_API=true   -> lib/client/api.ts chama `/api/*` para dominios first-party e `NEXT_PUBLIC_API_BASE` para externos
 MMX_APP_ENV               -> escolhe matriz de CORS para `/api`
 \`\`\`
 
 Para trocar para API de producao:
 1. Definir `NEXT_PUBLIC_USE_API=true` e `NEXT_PUBLIC_API_BASE=<url>` nas variaveis de ambiente da Vercel
-2. Implementar/expandir chamadas `fetch` em `lib/client/api.ts`
+2. Garantir que novos dominios first-party sejam roteados em `resolveApiUrl` de `lib/client/api.ts`
 3. Validar que fluxos de desenvolvimento (ex.: "Login Direto") permanecem protegidos por gate de ambiente
 4. Remover a logica de `lib/server/migration-service.ts` apos migracao completa dos dados para o banco
+
+Dominios first-party atualmente ativos no adapter (`NEXT_PUBLIC_USE_API=true`):
+- `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 
 ## Hardening de seguranca (backend)
 

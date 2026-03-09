@@ -5,7 +5,7 @@
 Todas as chamadas de API passam por `lib/client/api.ts`.
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
-- Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, auth e reports/summary.
+- Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, auth e reports (`summary`, `aging`, `cashflow`).
 - Auth base em backend ja ativo: `register/login` com hash de senha (`bcryptjs`) e update de `lastLogin` no login.
 - Auth JWT ja ativo com access+refresh token, rotacao/revogacao de refresh e logout.
 
@@ -132,10 +132,13 @@ PUT    /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data
 DELETE /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
 
 GET    /api/reports/summary     -> { data: DashboardSummary, error: null } | { data: null, error }
+GET    /api/reports/aging       -> { data: AgingReport, error: null } | { data: null, error }
+GET    /api/reports/cashflow    -> { data: CashflowData[], error: null } | { data: null, error }
 
-# Pendentes (first-party)
-GET    /api/reports/aging
-GET    /api/reports/cashflow
+Observacao reports atual:
+- `GET /api/reports/summary`: consolida totais gerais e por status para dashboard.
+- `GET /api/reports/aging`: aceita `dateFrom` e `dateTo` e retorna buckets (`overdue`, `next7Days`, `next30Days`, `future`) com blocos `completed*` e `pending*`.
+- `GET /api/reports/cashflow`: aceita `days` (default `30`) e `status` (`all|completed|pending|cancelled`) e retorna serie agregada por data com saldos acumulados.
 
 POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }
 POST   /api/auth/register       -> { data: AuthRegisterResponse, error: null } | { data: null, error }

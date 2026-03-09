@@ -29,7 +29,7 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
 - Keep API response envelope consistent: `{ data, error }`.
 - In `NEXT_PUBLIC_USE_API=true`, keep explicit adapter error behavior (including connectivity errors) and do not add automatic mock fallback.
 - Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout`, `use-session` refresh uses `POST /api/auth/refresh`, and auth bootstrap no longer depends on local `auth_session`.
-- Current domain migration status: first-party routes for `category-groups` and `reports/summary` are implemented in `app/api/**`; keep adapter wiring changes (if needed) centralized in `lib/client/api.ts`.
+- Current domain migration status: first-party routes for `category-groups` and `reports` (`summary`, `aging`, `cashflow`) are implemented in `app/api/**`, and adapter routing in `lib/client/api.ts` is converged to `/api/*` in `NEXT_PUBLIC_USE_API=true`.
 - Keep server cross-cutting security centralized in `lib/server/security/**` + `middleware.ts`.
 
 ## Security Baseline (Current)

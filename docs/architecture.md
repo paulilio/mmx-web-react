@@ -35,8 +35,8 @@ localStorage (mock) | REST API (production)
 
 1. A pagina renderiza e chama o hook de dominio (ex.: `useTransactions`)
 2. O hook chama o servico de persistencia, que chama `lib/client/api.ts`
-3. `lib/client/api.ts` le/escreve adapters locais e roteia para endpoints de primeira parte ja conectados no adapter (`/api/transactions`, `/api/categories`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/auth`)
-4. Rotas first-party ja implementadas para `category-groups` e `reports/summary` existem em `app/api/**`; a conexao explicita no adapter (`resolveApiUrl`) segue como etapa de convergencia.
+3. `lib/client/api.ts` le/escreve adapters locais e roteia para endpoints de primeira parte ja conectados no adapter (`/api/transactions`, `/api/categories`, `/api/category-groups`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/auth`, `/api/reports/*`)
+4. Rotas first-party para `category-groups` e `reports` (`summary`, `aging`, `cashflow`) estao implementadas em `app/api/**` e ja convergidas no adapter (`resolveApiUrl`).
 4. O hook retorna dados tipados e o componente re-renderiza
 
 ## Isolamento por Usuario
@@ -93,7 +93,8 @@ Estado atual de auth no frontend:
         - areas
 - Reports first-party:
         - `summary` ativo (`/api/reports/summary`)
-        - `aging` e `cashflow` ainda pendentes
+        - `aging` ativo (`/api/reports/aging`)
+        - `cashflow` ativo (`/api/reports/cashflow`)
 - Auth backend base concluido:
         - `POST /api/auth/login`
         - `POST /api/auth/register`

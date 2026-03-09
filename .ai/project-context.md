@@ -6,7 +6,7 @@
 - Current mode: hybrid mock-first + first-party backend routes.
 
 ## Current Backend Coverage
-- Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`.
+- Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 - Auth base is implemented with `AuthService` (`register/login`), password hashing via `bcryptjs`, and `lastLogin` update on successful login.
 - JWT auth is active with access+refresh tokens, refresh rotation/revocation, and logout route (`POST /api/auth/logout`).
 - OAuth providers implemented: Google and Microsoft.
