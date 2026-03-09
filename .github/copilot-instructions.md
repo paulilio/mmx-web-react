@@ -75,6 +75,7 @@
 ## Validation Checklist Before Finalizing
 - Run:
   - `pnpm test:unit`
+  - `pnpm test:integration`
   - `pnpm lint`
   - `pnpm type-check` (`tsc --noEmit` equivalent)
   - `pnpm build`

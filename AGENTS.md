@@ -54,6 +54,7 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
 ## Build and Validation
 - Before finalizing changes, run:
   - `pnpm test:unit`
+  - `pnpm test:integration`
   - `pnpm lint`
   - `pnpm type-check`
   - `pnpm build`

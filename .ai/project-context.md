@@ -53,4 +53,4 @@
 - Prefer extending existing hook/service/repository patterns instead of parallel flows.
 - Keep auth/security cross-cutting logic under `lib/server/security/**`.
 - When updating docs, keep `.ai/*`, `README.md`, and `docs/*` consistent with each other.
-- Before finalizing: run `pnpm test:unit`, `pnpm type-check`, `pnpm build`, `pnpm lint`, and `pnpm validate:env` as needed.
+- Before finalizing: run `pnpm test:unit`, `pnpm test:integration`, `pnpm type-check`, `pnpm build`, `pnpm lint`, and `pnpm validate:env` as needed.

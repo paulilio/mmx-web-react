@@ -17,6 +17,12 @@ pnpm type-check
 # Lint
 pnpm lint
 
+# Testes unitarios
+pnpm test:unit
+
+# Testes de integracao (rotas API + middleware)
+pnpm test:integration
+
 # Build (validar antes de enviar)
 pnpm build
 
@@ -88,6 +94,8 @@ jobs:
         with: { node-version: 22 }
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm test:unit
+      - run: pnpm test:integration
       - run: pnpm type-check
       - run: pnpm build
 \`\`\`

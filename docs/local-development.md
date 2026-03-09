@@ -67,6 +67,9 @@ pnpm type-check
 # testes unitarios
 pnpm test:unit
 
+# testes de integracao (rotas API + middleware)
+pnpm test:integration
+
 # build de validacao
 pnpm build
 

@@ -13,6 +13,8 @@
     "prisma:studio": "prisma studio",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
+    "test:integration": "vitest run app/api middleware.test.ts",
+    "test:integration:watch": "vitest app/api middleware.test.ts",
     "validate:env": "node scripts/validate-env.mjs",
     "start": "next start",
     "type-check": "tsc --noEmit"

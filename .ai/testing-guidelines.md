@@ -12,13 +12,14 @@
   - validation schemas in `lib/shared/validations.ts`.
   - hook business logic with controlled mocks.
 - Keep tests deterministic; avoid real time/network dependencies.
-- Prefer `pnpm test:unit` for CI/local validation and `pnpm test:unit:watch` while developing tests.
+- Prefer `pnpm test:unit` + `pnpm test:integration` for CI/local validation, and `pnpm test:unit:watch` while developing tests.
 
 ## Integration Test Rules
 - Test feature behavior through user interactions:
   - form submission paths.
   - modal open/edit/save/cancel flows.
   - error/loading/empty states.
+- Use `pnpm test:integration` for route/integration regression checks (`app/api/**` + `middleware.test.ts`).
 - Mock `lib/client/api.ts` boundary, not deep internals.
 - For component tests that require browser APIs, use `/** @vitest-environment jsdom */` in the test file.
 
@@ -63,6 +64,6 @@ lib/
 \`\`\`
 
 ## CI Recommendations
-- Validate at least: `pnpm test:unit`, `pnpm lint`, `pnpm type-check`, `pnpm build`.
+- Validate at least: `pnpm test:unit`, `pnpm test:integration`, `pnpm lint`, `pnpm type-check`, `pnpm build`.
 - For environment-sensitive changes, run `pnpm validate:env -- --env=development` and (for release checks) `--env=production`.
-- Keep `pnpm test:unit` in CI for every PR.
+- Keep `pnpm test:unit` and `pnpm test:integration` in CI for every PR.

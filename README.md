@@ -38,6 +38,7 @@ pnpm lint
 pnpm type-check
 pnpm test:unit
 pnpm test:unit:watch
+pnpm test:integration
 pnpm build
 ```
 
