@@ -2,6 +2,8 @@
 
 Este documento resume as principais pastas e responsabilidades.
 
+Para onboarding tecnico consolidado (proposito, arquitetura, modulos e fluxo), veja `docs/system-overview.md`.
+
 ## Pastas principais
 
 ### `app/`

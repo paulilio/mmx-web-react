@@ -2,6 +2,8 @@
 
 Este documento cobre como rodar o projeto **com Docker** — tanto no modo desenvolvimento quanto no modo produção. Para rodar **sem Docker**, veja [`docs/local-development.md`](local-development.md).
 
+Para onboarding tecnico consolidado (proposito, arquitetura, modulos e fluxo), veja `docs/system-overview.md`.
+
 ---
 
 ## Pré-requisitos
@@ -33,7 +35,7 @@ scripts/
 
 ---
 
-## Setup inicial (uma vez)
+## Preparacao inicial (uma vez)
 
 Crie os arquivos de ambiente reais a partir dos exemplos. **Nunca commite os arquivos reais (`.env` sem `.example`).**
 

@@ -2,6 +2,8 @@
 
 Este documento cobre como rodar o projeto **sem Docker**, usando Node.js e pnpm diretamente. Para rodar **com Docker**, veja [`docs/docker.md`](docker.md).
 
+Para onboarding tecnico consolidado (proposito, arquitetura, modulos e fluxo), veja `docs/system-overview.md`.
+
 ## Requisitos
 
 - Node.js 22+
@@ -43,14 +45,14 @@ Variaveis principais:
 - `GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|GOOGLE_REDIRECT_URI`: configuracao do OAuth Google (`BE-06.1`)
 - `MICROSOFT_CLIENT_ID|MICROSOFT_CLIENT_SECRET|MICROSOFT_REDIRECT_URI|MICROSOFT_TENANT_ID`: configuracao do OAuth Microsoft (`BE-06.2`)
 
-## Como rodar localmente
+## Execucao local
 
 ```bash
 # desenvolvimento
 pnpm dev
 ```
 
-Aplicacao local:
+Aplicacao disponivel em:
 
 - `http://localhost:3000`
 

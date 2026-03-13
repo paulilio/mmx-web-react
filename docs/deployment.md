@@ -1,5 +1,7 @@
 # Deploy
 
+Para uma visao geral de onboarding tecnico (contexto do sistema, arquitetura e fluxo de dados), veja `docs/system-overview.md`.
+
 ## Desenvolvimento Local
 
 **Requisitos:** Node.js 22, pnpm
@@ -144,12 +146,12 @@ jobs:
 
 | Evento | Ambiente | URL |
 |---|---|---|
-| PR aberto / push em branch | Preview | `*.vercel.app` (unico por PR) |
+| PR aberto / push em branch | Ambiente de preview | `*.vercel.app` (unico por PR) |
 | Merge em `main` | Producao | Dominio customizado |
 
 **Fluxo de deploy:**
-1. Push para qualquer branch -> Vercel gera preview automaticamente
-2. Compartilhe a URL de preview com o time para revisao
+1. Push para qualquer branch -> Vercel gera ambiente de preview automaticamente
+2. Compartilhe a URL do ambiente de preview com o time para revisao
 3. Merge do PR em `main` -> deploy de producao e disparado
 
 **Versao do Node.js:** defina **22** em Vercel Project Settings -> General -> Node.js Version (igual ao `engines` do `package.json`).

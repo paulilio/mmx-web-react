@@ -1,5 +1,7 @@
 # Arquitetura
 
+Para onboarding tecnico consolidado (visao de produto, modulos, fluxo e deploy), veja `docs/system-overview.md`.
+
 ## Visao Geral do Sistema
 
 MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e hibrida (localStorage + API de primeira parte), com camada de adapter preparada para migracao incremental sem mudancas de UI.

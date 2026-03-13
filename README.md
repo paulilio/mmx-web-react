@@ -21,6 +21,80 @@ Atualmente, transacoes, categories, category-groups, contacts, budget, areas, se
 
 ---
 
+## Inicio Rapido
+
+Rode localmente em menos de 2 minutos:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Abrir: `http://localhost:3000`
+
+---
+
+## Arquitetura
+
+O backend segue arquitetura em camadas:
+
+`API -> Services -> Domain -> Repositories -> Prisma -> PostgreSQL`
+
+Essa estrutura separa:
+- transporte HTTP
+- regras de negocio
+- acesso a dados
+
+Diagrama simplificado:
+
+```text
+Frontend (React)
+	|
+	v
+Next.js API routes
+	|
+	v
+Services
+	|
+	v
+Domain
+	|
+	v
+Repositories
+	|
+	v
+Prisma
+	|
+	v
+PostgreSQL
+```
+
+---
+
+## Estrutura principal
+
+Visao rapida da estrutura do projeto:
+
+```text
+app/
+components/
+hooks/
+lib/
+  domain/
+  server/
+    services/
+    repositories/
+prisma/
+
+docs/
+docker/
+scripts/
+```
+
+Para a estrutura completa, veja `docs/project-structure.md`.
+
+---
+
 ## Desenvolvimento local
 
 ```bash
@@ -40,6 +114,23 @@ pnpm test:unit
 pnpm test:unit:watch
 pnpm test:integration
 pnpm build
+```
+
+---
+
+## Estrategia de testes
+
+Como testamos o projeto:
+
+- Testes unitarios: Vitest
+- Testes de integracao: Vitest + API routes + middleware
+- E2E (opcional): Playwright
+
+Comandos principais:
+
+```bash
+pnpm test:unit
+pnpm test:integration
 ```
 
 ---
@@ -66,6 +157,7 @@ CORS_ORIGINS_PROD=
 
 ## Documentacao
 
+- Onboarding tecnico: `docs/system-overview.md`
 - Arquitetura geral: `docs/architecture.md`
 - Contratos de API: `docs/api-contracts.md`
 - Deploy e CI: `docs/deployment.md`
@@ -79,7 +171,7 @@ CORS_ORIGINS_PROD=
 
 ## Docker (Checklist Rapido)
 
-Operacao recomendada com os atalhos `pnpm`:
+Operacao recomendada com atalhos `pnpm`:
 
 ```bash
 # preparar envs uma vez
@@ -105,7 +197,7 @@ pnpm docker:prod:down
 Observacoes:
 - `docker:dev:*` usa o projeto compose `mmx-dev`
 - `docker:prod:*` usa o projeto compose `mmx-prod`
-- Os comandos validam os env files obrigatorios antes de executar o compose
+- Os comandos validam env files obrigatorios antes de executar o compose
 
 ---
 
