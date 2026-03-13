@@ -106,6 +106,8 @@ pnpm docker:prod:down
 
 As migrações Prisma são aplicadas automaticamente no startup via `scripts/docker/migrate-and-start.sh`.
 
+Os comandos `pnpm docker:prod:*` usam o runner unificado `scripts/docker/run-compose.mjs` com validação prévia dos arquivos de ambiente obrigatórios.
+
 Variáveis obrigatórias em `docker/env/app.prod.env` para produção:
 - `DATABASE_URL` — já configurado para o container postgres do compose
 - `MMX_APP_ENV=production`

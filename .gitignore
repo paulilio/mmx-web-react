@@ -19,6 +19,10 @@ yarn-error.log*
 # env files
 .env*
 
+# docker env files (versionar apenas templates .example)
+docker/env/*.env
+!docker/env/*.env.example
+
 # vercel
 .vercel
 

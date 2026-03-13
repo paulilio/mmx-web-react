@@ -77,6 +77,38 @@ CORS_ORIGINS_PROD=
 
 ---
 
+## Docker (Checklist Rapido)
+
+Operacao recomendada com os atalhos `pnpm`:
+
+```bash
+# preparar envs uma vez
+cp docker/env/app.env.example docker/env/app.env
+cp docker/env/app.prod.env.example docker/env/app.prod.env
+cp docker/env/postgres.env.example docker/env/postgres.env
+
+# desenvolvimento
+pnpm docker:dev:up
+pnpm docker:dev:ps
+pnpm docker:dev:logs
+pnpm docker:dev:rebuild
+pnpm docker:dev:down
+
+# producao (self-hosted)
+pnpm docker:prod:up
+pnpm docker:prod:ps
+pnpm docker:prod:logs
+pnpm docker:prod:rebuild
+pnpm docker:prod:down
+```
+
+Observacoes:
+- `docker:dev:*` usa o projeto compose `mmx-dev`
+- `docker:prod:*` usa o projeto compose `mmx-prod`
+- Os comandos validam os env files obrigatorios antes de executar o compose
+
+---
+
 ## Convencoes
 
 - Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)

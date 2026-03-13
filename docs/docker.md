@@ -66,6 +66,13 @@ Usa `docker-compose.dev.yml`:
 - Banco PostgreSQL local em container
 - `node_modules` e `.next` preservados no container (não sobrescritos pelo bind mount)
 - Migrações Prisma rodadas automaticamente na inicialização
+- Projeto compose nomeado como `mmx-dev` (containers e volumes previsíveis)
+
+Atalho recomendado (com validacao de env files antes do compose):
+
+```bash
+pnpm docker:dev:up
+```
 
 ```bash
 # Subir a stack (app + postgres)
@@ -84,6 +91,15 @@ docker compose -f docker/compose/docker-compose.dev.yml down
 docker compose -f docker/compose/docker-compose.dev.yml down -v
 ```
 
+Atalhos adicionais via `pnpm`:
+
+```bash
+pnpm docker:dev:logs
+pnpm docker:dev:down
+pnpm docker:dev:rebuild
+pnpm docker:dev:ps
+```
+
 Aplicação disponível em: `http://localhost:3000`
 
 > **Nota:** edições no código são refletidas automaticamente via HMR. Não é necessário rebuild da imagem para mudanças de código.
@@ -93,7 +109,7 @@ Aplicação disponível em: `http://localhost:3000`
 Necessário apenas quando `package.json` ou `pnpm-lock.yaml` mudarem:
 
 ```bash
-docker compose -f docker/compose/docker-compose.dev.yml up --build
+pnpm docker:dev:rebuild
 ```
 
 ---
@@ -106,6 +122,7 @@ Usa `docker-compose.prod.yml`:
 - Healthcheck em `/api/health`
 - `restart: unless-stopped` na aplicação
 - Migrações Prisma rodadas via `scripts/docker/migrate-and-start.sh` no startup
+- Projeto compose nomeado como `mmx-prod` (isolado do ambiente dev)
 
 Atalho recomendado (com validacao de env files antes do compose):
 
@@ -132,6 +149,8 @@ Atalhos adicionais via `pnpm`:
 ```bash
 pnpm docker:prod:logs
 pnpm docker:prod:down
+pnpm docker:prod:rebuild
+pnpm docker:prod:ps
 ```
 
 ### Build isolado da imagem (sem compose)

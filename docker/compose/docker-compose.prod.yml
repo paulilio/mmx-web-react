@@ -1,3 +1,5 @@
+name: mmx-prod
+
 services:
 
   postgres:
