@@ -121,3 +121,83 @@ Estado atual de auth no frontend:
 - Rate limiting de auth em `lib/server/security/rate-limit.ts`
 - CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`
 - Gate de autorizacao central no `middleware.ts` para APIs protegidas (`401 AUTH_REQUIRED` sem access token)
+
+## Estrutura-alvo de modulos (backend)
+
+Objetivo: manter `modular monolith` com boundaries de dominio explicitos e baixo acoplamento.
+
+```text
+lib/server/
+        modules/
+                auth/
+                        auth.controller.ts
+                        auth.service.ts
+                        auth.repository.ts
+                        auth.domain.ts
+                        auth.types.ts
+
+                transactions/
+                        transactions.controller.ts
+                        transactions.service.ts
+                        transactions.repository.ts
+                        transactions.domain.ts
+                        transactions.types.ts
+
+                categories/
+                category-groups/
+                contacts/
+                budget/
+                reports/
+                settings/
+                areas/
+                users/
+
+        shared/
+                database/
+                http/
+                auth/
+```
+
+Regra fundamental de modulo:
+- um modulo nao acessa repository de outro modulo diretamente
+- colaboracao entre modulos ocorre via service contract (ou fachada explicita)
+
+Fluxo interno padrao de modulo:
+- controller -> service -> domain -> repository -> database
+
+## Plano de migracao em fases (sem quebra de API)
+
+Fase 0 - Baseline e contratos (sem mudanca funcional)
+- manter todos os endpoints atuais em `app/api/**`
+- congelar contrato de resposta `{ data, error }`
+- adicionar testes de contrato para rotas criticas
+
+Fase 1 - Estrutura de pastas e facades de modulo
+- criar `lib/server/modules/**` e mover codigo por dominio sem alterar assinaturas publicas
+- manter controllers atuais delegando para novas services de modulo
+- introduzir facades quando houver dependencias entre dominios
+
+Fase 2 - Isolamento de regras e repositorios
+- mover regras puras para `*.domain.ts` por modulo
+- restringir acesso Prisma ao repository layer
+- remover chamadas cruzadas `repository -> repository` entre modulos
+
+Fase 3 - Reports e composicao multi-modulo
+- consolidar `reports` como modulo agregador
+- `reports` pode ler via services de outros modulos, nunca por repository direto
+- validar performance e indices de banco para consultas analiticas
+
+Fase 4 - Ledger financeiro (fundacao para escala)
+- introduzir modulo `ledger` com modelo de lancamentos contabeis
+- manter compatibilidade com `transactions` durante transicao
+- migracao incremental de calculos de `budget` e `reports` para dados de ledger
+
+Fase 5 - Hardening final e preparacao para escala
+- auditoria de boundaries (lint/arquitetura)
+- cobertura de testes por modulo
+- readiness checklist para extracao futura (se necessario) de modulos para microservices
+
+Critico em todas as fases:
+- sem quebra de endpoint publico
+- sem mudanca de envelope HTTP
+- migracao guiada por testes de contrato e regressao
