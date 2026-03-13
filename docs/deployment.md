@@ -96,6 +96,14 @@ docker compose -f docker/compose/docker-compose.prod.yml up --build -d
 docker compose -f docker/compose/docker-compose.prod.yml logs -f app
 ```
 
+Atalho recomendado (com validacao previa de arquivos obrigatorios):
+
+```bash
+pnpm docker:prod:up
+pnpm docker:prod:logs
+pnpm docker:prod:down
+```
+
 As migrações Prisma são aplicadas automaticamente no startup via `scripts/docker/migrate-and-start.sh`.
 
 Variáveis obrigatórias em `docker/env/app.prod.env` para produção:

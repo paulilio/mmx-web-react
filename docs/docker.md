@@ -107,6 +107,12 @@ Usa `docker-compose.prod.yml`:
 - `restart: unless-stopped` na aplicação
 - Migrações Prisma rodadas via `scripts/docker/migrate-and-start.sh` no startup
 
+Atalho recomendado (com validacao de env files antes do compose):
+
+```bash
+pnpm docker:prod:up
+```
+
 ```bash
 # Build e subir a stack completa
 docker compose -f docker/compose/docker-compose.prod.yml up --build
@@ -119,6 +125,13 @@ docker compose -f docker/compose/docker-compose.prod.yml logs -f app
 
 # Parar
 docker compose -f docker/compose/docker-compose.prod.yml down
+```
+
+Atalhos adicionais via `pnpm`:
+
+```bash
+pnpm docker:prod:logs
+pnpm docker:prod:down
 ```
 
 ### Build isolado da imagem (sem compose)
