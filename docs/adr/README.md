@@ -48,7 +48,6 @@ docs/
     0003-adopt-clean-architecture.md
     0004-auth-local-session-first.md
     0005-adopt-backend-jwt-auth.md
-    0012-adopt-domain-bounded-modular-monolith-structure.md
     ...
 ```
 

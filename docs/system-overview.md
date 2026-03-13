@@ -170,7 +170,6 @@ pnpm test:integration
 
 Referencias detalhadas:
 - arquitetura: `docs/architecture.md`
-- ADR de modularizacao por dominio: `docs/adr/0012-adopt-domain-bounded-modular-monolith-structure.md`
 - estrutura de pastas: `docs/project-structure.md`
 - deploy e CI: `docs/deployment.md`
 - operacao Docker: `docs/docker.md`
