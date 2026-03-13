@@ -12,18 +12,8 @@ const { serviceMock } = vi.hoisted(() => {
   }
 })
 
-vi.mock("../../../lib/server/services/category-group-service", () => ({
-  CategoryGroupService: vi.fn(
-    class {
-      constructor() {
-        return serviceMock
-      }
-    },
-  ),
-}))
-
-vi.mock("../../../lib/server/repositories/category-group-repository", () => ({
-  CategoryGroupRepository: vi.fn(),
+vi.mock("@/lib/server/services", () => ({
+  categoryGroupService: serviceMock,
 }))
 
 import { GET, POST } from "./route"

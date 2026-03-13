@@ -10,18 +10,8 @@ const { reportServiceMock } = vi.hoisted(() => {
   }
 })
 
-vi.mock("@/lib/server/repositories", () => ({
-  transactionRepository: {},
-}))
-
-vi.mock("@/lib/server/services/report-service", () => ({
-  ReportService: vi.fn(
-    class {
-      constructor() {
-        return reportServiceMock
-      }
-    },
-  ),
+vi.mock("@/lib/server/services", () => ({
+  reportService: reportServiceMock,
 }))
 
 import { GET } from "./route"

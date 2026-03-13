@@ -1,12 +1,9 @@
 import { NextRequest } from "next/server"
 import { fail, ok } from "@/lib/server/http/api-response"
 import { resolveUserId } from "@/lib/server/http/transactions-mapper"
-import { transactionRepository } from "@/lib/server/repositories"
-import { ReportService } from "@/lib/server/services/report-service"
+import { reportService } from "@/lib/server/services"
 
 export const runtime = "nodejs"
-
-const reportService = new ReportService(transactionRepository)
 
 export async function GET(request: NextRequest) {
   try {

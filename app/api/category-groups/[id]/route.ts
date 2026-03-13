@@ -5,12 +5,9 @@ import {
   parseCategoryGroupStatus,
   resolveUserId,
 } from "../../../../lib/server/http/category-groups-mapper"
-import { CategoryGroupRepository } from "../../../../lib/server/repositories/category-group-repository"
-import { CategoryGroupService } from "../../../../lib/server/services/category-group-service"
+import { categoryGroupService } from "@/lib/server/services"
 
 export const runtime = "nodejs"
-
-const categoryGroupService = new CategoryGroupService(new CategoryGroupRepository())
 
 export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
