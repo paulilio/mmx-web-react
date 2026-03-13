@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const { userRepositoryMock, googleOAuthServiceMock } = vi.hoisted(() => ({
-  userRepositoryMock: {
-    findByEmail: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
+const { oauthAuthServiceMock, googleOAuthServiceMock } = vi.hoisted(() => ({
+  oauthAuthServiceMock: {
+    loginWithGoogleProfile: vi.fn(),
   },
   googleOAuthServiceMock: {
     resolveGoogleOAuthConfig: vi.fn(),
@@ -12,8 +10,8 @@ const { userRepositoryMock, googleOAuthServiceMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock("../../../../../../lib/server/repositories", () => ({
-  userRepository: userRepositoryMock,
+vi.mock("@/lib/server/services", () => ({
+  oauthAuthService: oauthAuthServiceMock,
 }))
 
 vi.mock("../../../../../../lib/server/services/google-oauth-service", () => googleOAuthServiceMock)
@@ -72,13 +70,15 @@ describe("/api/auth/oauth/google/callback", () => {
       picture: "https://img.test/u.png",
     })
 
-    userRepositoryMock.findByEmail.mockResolvedValueOnce(null)
-    userRepositoryMock.create.mockResolvedValueOnce({
-      id: "u1",
-      email: "novo@mmx.com",
-      firstName: "Novo",
-      lastName: "Usuario",
-      planType: "FREE",
+      oauthAuthServiceMock.loginWithGoogleProfile.mockResolvedValueOnce({
+        isNewUser: true,
+        user: {
+          id: "u1",
+          email: "novo@mmx.com",
+          firstName: "Novo",
+          lastName: "Usuario",
+          planType: "FREE",
+        },
     })
 
     const request = makeRequest("http://localhost:3000/api/auth/oauth/google/callback?code=abc&state=state-1")
@@ -87,8 +87,7 @@ describe("/api/auth/oauth/google/callback", () => {
 
     expect(response.status).toBe(200)
     expect(payload.data.isNewUser).toBe(true)
-    expect(userRepositoryMock.create).toHaveBeenCalledTimes(1)
-    expect(userRepositoryMock.update).not.toHaveBeenCalled()
+      expect(oauthAuthServiceMock.loginWithGoogleProfile).toHaveBeenCalledTimes(1)
   })
 
   it("faz login idempotente quando usuario ja existe", async () => {
@@ -99,20 +98,15 @@ describe("/api/auth/oauth/google/callback", () => {
       picture: "https://img.test/u2.png",
     })
 
-    userRepositoryMock.findByEmail.mockResolvedValueOnce({
-      id: "u2",
-      email: "existente@mmx.com",
-      firstName: "Usuario",
-      lastName: "Existente",
-      planType: "FREE",
-      profilePhoto: null,
-    })
-    userRepositoryMock.update.mockResolvedValueOnce({
-      id: "u2",
-      email: "existente@mmx.com",
-      firstName: "Usuario",
-      lastName: "Existente",
-      planType: "FREE",
+      oauthAuthServiceMock.loginWithGoogleProfile.mockResolvedValueOnce({
+        isNewUser: false,
+        user: {
+          id: "u2",
+          email: "existente@mmx.com",
+          firstName: "Usuario",
+          lastName: "Existente",
+          planType: "FREE",
+        },
     })
 
     const request = makeRequest("http://localhost:3000/api/auth/oauth/google/callback?code=abc&state=state-1")
@@ -121,7 +115,6 @@ describe("/api/auth/oauth/google/callback", () => {
 
     expect(response.status).toBe(200)
     expect(payload.data.isNewUser).toBe(false)
-    expect(userRepositoryMock.create).not.toHaveBeenCalled()
-    expect(userRepositoryMock.update).toHaveBeenCalledTimes(1)
+      expect(oauthAuthServiceMock.loginWithGoogleProfile).toHaveBeenCalledTimes(1)
   })
 })

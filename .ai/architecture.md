@@ -23,6 +23,7 @@
 
 ## Data and Persistence Boundary
 - Adapter entrypoint for UI/hook calls: `lib/client/api.ts`.
+- Server composition root for route dependencies: `lib/server/services/index.ts`.
 - Storage support (mock mode and migration): `lib/server/storage.ts`, `lib/server/persistence-service.ts`, `lib/server/migration-service.ts`, `lib/server/user-data-service.ts`.
 - First-party API domains already migrated:
   - transactions
@@ -63,3 +64,6 @@
 - Do not bypass `lib/client/api.ts` from UI code.
 - Do not move business rules from domain/service to page components.
 - Prefer reusing `lib/server/security/*` for cross-cutting concerns rather than route-local duplication.
+- In `app/api/**`, import service instances from `lib/server/services` and avoid direct imports from `lib/server/repositories/**` or `lib/server/db/prisma`.
+- Do not instantiate services inside route files; use composition from `lib/server/services/index.ts`.
+- Keep `.eslintrc.json` architecture guardrails (`no-restricted-imports` for `app/api/**/route.ts`) intact.

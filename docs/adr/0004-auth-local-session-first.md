@@ -2,7 +2,7 @@
 
 Date: 2026-02-24
 Status: Superseded
-Supersedes: ADR-XXXX (optional)
+Supersedes: -
 Superseded by: ADR-0005
 
 ## Context

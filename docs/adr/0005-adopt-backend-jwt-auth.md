@@ -3,7 +3,7 @@
 Date: 2026-03-06
 Status: Accepted
 Supersedes: ADR-0004
-Superseded by: ADR-XXXX (optional)
+Superseded by: -
 
 ## Context
 

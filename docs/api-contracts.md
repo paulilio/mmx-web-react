@@ -4,8 +4,8 @@
 
 Todas as chamadas de API passam por `lib/client/api.ts`.
 
-- Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adapters locais.
-- Rotas Next.js de primeira parte ja estao ativas para transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, settings, auth e reports (`summary`, `aging`, `cashflow`).
+- Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adaptadores locais.
+- Rotas Next.js de primeira parte ja estao ativas para transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`) e relatorios (`summary`, `aging`, `cashflow`).
 - Auth base em backend ja ativo: `register/login` com hash de senha (`bcryptjs`) e update de `lastLogin` no login.
 - Auth JWT ja ativo com access+refresh token, rotacao/revogacao de refresh e logout.
 
@@ -27,15 +27,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 ```
 
-### Comportamento atual do adapter cliente
+### Comportamento atual do adaptador cliente
 
-- Em `NEXT_PUBLIC_USE_API=true`, o adapter aceita:
+- Em `NEXT_PUBLIC_USE_API=true`, o adaptador aceita:
   - payload com envelope `{ data, error }` (padrao atual)
   - payload legado sem envelope (compatibilidade temporaria)
 - Em `NEXT_PUBLIC_USE_API=true`, chamadas externas roteadas para `NEXT_PUBLIC_API_BASE` enviam `credentials: "include"` para suportar auth cookie-based cross-origin.
-- Em `NEXT_PUBLIC_USE_API=true`, chamadas first-party (`/api/*`) mantem comportamento atual de roteamento interno.
-- Se vier `error` no envelope, o adapter lanca `ApiError` explicitamente.
-- Se a API estiver indisponivel (erro de rede), o adapter lanca erro explicito de conectividade (`ApiError` com `status: 0`).
+- Em `NEXT_PUBLIC_USE_API=true`, chamadas de primeira parte (`/api/*`) mantem comportamento atual de roteamento interno.
+- Se vier `error` no envelope, o adaptador lanca `ApiError` explicitamente.
+- Se a API estiver indisponivel (erro de rede), o adaptador lanca erro explicito de conectividade (`ApiError` com `status: 0`).
 - Nao ha fallback automatico para mock em indisponibilidade de API no modo `USE_API=true`.
 
 ### Estado atual da migracao de auth no frontend
@@ -148,7 +148,7 @@ Observacao reports atual:
 
 Observacao settings atual:
 - No frontend, os fluxos de manutencao de settings (import/export/clear) usam `hooks/use-settings-maintenance.ts` e boundary `lib/client/api.ts`.
-- Em `NEXT_PUBLIC_USE_API=true`, o adapter roteia `/settings/*` para first-party (`/api/settings/*`).
+- Em `NEXT_PUBLIC_USE_API=true`, o adaptador roteia `/settings/*` para primeira parte (`/api/settings/*`).
 - A tela `app/settings/page.tsx` nao deve acessar storage/localStorage diretamente para manutencao de dados.
 
 POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }

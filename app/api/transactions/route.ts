@@ -1,8 +1,5 @@
 import { NextRequest } from "next/server"
 import { transactionService } from "@/lib/server/services"
-import type {
-  DomainTransactionType,
-} from "@/lib/domain/transactions/transaction-entity"
 import { fail, ok } from "@/lib/server/http/api-response"
 import {
   mapTransaction,
@@ -79,12 +76,17 @@ export async function POST(request: NextRequest) {
       return fail(400, "INVALID_INPUT", "Campos obrigatorios: date, type, categoryId")
     }
 
+      const parsedType = parseTransactionType(body.type)
+      if (!parsedType) {
+        return fail(400, "INVALID_INPUT", "Tipo da transacao invalido")
+      }
+
     const created = await transactionService.create(
       {
         userId,
         description: body.description ?? "",
         amount: Number(body.amount ?? 0),
-        type: parseTransactionType(body.type) as DomainTransactionType,
+          type: parsedType,
         categoryId: body.categoryId,
         date: body.date,
         status: parseTransactionStatus(body.status),

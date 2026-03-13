@@ -48,7 +48,9 @@ No projeto atual, a camada server esta organizada em `lib/server/`.
 Exemplos:
 
 - `lib/server/services/`
+- `lib/server/services/index.ts` (composition root consumido por `app/api/**`)
 - `lib/server/services/auth-service.ts`
+- `lib/server/services/oauth-auth-service.ts`
 - `lib/server/repositories/`
 - `lib/server/db/prisma.ts`
 - `lib/server/security/rate-limit.ts`
@@ -56,9 +58,9 @@ Exemplos:
 - `lib/server/security/password-hash.ts`
 - `lib/server/services/settings-maintenance-service.ts`
 
-### `app/api/settings/` (first-party)
+### `app/api/settings/` (primeira parte)
 
-Rotas de manutencao de dados da tela de settings em API mode.
+Rotas de manutencao de dados da tela de settings no modo API.
 
 Exemplos:
 
@@ -88,7 +90,7 @@ Exemplos:
 
 ## Outras pastas relevantes
 
-- `lib/client/`: adapter de API para consumo no cliente
+- `lib/client/`: adaptador de API para consumo no cliente
 - `lib/shared/`: tipos, utils e configuracoes compartilhadas
 - `prisma/`: schema e migrations do banco
 - `docs/`: documentacao tecnica
@@ -99,3 +101,7 @@ Exemplos:
 ```text
 app/api -> lib/server/services -> lib/domain -> lib/server/repositories -> Prisma/PostgreSQL
 ```
+
+Regra de fronteira atual:
+- `app/api/**/route.ts` deve depender de instancias de `lib/server/services/index.ts`
+- imports diretos de `lib/server/repositories/**` e `lib/server/db/prisma` em rotas sao bloqueados por guardrail no `.eslintrc.json`

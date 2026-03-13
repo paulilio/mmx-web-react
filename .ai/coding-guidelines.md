@@ -51,6 +51,8 @@
 
 ## API and Security Rules
 - Prefer implementing backend behavior in `app/api/**` + `lib/server/**` layers.
+- In `app/api/**`, import service instances from `lib/server/services` (composition root in `lib/server/services/index.ts`).
+- Do not import `lib/server/repositories/**` or `lib/server/db/prisma` directly in route handlers.
 - Keep cross-cutting controls centralized:
   - CORS in `lib/server/security/cors.ts` + `middleware.ts`
   - rate limiting in `lib/server/security/rate-limit.ts`
@@ -63,3 +65,8 @@
 - Do not introduce new direct storage access in feature UI.
 - Do not add production-path test shortcuts or hardcoded auth tokens/codes.
 - Do not bypass `lib/client/api.ts` from hooks/pages.
+
+## Documentation Governance
+- For architecture/contracts/security/runtime changes, execute `docs/documentation-governance-checklist.md` before finalizing.
+- Keep `README.md`, `docs/**`, `AGENTS.md`, `.github/copilot-instructions.md`, and `.ai/**` synchronized with implemented behavior.
+- Avoid documenting placeholders or planned states as current behavior.

@@ -71,8 +71,8 @@ Each ADR should follow a simple and consistent format.
 
 Date: YYYY-MM-DD  
 Status: Proposed | Accepted | Rejected | Deprecated | Superseded
-Supersedes: ADR-XXXX (optional)
-Superseded by: ADR-XXXX (optional)
+Supersedes: -
+Superseded by: -
 
 ## Context
 
@@ -170,8 +170,8 @@ Architecture evolution becomes traceable over time.
 
 Date: 2026-03-06
 Status: Accepted
-Supersedes: ADR-0000 (optional)
-Superseded by: ADR-XXXX (optional)
+Supersedes: -
+Superseded by: -
 
 ## Context
 The system requires a relational database with strong transactional guarantees.

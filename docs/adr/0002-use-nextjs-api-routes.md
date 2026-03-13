@@ -2,8 +2,8 @@
 
 Date: 2026-02-20
 Status: Accepted
-Supersedes: ADR-XXXX (optional)
-Superseded by: ADR-XXXX (optional)
+Supersedes: -
+Superseded by: -
 
 ## Context
 

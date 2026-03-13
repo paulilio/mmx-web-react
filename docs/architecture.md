@@ -4,7 +4,7 @@ Para onboarding tecnico consolidado (visao de produto, modulos, fluxo e deploy),
 
 ## Visao Geral do Sistema
 
-MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e hibrida (localStorage + API de primeira parte), com camada de adapter preparada para migracao incremental sem mudancas de UI.
+MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e hibrida (localStorage + API de primeira parte), com camada de adaptador preparada para migracao incremental sem mudancas de UI.
 
 ## Stack
 
@@ -28,18 +28,19 @@ Hooks customizados (use-transactions, use-budget, use-auth ...)
         ↓
 Camada de servicos (lib/server/persistence-service, lib/server/storage, lib/server/user-data-service)
         ↓
-Repositorio / adapter (lib/client/api.ts  <- substituir mock adapters progressivamente)
+Repositorio / adaptador (lib/client/api.ts  <- substituir adaptadores mock progressivamente)
         ↓
-localStorage (mock) | REST API (production)
+localStorage (mock) | REST API (producao)
 \`\`\`
 
 ## Fluxo de Dados
 
 1. A pagina renderiza e chama o hook de dominio (ex.: `useTransactions`)
 2. O hook chama o servico de persistencia, que chama `lib/client/api.ts`
-3. `lib/client/api.ts` le/escreve adapters locais e roteia para endpoints de primeira parte ja conectados no adapter (`/api/transactions`, `/api/categories`, `/api/category-groups`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/settings/*`, `/api/auth`, `/api/reports/*`)
-4. Rotas first-party para `category-groups` e `reports` (`summary`, `aging`, `cashflow`) estao implementadas em `app/api/**` e ja convergidas no adapter (`resolveApiUrl`).
-4. O hook retorna dados tipados e o componente re-renderiza
+3. `lib/client/api.ts` le/escreve adaptadores locais e roteia para endpoints de primeira parte ja conectados no adaptador (`/api/transactions`, `/api/categories`, `/api/category-groups`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/settings/*`, `/api/auth`, `/api/reports/*`)
+4. Rotas de primeira parte para `category-groups` e `reports` (`summary`, `aging`, `cashflow`) estao implementadas em `app/api/**` e ja convergidas no adaptador (`resolveApiUrl`).
+5. Rotas em `app/api/**` consomem instancias do composition root (`lib/server/services/index.ts`) e nao importam `repositories/prisma` diretamente.
+6. O hook retorna dados tipados e o componente re-renderiza
 
 ## Isolamento por Usuario
 
@@ -74,7 +75,7 @@ docs/                 # This folder
 |---|---|
 | Auth context | `hooks/use-auth.tsx` |
 | Session | `hooks/use-session.ts` |
-| Storage adapter | `lib/client/api.ts` |
+| Adaptador de storage/API | `lib/client/api.ts` |
 | Multi-user migration | `lib/server/migration-service.ts` |
 | Audit log | `lib/shared/audit-logger.ts` |
 | Route protection | `middleware.ts` + `components/auth/auth-guard.tsx` |
@@ -93,11 +94,11 @@ Estado atual de auth no frontend:
         - contacts
         - budget + budget-allocations
         - areas
-- Reports first-party:
+- Relatorios de primeira parte:
         - `summary` ativo (`/api/reports/summary`)
         - `aging` ativo (`/api/reports/aging`)
         - `cashflow` ativo (`/api/reports/cashflow`)
-- Settings maintenance first-party:
+- Manutencao de configuracoes de primeira parte:
         - `import` ativo (`/api/settings/import`)
         - `export` ativo (`/api/settings/export`)
         - `clear` ativo (`/api/settings/clear`)
@@ -107,6 +108,7 @@ Estado atual de auth no frontend:
         - `POST /api/auth/refresh`
         - `POST /api/auth/logout`
         - `lib/server/services/auth-service.ts` (register/login)
+        - `lib/server/services/oauth-auth-service.ts` (orquestracao de callback OAuth Google/Microsoft)
         - `lib/domain/auth/auth-rules.ts` (validacoes de auth)
         - `lib/server/security/password-hash.ts` (`bcryptjs` para hash/compare)
         - `lib/server/security/jwt.ts` (access/refresh token)
@@ -115,9 +117,10 @@ Estado atual de auth no frontend:
 ## Hardening HTTP (estado atual)
 
 - Envelope padrao de resposta: `{ data, error }` em `lib/server/http/api-response.ts`
-- Adapter cliente em `NEXT_PUBLIC_USE_API=true` desembrulha envelope e mantem compatibilidade legada temporaria (sem envelope) apenas no proprio adapter.
-- Erros de envelope e indisponibilidade de API sao explicitos (`ApiError`), sem fallback automatico para mock em API mode.
+- Adaptador cliente em `NEXT_PUBLIC_USE_API=true` desembrulha envelope e mantem compatibilidade legada temporaria (sem envelope) apenas no proprio adaptador.
+- Erros de envelope e indisponibilidade de API sao explicitos (`ApiError`), sem fallback automatico para mock no modo API.
 - Em settings, manutencao de dados no frontend foi convergida para `hooks/use-settings-maintenance.ts` + `lib/client/api.ts` (sem bypass direto para storage/localStorage na pagina).
 - Rate limiting de auth em `lib/server/security/rate-limit.ts`
 - CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`
 - Gate de autorizacao central no `middleware.ts` para APIs protegidas (`401 AUTH_REQUIRED` sem access token)
+- Guardrail de arquitetura no `.eslintrc.json`: `no-restricted-imports` bloqueando import direto de `lib/server/repositories/**` e `lib/server/db/prisma` em `app/api/**/route.ts`

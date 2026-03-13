@@ -1,34 +1,12 @@
 import { NextRequest } from "next/server"
 import { fail, ok } from "../../../../../../lib/server/http/api-response"
-import { userRepository } from "../../../../../../lib/server/repositories"
+import { oauthAuthService } from "@/lib/server/services"
 import { setAuthCookies } from "../../../../../../lib/server/security/auth-cookies"
 import { issueAccessToken, issueRefreshToken } from "../../../../../../lib/server/security/jwt"
 import { persistRefreshSession } from "../../../../../../lib/server/security/refresh-session-store"
 import { exchangeMicrosoftCodeForProfile, resolveMicrosoftOAuthConfig } from "../../../../../../lib/server/services/microsoft-oauth-service"
 
 export const runtime = "nodejs"
-
-function splitName(fullName?: string): { firstName: string; lastName: string } {
-  if (!fullName) {
-    return {
-      firstName: "Usuario",
-      lastName: "Microsoft",
-    }
-  }
-
-  const parts = fullName.trim().split(/\s+/)
-  if (parts.length === 1) {
-    return {
-      firstName: parts[0] || "Usuario",
-      lastName: "Microsoft",
-    }
-  }
-
-  return {
-    firstName: parts[0] || "Usuario",
-    lastName: parts.slice(1).join(" ") || "Microsoft",
-  }
-}
 
 export async function GET(request: NextRequest) {
   const config = resolveMicrosoftOAuthConfig(request)
@@ -52,62 +30,23 @@ export async function GET(request: NextRequest) {
   try {
     const profile = await exchangeMicrosoftCodeForProfile({ code, config })
 
-    const existingUser = await userRepository.findByEmail(profile.email)
+      const { user, isNewUser } = await oauthAuthService.loginWithMicrosoftProfile(profile)
 
-    if (existingUser) {
-      const updatedUser = await userRepository.update(existingUser.id, {
-        isEmailConfirmed: true,
-        lastLogin: new Date(),
-      })
-
-      const accessTokenResult = issueAccessToken({ id: updatedUser.id, email: updatedUser.email })
-      const refreshTokenResult = issueRefreshToken({ id: updatedUser.id, email: updatedUser.email })
-      persistRefreshSession(refreshTokenResult.token, updatedUser.id, refreshTokenResult.expiresInSeconds)
-
-      const response = ok({
-        accessToken: accessTokenResult.token,
-        refreshToken: refreshTokenResult.token,
-        expiresIn: accessTokenResult.expiresInSeconds,
-        isNewUser: false,
-        user: {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          firstName: updatedUser.firstName,
-          lastName: updatedUser.lastName,
-          planType: updatedUser.planType,
-        },
-      })
-
-      response.cookies.delete("mmx_oauth_state_microsoft")
-      return setAuthCookies(response, accessTokenResult.token, refreshTokenResult.token)
-    }
-
-    const nameFromProfile = splitName(profile.fullName)
-    const createdUser = await userRepository.create({
-      email: profile.email,
-      passwordHash: null,
-      firstName: profile.givenName || nameFromProfile.firstName,
-      lastName: profile.familyName || nameFromProfile.lastName,
-      isEmailConfirmed: true,
-      planType: "FREE",
-      lastLogin: new Date(),
-    })
-
-    const accessTokenResult = issueAccessToken({ id: createdUser.id, email: createdUser.email })
-    const refreshTokenResult = issueRefreshToken({ id: createdUser.id, email: createdUser.email })
-    persistRefreshSession(refreshTokenResult.token, createdUser.id, refreshTokenResult.expiresInSeconds)
+      const accessTokenResult = issueAccessToken({ id: user.id, email: user.email })
+      const refreshTokenResult = issueRefreshToken({ id: user.id, email: user.email })
+      persistRefreshSession(refreshTokenResult.token, user.id, refreshTokenResult.expiresInSeconds)
 
     const response = ok({
       accessToken: accessTokenResult.token,
       refreshToken: refreshTokenResult.token,
       expiresIn: accessTokenResult.expiresInSeconds,
-      isNewUser: true,
+        isNewUser,
       user: {
-        id: createdUser.id,
-        email: createdUser.email,
-        firstName: createdUser.firstName,
-        lastName: createdUser.lastName,
-        planType: createdUser.planType,
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          planType: user.planType,
       },
     })
 

@@ -3,7 +3,7 @@
 Frontend web do projeto **MMX**, construido com **Next.js + TypeScript**.
 
 O repositorio esta em modo **mock-first com migracao incremental para backend real**.
-Atualmente, transacoes, categories, category-groups, contacts, budget, areas, settings e reports (`summary`, `aging`, `cashflow`) ja possuem rotas backend em `app/api/**`.
+Atualmente, transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`) e relatorios (`reports/summary`, `reports/aging`, `reports/cashflow`) ja possuem rotas backend em `app/api/**`.
 
 ---
 
@@ -44,6 +44,10 @@ Essa estrutura separa:
 - transporte HTTP
 - regras de negocio
 - acesso a dados
+
+Regra atual de composicao no backend:
+- `app/api/**` consome instancias do composition root em `lib/server/services/index.ts`
+- rotas nao devem importar repositories/prisma diretamente
 
 Diagrama simplificado:
 
@@ -212,16 +216,19 @@ Observacoes:
 
 ## Status atual (resumo)
 
-- Fluxo completo em transacoes, categories, category-groups, contacts, budget e areas: `API -> Service -> Domain -> Repository -> Prisma`
+- Fluxo completo em transacoes, categorias, grupos de categorias, contatos, orcamento e areas: `API -> Service -> Domain -> Repository -> Prisma`
 - Budget no frontend convergido em E3: `use-budget-allocations` como caminho principal; `use-budget.ts` mantido apenas como legado de compatibilidade transitoria
-- Reports first-party ativos em `app/api/reports/summary`, `app/api/reports/aging` e `app/api/reports/cashflow`
-- Settings maintenance first-party ativo em `app/api/settings/import`, `app/api/settings/export` e `app/api/settings/clear`
+- Relatorios de primeira parte ativos em `app/api/reports/summary`, `app/api/reports/aging` e `app/api/reports/cashflow`
+- Manutencao de configuracoes de primeira parte ativa em `app/api/settings/import`, `app/api/settings/export` e `app/api/settings/clear`
 - Settings no frontend convergido para boundary: `app/settings/page.tsx` usa `hooks/use-settings-maintenance.ts` + `lib/client/api.ts` (sem acesso direto a storage/localStorage)
 - Contrato HTTP padronizado com envelope `{ data, error }`
 - Adapter cliente (`lib/client/api.ts`) em `NEXT_PUBLIC_USE_API=true`: desembrulha envelope, aceita payload legado sem envelope temporariamente, envia `credentials: "include"` para chamadas externas via `API_BASE` e lanca erro explicito de conectividade (`ApiError`, `status: 0`) sem fallback automatico para mock
 - Endpoints de auth backend: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
 - OAuth Google backend: `GET /api/auth/oauth/google` + `GET /api/auth/oauth/google/callback`
 - OAuth Microsoft backend: `GET /api/auth/oauth/microsoft` + `GET /api/auth/oauth/microsoft/callback`
+- OAuth callback orquestrado por `lib/server/services/oauth-auth-service.ts`
+- Composition root backend consolidado em `lib/server/services/index.ts`
+- Guardrail de arquitetura ativo em `.eslintrc.json` para bloquear import direto de `repositories/prisma` em `app/api/**/route.ts`
 - Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
 - Auth backend base concluido: hash de senha com `bcryptjs`, `AuthService` e atualizacao de `lastLogin` no login
 - Auth JWT concluido: emissao/validacao de access+refresh token, `POST /api/auth/logout` e gate central de autorizacao para APIs protegidas no `middleware.ts`

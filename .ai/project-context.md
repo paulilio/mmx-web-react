@@ -7,9 +7,11 @@
 
 ## Current Backend Coverage
 - Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
+- API route composition is centralized in `lib/server/services/index.ts`; route handlers should consume service instances from this composition root.
 - Auth base is implemented with `AuthService` (`register/login`), password hashing via `bcryptjs`, and `lastLogin` update on successful login.
 - JWT auth is active with access+refresh tokens, refresh rotation/revocation, and logout route (`POST /api/auth/logout`).
 - OAuth providers implemented: Google and Microsoft.
+- OAuth callback create/update/login orchestration is centralized in `lib/server/services/oauth-auth-service.ts`.
 - API hardening implemented: rate limiting on auth endpoints, CORS by environment, security headers, secure auth cookies, and central middleware auth gate for protected APIs.
 
 ## Current Frontend Auth Status
@@ -68,4 +70,5 @@
 - Prefer extending existing hook/service/repository patterns instead of parallel flows.
 - Keep auth/security cross-cutting logic under `lib/server/security/**`.
 - When updating docs, keep `.ai/*`, `README.md`, and `docs/*` consistent with each other.
+- For architecture/contracts/security/runtime updates, use `docs/documentation-governance-checklist.md` before finalizing.
 - Before finalizing: run `pnpm test:unit`, `pnpm test:integration`, `pnpm type-check`, `pnpm build`, `pnpm lint`, and `pnpm validate:env` as needed.

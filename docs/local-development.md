@@ -39,7 +39,7 @@ MICROSOFT_TENANT_ID=common
 Variaveis principais:
 
 - `NEXT_PUBLIC_USE_API`: `false` usa modo mock/local; `true` usa chamadas de API
-- `NEXT_PUBLIC_API_BASE`: URL base para endpoints externos ainda nao first-party quando `NEXT_PUBLIC_USE_API=true`
+- `NEXT_PUBLIC_API_BASE`: URL base para endpoints externos ainda nao de primeira parte quando `NEXT_PUBLIC_USE_API=true`
 - `MMX_APP_ENV`: ambiente efetivo para politicas server (`development|staging|production`)
 - `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
 - `GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|GOOGLE_REDIRECT_URI`: configuracao do OAuth Google (`BE-06.1`)
@@ -90,7 +90,7 @@ pnpm prisma:studio
 
 - Em modo mock (`NEXT_PUBLIC_USE_API=false`), o projeto funciona sem backend completo e sem PostgreSQL.
 - Em modo API (`NEXT_PUBLIC_USE_API=true`), é necessário PostgreSQL com `DATABASE_URL` configurado no `.env.local`.
-- Dominios com rotas de primeira parte ja ativos: transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, settings, auth, reports/summary, reports/aging e reports/cashflow.
+- Dominios com rotas de primeira parte ja ativos: transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`), `reports/summary`, `reports/aging` e `reports/cashflow`.
 
 ---
 

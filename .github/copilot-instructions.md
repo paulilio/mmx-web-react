@@ -11,6 +11,8 @@
 - Keep this layered flow:
   - client: `app/**` -> `components/**` -> `hooks/**` -> `lib/client/api.ts`
   - server: `app/api/**` -> `lib/server/services/**` -> `lib/domain/**` -> `lib/server/repositories/**` -> Prisma
+- In `app/api/**`, consume service instances from `lib/server/services` (composition root in `lib/server/services/index.ts`).
+- Do not instantiate services in route files and do not import repositories/prisma directly in route handlers.
 - Keep route UI in `app/**/page.tsx`; keep reusable UI in `components/**`.
 - Keep business rules in hooks/services/domain; hooks must not render JSX.
 - Respect route/session protection setup: `middleware.ts`, `components/auth/auth-guard.tsx`, `components/auth/session-monitor.tsx`.
@@ -43,6 +45,7 @@
 - Current frontend auth migration status: in `NEXT_PUBLIC_USE_API=true`, `use-auth` login/logout use `POST /api/auth/login|logout`, `use-session` refresh uses `POST /api/auth/refresh`, and auth bootstrap no longer depends on local `auth_session`.
 - Current budget hook convergence status (E3): `use-budget-allocations` is the primary path for active product flows; `use-budget.ts` remains only as legacy compatibility during transition.
 - Current settings maintenance status: `import/export/clear` now run via first-party routes (`/api/settings/*`) and `hooks/use-settings-maintenance.ts`; `app/settings/page.tsx` must not access storage/localStorage directly for these flows.
+- Current OAuth callback orchestration status: Google/Microsoft callbacks delegate user create/update/login flow to `lib/server/services/oauth-auth-service.ts`.
 - Use typed errors where possible (for example `ApiError`) and avoid exposing raw technical errors in UI.
 
 ## Security Baseline (Do Not Regress)
@@ -72,9 +75,10 @@
 - In `app/api/**` tests, prioritize status/envelope/security assertions (for example `429`, CORS behavior, cookie emission).
 
 ## AI Contribution Workflow
-- Before editing, read: `AGENTS.md`, then `.ai/project-context.md`, `.ai/architecture.md`, `.ai/coding-guidelines.md`, `.ai/testing-guidelines.md`, `.ai/repo-map.md`.
+- Before editing, read: `AGENTS.md`, then `.ai/project-context.md`, `.ai/architecture.md`, `.ai/coding-guidelines.md`, `.ai/testing-guidelines.md`, `.ai/repo-map.md`, `.ai/documentation-governance.md`.
 - Prefer extending existing hooks/services/repositories rather than creating parallel patterns.
 - If architecture/contracts/security behavior changes, update docs consistently: `README.md`, `docs/**`, `.ai/**`, `AGENTS.md`, and this file.
+- For architecture/contracts/security/runtime changes, execute `docs/documentation-governance-checklist.md` before finalizing and reflect impacted files in the PR summary.
 
 ## Validation Checklist Before Finalizing
 - Run:
@@ -91,3 +95,4 @@
 - Do not introduce production-path shortcuts for auth/tests (direct login/mock tokens/codes).
 - Do not duplicate security logic route-by-route if an existing helper exists in `lib/server/security/**`.
 - Do not create alternative data access paths that bypass hooks + `lib/client/api.ts`.
+- Do not bypass architecture guardrails in `.eslintrc.json` for `app/api/**/route.ts` (`no-restricted-imports` for repositories/prisma).

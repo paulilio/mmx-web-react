@@ -27,6 +27,9 @@
 - `lib/server/storage.ts`: mock storage helpers and cache behavior.
 - `lib/server/migration-service.ts`: legacy key migration and user-scoped storage helpers.
 - `middleware.ts`: `/api` CORS handling (including preflight), origin enforcement, centralized auth gate for protected APIs, and security headers.
+- `lib/server/services/index.ts`: backend composition root used by `app/api/**` routes.
+- `lib/server/services/oauth-auth-service.ts`: OAuth callback orchestration for Google/Microsoft user create/update/login.
+- `.eslintrc.json`: architecture guardrails (`no-restricted-imports`) blocking direct repositories/prisma imports in `app/api/**/route.ts`.
 - `app/layout.tsx`: root providers and app shell wiring.
 - `.github/copilot-instructions.md`: AI generation constraints.
 
@@ -77,7 +80,9 @@
 - `lib/server/persistence-service.ts`: transaction persistence abstraction.
 - `lib/server/user-data-service.ts`: user-context data operations.
 - `lib/server/migration-service.ts`: key migration + user data isolation helper.
+- `lib/server/services/index.ts`: service composition root consumed by route handlers.
 - `lib/server/services/auth-service.ts`: auth register/login orchestration and `lastLogin` update.
+- `lib/server/services/oauth-auth-service.ts`: OAuth callback orchestration (Google/Microsoft).
 - `lib/server/services/settings-maintenance-service.ts`: server-side maintenance orchestration for settings import/export/clear.
 - `lib/server/security/rate-limit.ts`: auth rate limiting.
 - `lib/server/security/cors.ts`: CORS by environment.

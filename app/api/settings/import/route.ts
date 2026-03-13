@@ -1,11 +1,9 @@
 import { NextRequest } from "next/server"
 import { fail, ok } from "@/lib/server/http/api-response"
 import { resolveUserId } from "@/lib/server/http/transactions-mapper"
-import { SettingsMaintenanceService } from "@/lib/server/services/settings-maintenance-service"
+import { settingsMaintenanceService } from "@/lib/server/services"
 
 export const runtime = "nodejs"
-
-const settingsMaintenanceService = new SettingsMaintenanceService()
 
 export async function POST(request: NextRequest) {
   try {

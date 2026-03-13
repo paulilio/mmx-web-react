@@ -9,6 +9,7 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
 4. `.ai/coding-guidelines.md`
 5. `.ai/testing-guidelines.md`
 6. `.ai/repo-map.md`
+7. `.ai/documentation-governance.md`
 
 ## Operating Rules
 - Follow repository conventions exactly (naming, file placement, TypeScript style).
@@ -23,6 +24,8 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
 
 ## Data and API Constraints
 - Use hooks + `lib/client/api.ts` for data access.
+- In `app/api/**`, use service instances from `lib/server/services` (composition root in `lib/server/services/index.ts`).
+- Do not instantiate services in route files and do not import `lib/server/repositories/**` or `lib/server/db/prisma` directly from route handlers.
 - Preserve `userId` isolation in reads/writes.
 - Use `mmx_` prefix for mock storage keys.
 - Keep transaction/form dates in `YYYY-MM-DD`.
@@ -32,8 +35,10 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
 - Current domain migration status: first-party routes for `category-groups` and `reports` (`summary`, `aging`, `cashflow`) are implemented in `app/api/**`, and adapter routing in `lib/client/api.ts` is converged to `/api/*` in `NEXT_PUBLIC_USE_API=true`.
 - Current budget hook convergence status (E3): `use-budget-allocations` is the primary path for active product flows; `use-budget.ts` remains only as legacy compatibility during transition.
 - Current settings maintenance status: `import/export/clear` now run via first-party routes (`/api/settings/*`) and `hooks/use-settings-maintenance.ts`; `app/settings/page.tsx` must not access storage/localStorage directly for these flows.
+- Current OAuth callback orchestration status: Google/Microsoft callbacks delegate user create/update/login orchestration to `lib/server/services/oauth-auth-service.ts`.
 - Current adapter credentials status: in `NEXT_PUBLIC_USE_API=true`, external requests routed to `NEXT_PUBLIC_API_BASE` use `credentials: "include"`; first-party `/api/*` routing behavior is preserved.
 - Keep server cross-cutting security centralized in `lib/server/security/**` + `middleware.ts`.
+- Keep architecture guardrails active in `.eslintrc.json` (`no-restricted-imports` for `app/api/**/route.ts`).
 
 ## Security Baseline (Current)
 - Auth hardening already active:
@@ -64,6 +69,9 @@ Use this file as the entrypoint for AI coding agents (Copilot, Codex, v0, and si
   - `pnpm type-check`
   - `pnpm build`
   - `pnpm validate:env -- --env=development`
+
+For architecture/contracts/security/runtime changes, also execute:
+- `docs/documentation-governance-checklist.md`
 
 For release/hardening changes, also run:
 - `pnpm validate:env -- --env=production`

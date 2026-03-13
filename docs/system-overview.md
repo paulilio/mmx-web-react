@@ -49,6 +49,7 @@ Principios atuais:
 - contrato HTTP padrao com envelope `{ data, error }`
 - fronteira de dados no cliente concentrada em `lib/client/api.ts`
 - preocupacoes de seguranca centralizadas em `lib/server/security/**` e `middleware.ts`
+- composition root backend centralizado em `lib/server/services/index.ts` para dependencias de `app/api/**`
 
 Diagrama simplificado:
 
@@ -81,11 +82,11 @@ PostgreSQL
 Modulos e responsabilidades:
 - Auth: sessao, refresh token, OAuth, guardas de rota
 - Transactions: CRUD e regras de negocio de lancamentos
-- Categories / Category Groups: organizacao de classificacao financeira
+- Categories / Category Groups (categorias e grupos de categorias): organizacao de classificacao financeira
 - Contacts: entidades de relacionamento por transacao
 - Budget / Budget Allocations: planejamento e distribuicao de valores
 - Reports: summary, aging, cashflow
-- Settings Maintenance: import/export/clear de dados
+- Settings Maintenance (manutencao de configuracoes): import/export/clear de dados
 
 Pastas chave:
 - UI e rotas: `app/**`, `components/**`
@@ -120,8 +121,8 @@ Fluxo padrao da interface ate a persistencia:
 1. Pagina em `app/**` renderiza componente.
 2. Componente chama hook de dominio em `hooks/**`.
 3. Hook acessa `lib/client/api.ts`.
-4. Adapter decide rota first-party (`/api/*`) ou base externa (`NEXT_PUBLIC_API_BASE`) conforme configuracao.
-5. Rotas em `app/api/**` delegam para services/domain/repositories.
+4. O adaptador decide rota de primeira parte (`/api/*`) ou base externa (`NEXT_PUBLIC_API_BASE`) conforme configuracao.
+5. Rotas em `app/api/**` delegam para services via composition root (`lib/server/services/index.ts`).
 6. Repositories acessam Prisma/PostgreSQL.
 7. Resposta volta no envelope `{ data, error }` para o hook e re-renderiza UI.
 
@@ -129,6 +130,7 @@ Observacoes importantes:
 - isolamento multiusuario por `userId`
 - em `NEXT_PUBLIC_USE_API=true`, sem fallback automatico para mock em erro de conectividade
 - chamadas externas usam `credentials: "include"` para auth baseada em cookie
+- em `app/api/**/route.ts`, guardrails de lint bloqueiam import direto de `repositories/prisma`
 
 ---
 

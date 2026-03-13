@@ -10,14 +10,8 @@ const { settingsServiceMock } = vi.hoisted(() => {
   }
 })
 
-vi.mock("@/lib/server/services/settings-maintenance-service", () => ({
-  SettingsMaintenanceService: vi.fn(
-    class {
-      constructor() {
-        return settingsServiceMock
-      }
-    },
-  ),
+vi.mock("@/lib/server/services", () => ({
+  settingsMaintenanceService: settingsServiceMock,
 }))
 
 import { POST } from "./route"
