@@ -69,7 +69,8 @@ CORS_ORIGINS_PROD=
 - Arquitetura geral: `docs/architecture.md`
 - Contratos de API: `docs/api-contracts.md`
 - Deploy e CI: `docs/deployment.md`
-- Desenvolvimento local: `docs/local-development.md`
+- Desenvolvimento local (sem Docker): `docs/local-development.md`
+- Docker (dev e produção): `docs/docker.md`
 - Estrutura do projeto: `docs/project-structure.md`
 - Diretrizes de frontend: `docs/frontend-guidelines.md`
 - ADRs (decisoes arquiteturais): `docs/adr/README.md`

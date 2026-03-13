@@ -79,6 +79,36 @@ Checklist rapido de producao (obrigatorio):
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
 - `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI`
 
+## Deploy com Docker (Self-hosted)
+
+Para deploy em servidor próprio (VPS, cloud VM, etc.) usando os arquivos em `docker/`:
+
+```bash
+# No servidor, clone o repositório e configure os env files
+cp docker/env/app.prod.env.example docker/env/app.prod.env
+cp docker/env/postgres.env.example docker/env/postgres.env
+# Edite os arquivos com os valores reais (credenciais, domínios, CORS)
+
+# Build e subir a stack (app + postgres)
+docker compose -f docker/compose/docker-compose.prod.yml up --build -d
+
+# Acompanhar logs
+docker compose -f docker/compose/docker-compose.prod.yml logs -f app
+```
+
+As migrações Prisma são aplicadas automaticamente no startup via `scripts/docker/migrate-and-start.sh`.
+
+Variáveis obrigatórias em `docker/env/app.prod.env` para produção:
+- `DATABASE_URL` — já configurado para o container postgres do compose
+- `MMX_APP_ENV=production`
+- `NEXT_PUBLIC_USE_API=true`
+- `CORS_ORIGINS_PROD` — domínio(s) da aplicação
+- Credenciais OAuth (`GOOGLE_*`, `MICROSOFT_*`) com redirect URIs do domínio real
+
+Veja detalhes completos em [`docs/docker.md`](docker.md).
+
+---
+
 ## Pipeline de CI (GitHub Actions)
 
 \`\`\`yaml

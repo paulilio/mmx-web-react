@@ -1,10 +1,12 @@
-# Desenvolvimento Local
+# Desenvolvimento Local (Sem Docker)
+
+Este documento cobre como rodar o projeto **sem Docker**, usando Node.js e pnpm diretamente. Para rodar **com Docker**, veja [`docs/docker.md`](docker.md).
 
 ## Requisitos
 
 - Node.js 22+
 - pnpm
-- Docker (opcional, para banco PostgreSQL local)
+- PostgreSQL (opcional — em modo mock não é necessário)
 
 ## Como instalar dependencias
 
@@ -84,5 +86,10 @@ pnpm prisma:studio
 
 ## Observacoes rapidas
 
-- Em modo mock (`NEXT_PUBLIC_USE_API=false`), o projeto funciona sem backend completo.
+- Em modo mock (`NEXT_PUBLIC_USE_API=false`), o projeto funciona sem backend completo e sem PostgreSQL.
+- Em modo API (`NEXT_PUBLIC_USE_API=true`), é necessário PostgreSQL com `DATABASE_URL` configurado no `.env.local`.
 - Dominios com rotas de primeira parte ja ativos: transacoes, categories, category-groups, contacts, budget, budget-allocations, areas, settings, auth, reports/summary, reports/aging e reports/cashflow.
+
+---
+
+Para rodar com Docker (banco isolado, HMR, sem instalar PostgreSQL localmente), veja [`docs/docker.md`](docker.md).
