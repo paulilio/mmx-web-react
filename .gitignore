@@ -2,6 +2,18 @@
 
 # dependencies
 /node_modules
+/apps/*/node_modules
+
+# workspace build artifacts
+/apps/*/dist
+
+# workspace lockfiles (root lockfile is canonical)
+/apps/*/pnpm-lock.yaml
+
+# monorepo/cache tools
+.turbo/
+.nx/
+.pnpm-store/
 
 # next.js
 /.next/
@@ -15,6 +27,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# lint/test caches
+.eslintcache
+coverage/
 
 # env files
 .env*
