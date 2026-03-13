@@ -6,6 +6,31 @@ Para onboarding tecnico consolidado (visao de produto, modulos, fluxo e deploy),
 
 MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e hibrida (localStorage + API de primeira parte), com camada de adaptador preparada para migracao incremental sem mudancas de UI.
 
+## Direcao Arquitetural (Opcao B)
+
+A direcao alvo do produto e separar frontend e backend em servicos distintos.
+
+Estado atual:
+- parte do backend ainda roda em `app/api/**` neste repositorio para acelerar entrega incremental.
+
+Estado alvo:
+- `mmx-web-react` (frontend)
+- `mmx-api` (backend dedicado)
+- PostgreSQL
+
+Fluxo alvo:
+
+```text
+Browser
+        -> mmx-web-react
+        -> HTTP REST
+        -> mmx-api
+        -> PostgreSQL
+```
+
+Regra de transicao:
+- manter `lib/client/api.ts` como fronteira unica de consumo de dados no frontend.
+
 ## Stack
 
 | Camada | Tecnologia |

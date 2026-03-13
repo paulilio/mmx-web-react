@@ -5,6 +5,8 @@ Frontend web do projeto **MMX**, construido com **Next.js + TypeScript**.
 O repositorio esta em modo **mock-first com migracao incremental para backend real**.
 Atualmente, transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`) e relatorios (`reports/summary`, `reports/aging`, `reports/cashflow`) ja possuem rotas backend em `app/api/**`.
 
+Importante: em estrategia alvo (Opcao B), frontend e backend ficam separados. As rotas em `app/api/**` existem hoje como etapa transitoria para acelerar desenvolvimento e migracao gradual para um servico dedicado (`mmx-api`).
+
 ---
 
 ## Stack
@@ -35,6 +37,8 @@ Abrir: `http://localhost:3000`
 ---
 
 ## Arquitetura
+
+### Estado atual (transicao)
 
 O backend segue arquitetura em camadas:
 
@@ -72,6 +76,28 @@ Prisma
 	v
 PostgreSQL
 ```
+
+### Arquitetura alvo (Opcao B)
+
+Separacao intencional de servicos:
+
+```text
+Browser
+	|
+	v
+mmx-web-react (frontend)
+	|
+	v
+HTTP REST
+	|
+	v
+mmx-api (backend)
+	|
+	v
+PostgreSQL
+```
+
+Regra de migracao: manter `lib/client/api.ts` como unica fronteira de dados no frontend durante toda a transicao, sem criar camadas paralelas de cliente HTTP.
 
 ---
 

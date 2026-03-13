@@ -47,6 +47,11 @@
   - `/transactions`, `/categories`, `/category-groups`, `/contacts`, `/auth`, `/areas`, `/budget`, `/budget-allocations`, `/settings/*`, `/reports/*`
 - Note: first-party routes for `category-groups` and `reports` (`summary`, `aging`, `cashflow`) are implemented under `app/api/**` and adapter routing in `resolveApiUrl` is converged.
 
+## Target Direction (Option B)
+- Target deployment shape is separated frontend (`mmx-web-react`) + backend (`mmx-api`) + PostgreSQL.
+- Current `app/api/**` routes are transitional first-party surfaces during migration.
+- Keep `lib/client/api.ts` as the single frontend adapter boundary while migrating domains to `mmx-api`.
+
 ## First-Party API Routes (Active)
 - Transactions: `app/api/transactions/**`
 - Categories: `app/api/categories/**`

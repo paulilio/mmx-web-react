@@ -2,6 +2,27 @@ name: mmx-dev
 
 services:
 
+  backend:
+    profiles: ["split"]
+    image: ${MMX_API_IMAGE:-mmx-api:local}
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - ../env/app.env
+    environment:
+      - PORT=4000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-mmx}:${POSTGRES_PASSWORD:-mmx_password}@postgres:5432/${POSTGRES_DB:-mmx}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -37,6 +58,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      backend:
+        condition: service_started
+        required: false
 
   monitor:
     build:

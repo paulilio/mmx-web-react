@@ -70,6 +70,7 @@ Usa `docker-compose.dev.yml`:
 - `node_modules` e `.next` preservados no container (não sobrescritos pelo bind mount)
 - Migrações Prisma rodadas automaticamente na inicialização
 - Projeto compose nomeado como `mmx-dev` (containers e volumes previsíveis)
+- Profile opcional `split` para incluir `backend` dedicado (`mmx-api`) quando disponivel
 
 Atalho recomendado (com validacao de env files antes do compose):
 
@@ -130,6 +131,7 @@ Usa `docker-compose.prod.yml`:
 - Serviço `monitor` em loop com dependência do healthcheck da aplicação
 - Migrações Prisma rodadas via `scripts/docker/migrate-and-start.sh` no startup
 - Projeto compose nomeado como `mmx-prod` (isolado do ambiente dev)
+- Profile opcional `split` para incluir `backend` dedicado (`mmx-api`) no self-hosted
 
 Atalho recomendado (com validacao de env files antes do compose):
 
@@ -218,6 +220,49 @@ Variáveis adicionais do serviço `monitor` no compose:
 - `MONITOR_BASE_URL`: URL alvo monitorada pelo runner (padrão no compose: `http://app:3000`).
 - `MONITOR_START_PATH`: rota inicial de monitoramento (padrão: `/dashboard`).
 - `MONITOR_INTERVAL_SECONDS`: intervalo entre execuções do monitor (padrão: `300`).
+
+Variáveis para migração frontend -> backend dedicado:
+
+- `NEXT_PUBLIC_API_MIGRATION_DOMAINS`: lista CSV de domínios roteados para `NEXT_PUBLIC_API_BASE` (ex.: `reports,categories`).
+- `MMX_API_IMAGE`: imagem Docker do backend dedicado usada no profile `split` (padrão: `mmx-api:local`).
+
+Uso do profile `split` (quando o `mmx-api` estiver disponível):
+
+```bash
+# dev com frontend + backend + postgres
+docker compose -f docker/compose/docker-compose.dev.yml --profile split up -d
+
+# prod self-hosted com backend dedicado
+docker compose -f docker/compose/docker-compose.prod.yml --profile split up -d
+```
+
+### Piloto reports em dev (copy/paste)
+
+1. Preparar env da aplicacao para piloto:
+
+```bash
+cp docker/env/app.split.reports.env.example docker/env/app.env
+```
+
+2. Garantir imagem local do backend dedicado (`mmx-api`) com nome `mmx-api:local`.
+
+3. Subir stack split com um comando:
+
+```bash
+pnpm docker:dev:up:split
+```
+
+4. Verificar logs:
+
+```bash
+pnpm docker:dev:logs:backend
+pnpm docker:dev:logs
+```
+
+5. Resultado esperado:
+- frontend continua em `http://localhost:3000`
+- backend dedicado em `http://localhost:4000`
+- dominio `reports` roteado para `NEXT_PUBLIC_API_BASE`
 
 O `DATABASE_URL` em `app.env` e `app.prod.env` já está configurado para o hostname `postgres` (nome do serviço no compose). Não é necessário alterar para usar o compose.
 

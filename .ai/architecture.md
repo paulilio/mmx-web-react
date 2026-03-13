@@ -4,6 +4,8 @@
 - Pattern: layered app + backend slices.
 - Client flow: Page/UI -> Feature Component -> Domain Hook -> `lib/client/api.ts`.
 - Server flow (first-party routes): `app/api/**` -> `lib/server/services/**` -> `lib/domain/**` -> `lib/server/repositories/**` -> Prisma.
+- Transitional status: `app/api/**` is a first-party backend surface used during migration.
+- Target status (Option B): frontend (`mmx-web-react`) and backend (`mmx-api`) deployed as separate services.
 
 ## Module Boundaries
 - `app/`: routing, pages, route-level layouts, loading states, API routes.
@@ -38,6 +40,7 @@
   - reports/summary
   - reports/aging
   - reports/cashflow
+- Migration rule: do not create parallel frontend API layers; keep `lib/client/api.ts` as the single boundary while domains are moved to `mmx-api`.
 
 ## Security Architecture
 - CORS policy: `lib/server/security/cors.ts` wired in `middleware.ts` for `/api`.

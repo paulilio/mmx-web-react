@@ -38,6 +38,14 @@ async function loadApiModule() {
 async function loadApiModuleApiMode() {
   vi.resetModules()
   process.env.NEXT_PUBLIC_USE_API = "true"
+  process.env.NEXT_PUBLIC_API_MIGRATION_DOMAINS = ""
+  return import("./api")
+}
+
+async function loadApiModuleApiModeWithMigration(domains: string) {
+  vi.resetModules()
+  process.env.NEXT_PUBLIC_USE_API = "true"
+  process.env.NEXT_PUBLIC_API_MIGRATION_DOMAINS = domains
   return import("./api")
 }
 
@@ -321,6 +329,44 @@ describe("lib/client/api API mode compatibility", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/reports/summary",
       expect.objectContaining({ method: "GET" }),
+    )
+  })
+
+  it("should route reports to external API when reports migration is enabled", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: {
+            totalOpen: 0,
+            totalOverdue: 0,
+            totalNext7Days: 0,
+            totalNext30Days: 0,
+            totalReceivables: 0,
+            totalPayables: 0,
+            completedReceivables: 0,
+            completedPayables: 0,
+            pendingReceivables: 0,
+            pendingPayables: 0,
+          },
+          error: null,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { getJSON } = await loadApiModuleApiModeWithMigration("reports")
+    await getJSON("/reports/summary")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://127.0.0.1:8000/reports/summary",
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+      }),
     )
   })
 

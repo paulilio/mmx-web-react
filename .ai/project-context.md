@@ -4,6 +4,7 @@
 - Product: MoedaMix web frontend for personal finance management.
 - Main areas: auth, dashboard, transactions, budget, categories, contacts, settings, admin audit logs.
 - Current mode: hybrid mock-first + first-party backend routes.
+- Target mode (Option B): separated frontend (`mmx-web-react`) and dedicated backend service (`mmx-api`).
 
 ## Current Backend Coverage
 - Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
@@ -42,6 +43,7 @@
 - Preserve multi-user isolation via `userId` in data operations.
 - Keep UI isolated from transport mode (mock vs API) via hooks + adapter boundary.
 - Maintain typed contracts and envelope responses `{ data, error }`.
+- Treat `app/api/**` as transitional first-party backend surface until domains are migrated to `mmx-api`.
 
 ## Core Technologies
 - Framework: Next.js 14 App Router.

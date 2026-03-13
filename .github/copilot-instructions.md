@@ -5,6 +5,7 @@
 - Stack: Next.js 14 App Router, React 19, TypeScript 5, Tailwind CSS v4, SWR, React Hook Form, Zod, Radix/shadcn.
 - Runtime: Node.js 22+, pnpm.
 - Current mode: hybrid mock-first + first-party API routes, with client boundary in `lib/client/api.ts`.
+- Target architecture: Option B with separated services (`mmx-web-react` frontend + `mmx-api` backend). Current `app/api/**` routes are transitional during migration.
 - First-party domains currently active: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
 
 ## Architecture Rules
@@ -33,6 +34,7 @@
 
 ## Data and API Rules
 - UI/components must access data via hooks and `lib/client/api.ts` only.
+- During migration to `mmx-api`, keep `lib/client/api.ts` as the single adapter boundary and avoid creating parallel frontend API client layers.
 - Do not bypass adapter boundaries by reading/writing storage directly in feature UI.
 - Keep mock storage keys prefixed with `mmx_`.
 - Preserve multi-user isolation with `userId` filtering in reads/writes.

@@ -1,5 +1,11 @@
 # Contratos de API
 
+## Direcao Arquitetural (Opcao B)
+
+- Arquitetura alvo: frontend (`mmx-web-react`) e backend (`mmx-api`) separados.
+- Estado atual: este repositorio ainda possui rotas em `app/api/**` como backend de primeira parte para transicao incremental.
+- Regra de migracao: manter `lib/client/api.ts` como unica fronteira de consumo HTTP no frontend durante a migracao para `mmx-api`.
+
 ## Modo Atual: Hibrido (mock-first + backend parcial)
 
 Todas as chamadas de API passam por `lib/client/api.ts`.

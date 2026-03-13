@@ -1,4 +1,4 @@
-import { USE_API, API_BASE } from "../shared/config"
+import { USE_API, API_BASE, API_MIGRATION_DOMAINS } from "../shared/config"
 import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../server/storage"
 import { apiLogger } from "../shared/logger"
 
@@ -184,19 +184,25 @@ function writeMockBudgetAllocations(items: MockBudgetAllocationRecord[]) {
 }
 
 function resolveApiUrl(endpoint: string): string {
-  // Migrated domains already have first-party Next.js handlers in app/api.
-  if (
-    endpoint.startsWith("/transactions") ||
-    endpoint.startsWith("/categories") ||
-    endpoint.startsWith("/category-groups") ||
-    endpoint.startsWith("/contacts") ||
-    endpoint.startsWith("/auth") ||
-    endpoint.startsWith("/areas") ||
-    endpoint.startsWith("/budget") ||
-    endpoint.startsWith("/budget-allocations") ||
-    endpoint.startsWith("/settings") ||
-    endpoint.startsWith("/reports")
-  ) {
+  const firstPath = endpoint.split("/").filter(Boolean)[0]?.toLowerCase()
+  const firstPartyDomains = new Set([
+    "transactions",
+    "categories",
+    "category-groups",
+    "contacts",
+    "auth",
+    "areas",
+    "budget",
+    "budget-allocations",
+    "settings",
+    "reports",
+  ])
+
+  if (firstPath && firstPartyDomains.has(firstPath)) {
+    if (API_MIGRATION_DOMAINS.has(firstPath)) {
+      return `${API_BASE}${endpoint}`
+    }
+
     return `/api${endpoint}`
   }
 
