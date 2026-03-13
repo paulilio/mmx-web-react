@@ -15,18 +15,40 @@ function applyCliOverrides(config) {
   const args = process.argv.slice(2)
   const result = { ...config }
 
+  function getOptionValue(optionName, currentArg, nextArg) {
+    if (currentArg === optionName && nextArg) {
+      return nextArg
+    }
+
+    const prefix = `${optionName}=`
+    if (currentArg.startsWith(prefix)) {
+      return currentArg.slice(prefix.length)
+    }
+
+    return null
+  }
+
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i]
-    if (arg === "--baseUrl" && args[i + 1]) {
-      result.baseUrl = args[i + 1]
-      i += 1
+
+    const baseUrlValue = getOptionValue("--baseUrl", arg, args[i + 1])
+    if (baseUrlValue) {
+      result.baseUrl = baseUrlValue
+      if (arg === "--baseUrl") {
+        i += 1
+      }
       continue
     }
 
-    if (arg === "--startPath" && args[i + 1]) {
-      result.startPath = args[i + 1]
-      i += 1
+    const startPathValue = getOptionValue("--startPath", arg, args[i + 1])
+    if (startPathValue) {
+      result.startPath = startPathValue
+      if (arg === "--startPath") {
+        i += 1
+      }
+      continue
     }
+
   }
 
   return result
@@ -37,11 +59,14 @@ function normalizeStartPath(startPath) {
     return "/"
   }
 
-  if (startPath.startsWith("http://") || startPath.startsWith("https://")) {
-    return startPath
+  // Git Bash may rewrite absolute-like args into local installation paths.
+  const normalized = startPath.replace(/^[A-Za-z]:\/Program Files\/Git\//, "/")
+
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return normalized
   }
 
-  return startPath.startsWith("/") ? startPath : `/${startPath}`
+  return normalized.startsWith("/") ? normalized : `/${normalized}`
 }
 
 async function assertCriticalSelectors(page, selectors, state) {
