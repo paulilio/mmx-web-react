@@ -1,0 +1,11 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "startPath": "/dashboard",
+  "headless": true,
+  "timeoutMs": 30000,
+  "waitAfterLoadMs": 1500,
+  "criticalSelectors": [
+    "main"
+  ],
+  "maxHttpErrorsToCapture": 5
+}
