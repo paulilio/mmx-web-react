@@ -1,33 +1,17 @@
 import { describe, expect, it, vi } from "vitest"
 import { ReportService } from "./report-service"
-import type { TransactionRecord, TransactionRepository } from "../repositories/transaction-repository"
+import type { TransactionRepository } from "../repositories/transaction-repository"
 
-function makeTransaction(overrides: Partial<TransactionRecord> = {}): TransactionRecord {
-  return {
-    id: "tx-1",
-    userId: "user-1",
-    description: "Lancamento",
-    amount: 100,
-    type: "INCOME",
-    categoryId: "cat-1",
-    contactId: null,
-    date: new Date("2026-03-01T00:00:00.000Z"),
-    status: "PENDING",
-    notes: null,
-    recurrence: null,
-    areaId: null,
-    categoryGroupId: null,
-    createdAt: new Date("2026-03-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-03-01T00:00:00.000Z"),
-    ...overrides,
-  }
-}
-
-type RepositoryMock = Pick<TransactionRepository, "findAllByUser">
+type RepositoryMock = Pick<
+  TransactionRepository,
+  "summarizeByTypeAndStatus" | "summarizeAgingExpenses" | "summarizeCashflowByDate"
+>
 
 function createRepositoryMock(): RepositoryMock {
   return {
-    findAllByUser: vi.fn(),
+    summarizeByTypeAndStatus: vi.fn(),
+    summarizeAgingExpenses: vi.fn(),
+    summarizeCashflowByDate: vi.fn(),
   }
 }
 
@@ -36,11 +20,11 @@ describe("ReportService", () => {
     const repository = createRepositoryMock()
     const service = new ReportService(repository as TransactionRepository)
 
-    vi.mocked(repository.findAllByUser).mockResolvedValue([
-      makeTransaction({ id: "tx-1", type: "INCOME", status: "COMPLETED", amount: 500 }),
-      makeTransaction({ id: "tx-2", type: "INCOME", status: "PENDING", amount: 200 }),
-      makeTransaction({ id: "tx-3", type: "EXPENSE", status: "COMPLETED", amount: 120 }),
-      makeTransaction({ id: "tx-4", type: "EXPENSE", status: "PENDING", amount: 80 }),
+    vi.mocked(repository.summarizeByTypeAndStatus).mockResolvedValue([
+      { type: "INCOME", status: "COMPLETED", totalAmount: 500 },
+      { type: "INCOME", status: "PENDING", totalAmount: 200 },
+      { type: "EXPENSE", status: "COMPLETED", totalAmount: 120 },
+      { type: "EXPENSE", status: "PENDING", totalAmount: 80 },
     ])
 
     const summary = await service.getSummary("user-1")
@@ -51,14 +35,14 @@ describe("ReportService", () => {
     expect(summary.pendingReceivables).toBe(200)
     expect(summary.completedPayables).toBe(120)
     expect(summary.pendingPayables).toBe(80)
-    expect(repository.findAllByUser).toHaveBeenCalledWith("user-1")
+    expect(repository.summarizeByTypeAndStatus).toHaveBeenCalledWith("user-1")
   })
 
   it("retorna zeros quando nao ha transacoes", async () => {
     const repository = createRepositoryMock()
     const service = new ReportService(repository as TransactionRepository)
 
-    vi.mocked(repository.findAllByUser).mockResolvedValue([])
+    vi.mocked(repository.summarizeByTypeAndStatus).mockResolvedValue([])
 
     const summary = await service.getSummary("user-1")
 
@@ -95,13 +79,11 @@ describe("ReportService", () => {
     const futureDate = new Date(today)
     futureDate.setDate(today.getDate() + 45)
 
-    vi.mocked(repository.findAllByUser).mockResolvedValue([
-      makeTransaction({ id: "tx-1", type: "EXPENSE", status: "PENDING", amount: 100, date: overdueDate }),
-      makeTransaction({ id: "tx-2", type: "EXPENSE", status: "COMPLETED", amount: 70, date: next7Date }),
-      makeTransaction({ id: "tx-3", type: "EXPENSE", status: "PENDING", amount: 90, date: next30Date }),
-      makeTransaction({ id: "tx-4", type: "EXPENSE", status: "PENDING", amount: 120, date: futureDate }),
-      makeTransaction({ id: "tx-5", type: "INCOME", status: "PENDING", amount: 1000, date: overdueDate }),
-      makeTransaction({ id: "tx-6", type: "EXPENSE", status: "CANCELLED", amount: 999, date: overdueDate }),
+    vi.mocked(repository.summarizeAgingExpenses).mockResolvedValue([
+      { date: overdueDate, status: "PENDING", totalAmount: 100 },
+      { date: next7Date, status: "COMPLETED", totalAmount: 70 },
+      { date: next30Date, status: "PENDING", totalAmount: 90 },
+      { date: futureDate, status: "PENDING", totalAmount: 120 },
     ])
 
     const aging = await service.getAging("user-1")
@@ -119,9 +101,8 @@ describe("ReportService", () => {
     const repository = createRepositoryMock()
     const service = new ReportService(repository as TransactionRepository)
 
-    vi.mocked(repository.findAllByUser).mockResolvedValue([
-      makeTransaction({ id: "tx-1", type: "EXPENSE", status: "PENDING", amount: 50, date: new Date("2026-03-01") }),
-      makeTransaction({ id: "tx-2", type: "EXPENSE", status: "PENDING", amount: 80, date: new Date("2026-03-20") }),
+    vi.mocked(repository.summarizeAgingExpenses).mockResolvedValue([
+      { date: new Date("2026-03-20"), status: "PENDING", totalAmount: 80 },
     ])
 
     const aging = await service.getAging("user-1", {
@@ -130,13 +111,17 @@ describe("ReportService", () => {
     })
 
     expect(aging.overdue + aging.next7Days + aging.next30Days + aging.future).toBe(80)
+    expect(repository.summarizeAgingExpenses).toHaveBeenCalledWith("user-1", {
+      dateFrom: new Date("2026-03-10"),
+      dateTo: new Date("2026-03-31"),
+    })
   })
 
   it("falha aging com intervalo de datas invalido", async () => {
     const repository = createRepositoryMock()
     const service = new ReportService(repository as TransactionRepository)
 
-    vi.mocked(repository.findAllByUser).mockResolvedValue([])
+    vi.mocked(repository.summarizeAgingExpenses).mockResolvedValue([])
 
     await expect(
       service.getAging("user-1", {
@@ -150,13 +135,10 @@ describe("ReportService", () => {
     const repository = createRepositoryMock()
     const service = new ReportService(repository as TransactionRepository)
 
-    const day1 = new Date("2026-03-01T00:00:00.000Z")
-    const day2 = new Date("2026-03-02T00:00:00.000Z")
-
-    vi.mocked(repository.findAllByUser).mockResolvedValue([
-      makeTransaction({ id: "tx-1", date: day1, type: "INCOME", status: "COMPLETED", amount: 200 }),
-      makeTransaction({ id: "tx-2", date: day1, type: "EXPENSE", status: "PENDING", amount: 50 }),
-      makeTransaction({ id: "tx-3", date: day2, type: "EXPENSE", status: "COMPLETED", amount: 40 }),
+    vi.mocked(repository.summarizeCashflowByDate).mockResolvedValue([
+      { date: new Date("2026-03-01T00:00:00.000Z"), type: "INCOME", status: "COMPLETED", totalAmount: 200 },
+      { date: new Date("2026-03-01T00:00:00.000Z"), type: "EXPENSE", status: "PENDING", totalAmount: 50 },
+      { date: new Date("2026-03-02T00:00:00.000Z"), type: "EXPENSE", status: "COMPLETED", totalAmount: 40 },
     ])
 
     const cashflow = await service.getCashflow("user-1", {
@@ -196,10 +178,8 @@ describe("ReportService", () => {
     const repository = createRepositoryMock()
     const service = new ReportService(repository as TransactionRepository)
 
-    vi.mocked(repository.findAllByUser).mockResolvedValue([
-      makeTransaction({ id: "tx-1", type: "INCOME", status: "COMPLETED", amount: 100 }),
-      makeTransaction({ id: "tx-2", type: "INCOME", status: "PENDING", amount: 80 }),
-      makeTransaction({ id: "tx-3", type: "EXPENSE", status: "CANCELLED", amount: 40 }),
+    vi.mocked(repository.summarizeCashflowByDate).mockResolvedValue([
+      { date: new Date("2026-03-01T00:00:00.000Z"), type: "INCOME", status: "PENDING", totalAmount: 80 },
     ])
 
     const pendingOnly = await service.getCashflow("user-1", {

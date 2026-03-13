@@ -7,6 +7,7 @@ import { BudgetRepository } from "./budget-repository"
 import { BudgetAllocationRepository } from "./budget-allocation-repository"
 import { AreaRepository } from "./area-repository"
 import { CategoryGroupRepository } from "./category-group-repository"
+import { LedgerEventRepository } from "./ledger-event-repository"
 
 export const userRepository = new UserRepository(prisma)
 export const transactionRepository = new TransactionRepository(prisma)
@@ -16,6 +17,7 @@ export const budgetRepository = new BudgetRepository(prisma)
 export const budgetAllocationRepository = new BudgetAllocationRepository(prisma)
 export const areaRepository = new AreaRepository(prisma)
 export const categoryGroupRepository = new CategoryGroupRepository(prisma)
+export const ledgerEventRepository = new LedgerEventRepository(prisma)
 
 export {
 	UserRepository,
@@ -26,4 +28,5 @@ export {
 	BudgetAllocationRepository,
 	AreaRepository,
 	CategoryGroupRepository,
+	LedgerEventRepository,
 }

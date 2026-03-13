@@ -1,15 +1,8 @@
-import type { DomainTransactionStatus, DomainTransactionType } from "@/lib/domain/transactions/transaction-entity"
-import type { TransactionRepository } from "@/lib/server/repositories/transaction-repository"
-
-interface SummaryTransaction {
-  amount: number
-  type: DomainTransactionType
-  status: DomainTransactionStatus
-}
-
-interface AgingTransaction extends SummaryTransaction {
-  date: Date
-}
+import type {
+  CashflowStatusFilter,
+  TransactionRepository,
+  TransactionSummaryGroupRecord,
+} from "@/lib/server/repositories/transaction-repository"
 
 export interface DashboardSummaryRecord {
   totalOpen: number
@@ -41,8 +34,6 @@ interface AgingFilters {
   dateFrom?: string
   dateTo?: string
 }
-
-type CashflowStatusFilter = "all" | "completed" | "pending" | "cancelled"
 
 interface CashflowFilters {
   days?: number
@@ -107,35 +98,22 @@ export class ReportService {
   }
 
   async getSummary(userId: string): Promise<DashboardSummaryRecord> {
-    const transactions = await this.transactionRepository.findAllByUser(userId)
+    const grouped = await this.transactionRepository.summarizeByTypeAndStatus(userId)
 
-    const normalized = transactions.map(
-      (item) =>
-        ({
-          amount: this.toAmount(item.amount),
-          type: item.type,
-          status: item.status,
-        }) as SummaryTransaction,
-    )
-
-    const completed = normalized.filter((item) => item.status === "COMPLETED")
-    const pending = normalized.filter((item) => item.status === "PENDING")
+    const sumBy = (predicate: (item: TransactionSummaryGroupRecord) => boolean) =>
+      grouped.filter(predicate).reduce((acc, item) => acc + this.toAmount(item.totalAmount), 0)
 
     return {
       totalOpen: 0,
       totalOverdue: 0,
       totalNext7Days: 0,
       totalNext30Days: 0,
-      totalReceivables: normalized.filter((item) => item.type === "INCOME").reduce((acc, item) => acc + item.amount, 0),
-      totalPayables: normalized.filter((item) => item.type === "EXPENSE").reduce((acc, item) => acc + item.amount, 0),
-      completedReceivables: completed
-        .filter((item) => item.type === "INCOME")
-        .reduce((acc, item) => acc + item.amount, 0),
-      completedPayables: completed
-        .filter((item) => item.type === "EXPENSE")
-        .reduce((acc, item) => acc + item.amount, 0),
-      pendingReceivables: pending.filter((item) => item.type === "INCOME").reduce((acc, item) => acc + item.amount, 0),
-      pendingPayables: pending.filter((item) => item.type === "EXPENSE").reduce((acc, item) => acc + item.amount, 0),
+      totalReceivables: sumBy((item) => item.type === "INCOME"),
+      totalPayables: sumBy((item) => item.type === "EXPENSE"),
+      completedReceivables: sumBy((item) => item.type === "INCOME" && item.status === "COMPLETED"),
+      completedPayables: sumBy((item) => item.type === "EXPENSE" && item.status === "COMPLETED"),
+      pendingReceivables: sumBy((item) => item.type === "INCOME" && item.status === "PENDING"),
+      pendingPayables: sumBy((item) => item.type === "EXPENSE" && item.status === "PENDING"),
     }
   }
 
@@ -153,23 +131,7 @@ export class ReportService {
     const next30 = new Date(today)
     next30.setDate(today.getDate() + 30)
 
-    const transactions = await this.transactionRepository.findAllByUser(userId)
-    const normalized = transactions
-      .filter((item) => item.status !== "CANCELLED")
-      .filter((item) => {
-        if (dateFrom && item.date < dateFrom) return false
-        if (dateTo && item.date > dateTo) return false
-        return true
-      })
-      .map(
-        (item) =>
-          ({
-            amount: this.toAmount(item.amount),
-            type: item.type,
-            status: item.status,
-            date: item.date,
-          }) as AgingTransaction,
-      )
+    const grouped = await this.transactionRepository.summarizeAgingExpenses(userId, { dateFrom, dateTo })
 
     const report: AgingReportRecord = {
       overdue: 0,
@@ -184,29 +146,27 @@ export class ReportService {
       pendingNext30Days: 0,
     }
 
-    for (const item of normalized) {
-      if (item.type !== "EXPENSE") {
-        continue
-      }
-
+    for (const item of grouped) {
       const bucket =
         item.date < today ? "overdue" : item.date <= next7 ? "next7Days" : item.date <= next30 ? "next30Days" : "future"
 
-      if (bucket === "overdue") report.overdue += item.amount
-      if (bucket === "next7Days") report.next7Days += item.amount
-      if (bucket === "next30Days") report.next30Days += item.amount
-      if (bucket === "future") report.future += item.amount
+      const amount = this.toAmount(item.totalAmount)
+
+      if (bucket === "overdue") report.overdue += amount
+      if (bucket === "next7Days") report.next7Days += amount
+      if (bucket === "next30Days") report.next30Days += amount
+      if (bucket === "future") report.future += amount
 
       if (item.status === "COMPLETED") {
-        if (bucket === "overdue") report.completedOverdue += item.amount
-        if (bucket === "next7Days") report.completedNext7Days += item.amount
-        if (bucket === "next30Days") report.completedNext30Days += item.amount
+        if (bucket === "overdue") report.completedOverdue += amount
+        if (bucket === "next7Days") report.completedNext7Days += amount
+        if (bucket === "next30Days") report.completedNext30Days += amount
       }
 
       if (item.status === "PENDING") {
-        if (bucket === "overdue") report.pendingOverdue += item.amount
-        if (bucket === "next7Days") report.pendingNext7Days += item.amount
-        if (bucket === "next30Days") report.pendingNext30Days += item.amount
+        if (bucket === "overdue") report.pendingOverdue += amount
+        if (bucket === "next7Days") report.pendingNext7Days += amount
+        if (bucket === "next30Days") report.pendingNext30Days += amount
       }
     }
 
@@ -221,16 +181,10 @@ export class ReportService {
     const fromDate = new Date(today)
     fromDate.setDate(today.getDate() - (days - 1))
 
-    const transactions = await this.transactionRepository.findAllByUser(userId)
-
-    const filtered = transactions
-      .filter((item) => item.date >= fromDate)
-      .filter((item) => {
-        if (status === "all") return true
-        if (status === "completed") return item.status === "COMPLETED"
-        if (status === "pending") return item.status === "PENDING"
-        return item.status === "CANCELLED"
-      })
+    const grouped = await this.transactionRepository.summarizeCashflowByDate(userId, {
+      fromDate,
+      status,
+    })
 
     const byDate = new Map<
       string,
@@ -244,7 +198,7 @@ export class ReportService {
       }
     >()
 
-    for (const item of filtered) {
+    for (const item of grouped) {
       const key = this.toDateKey(item.date)
       if (!byDate.has(key)) {
         byDate.set(key, {
@@ -260,7 +214,7 @@ export class ReportService {
       const bucket = byDate.get(key)
       if (!bucket) continue
 
-      const amount = this.toAmount(item.amount)
+      const amount = this.toAmount(item.totalAmount)
       const isIncome = item.type === "INCOME"
       const isCompleted = item.status === "COMPLETED"
 

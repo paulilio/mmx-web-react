@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/server/db/prisma"
+import { Prisma } from "@prisma/client"
 import type {
   DomainTransactionStatus,
   DomainTransactionType,
@@ -19,6 +20,7 @@ export interface TransactionRecord {
   recurrence?: unknown
   areaId?: string | null
   categoryGroupId?: string | null
+  deletedAt?: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -59,6 +61,46 @@ export interface TransactionFilters {
   dateTo?: string
 }
 
+export interface TransactionSummaryGroupRecord {
+  type: DomainTransactionType
+  status: DomainTransactionStatus
+  totalAmount: number
+}
+
+export interface TransactionAgingGroupRecord {
+  date: Date
+  status: DomainTransactionStatus
+  totalAmount: number
+}
+
+export interface TransactionCashflowGroupRecord {
+  date: Date
+  type: DomainTransactionType
+  status: DomainTransactionStatus
+  totalAmount: number
+}
+
+export type CashflowStatusFilter = "all" | "completed" | "pending" | "cancelled"
+
+interface SummarySqlRow {
+  type: DomainTransactionType
+  status: DomainTransactionStatus
+  totalAmount: unknown
+}
+
+interface AgingSqlRow {
+  date: Date
+  status: DomainTransactionStatus
+  totalAmount: unknown
+}
+
+interface CashflowSqlRow {
+  date: Date
+  type: DomainTransactionType
+  status: DomainTransactionStatus
+  totalAmount: unknown
+}
+
 export class TransactionRepository extends BaseRepository {
   constructor(dbClient = prisma) {
     super(dbClient)
@@ -69,6 +111,7 @@ export class TransactionRepository extends BaseRepository {
       where: {
         id,
         userId,
+        deletedAt: null,
       },
     }) as Promise<TransactionRecord | null>
   }
@@ -81,6 +124,7 @@ export class TransactionRepository extends BaseRepository {
 
     const where = {
       userId: filters.userId,
+      deletedAt: null,
       status: filters.status,
       type: filters.type,
       categoryId: filters.categoryId,
@@ -107,7 +151,7 @@ export class TransactionRepository extends BaseRepository {
 
   async findAllByUser(userId: string): Promise<TransactionRecord[]> {
     return this.prisma.transaction.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null },
       orderBy: {
         date: "desc",
       },
@@ -118,6 +162,95 @@ export class TransactionRepository extends BaseRepository {
     return this.prisma.transaction.create({
       data,
     }) as Promise<TransactionRecord>
+  }
+
+  async summarizeByTypeAndStatus(userId: string): Promise<TransactionSummaryGroupRecord[]> {
+    const rows = (await this.prisma.$queryRaw(
+      Prisma.sql`
+        SELECT
+          "type",
+          "status",
+          COALESCE(SUM("amount"), 0) AS "totalAmount"
+        FROM "Transaction"
+        WHERE "userId" = ${userId}
+          AND "deletedAt" IS NULL
+        GROUP BY "type", "status"
+      `,
+    )) as SummarySqlRow[]
+
+    return rows.map((item) => ({
+      type: item.type,
+      status: item.status,
+      totalAmount: Number(item.totalAmount ?? 0),
+    }))
+  }
+
+  async summarizeAgingExpenses(
+    userId: string,
+    filters?: { dateFrom?: Date; dateTo?: Date },
+  ): Promise<TransactionAgingGroupRecord[]> {
+    const dateFromClause = filters?.dateFrom ? Prisma.sql` AND "date" >= ${filters.dateFrom}` : Prisma.empty
+    const dateToClause = filters?.dateTo ? Prisma.sql` AND "date" <= ${filters.dateTo}` : Prisma.empty
+
+    const rows = (await this.prisma.$queryRaw(
+      Prisma.sql`
+        SELECT
+          "date",
+          "status",
+          COALESCE(SUM("amount"), 0) AS "totalAmount"
+        FROM "Transaction"
+        WHERE "userId" = ${userId}
+          AND "deletedAt" IS NULL
+          AND "type" = 'EXPENSE'
+          AND "status" <> 'CANCELLED'
+          ${dateFromClause}
+          ${dateToClause}
+        GROUP BY "date", "status"
+      `,
+    )) as AgingSqlRow[]
+
+    return rows.map((item) => ({
+      date: item.date,
+      status: item.status,
+      totalAmount: Number(item.totalAmount ?? 0),
+    }))
+  }
+
+  async summarizeCashflowByDate(
+    userId: string,
+    options: { fromDate: Date; status: CashflowStatusFilter },
+  ): Promise<TransactionCashflowGroupRecord[]> {
+    const statusClause =
+      options.status === "all"
+        ? Prisma.empty
+        : options.status === "completed"
+          ? Prisma.sql` AND "status" = 'COMPLETED'`
+          : options.status === "pending"
+            ? Prisma.sql` AND "status" = 'PENDING'`
+            : Prisma.sql` AND "status" = 'CANCELLED'`
+
+    const rows = (await this.prisma.$queryRaw(
+      Prisma.sql`
+        SELECT
+          "date",
+          "type",
+          "status",
+          COALESCE(SUM("amount"), 0) AS "totalAmount"
+        FROM "Transaction"
+        WHERE "userId" = ${userId}
+          AND "deletedAt" IS NULL
+          AND "date" >= ${options.fromDate}
+          ${statusClause}
+        GROUP BY "date", "type", "status"
+      `,
+    )) as CashflowSqlRow[]
+
+    return rows.map((item) => ({
+      date: item.date,
+      type: item.type,
+      status: item.status,
+      totalAmount: Number(item.totalAmount ?? 0),
+    }))
   }
 
   async update(id: string, userId: string, data: UpdateTransactionRecordInput): Promise<TransactionRecord | null> {
@@ -140,8 +273,11 @@ export class TransactionRepository extends BaseRepository {
       return null
     }
 
-    return this.prisma.transaction.delete({
+    return this.prisma.transaction.update({
       where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
     }) as Promise<TransactionRecord>
   }
 }

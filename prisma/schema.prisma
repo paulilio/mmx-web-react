@@ -81,8 +81,24 @@ model User {
   budgetAllocations     BudgetAllocation[]
   areas                 Area[]
   categoryGroups        CategoryGroup[]
+  ledgerEvents          LedgerEvent[]
 
   @@index([email])
+}
+
+model LedgerEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType  String
+  entityType String
+  entityId   String
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@index([eventType, createdAt])
 }
 
 model CategoryGroup {
@@ -135,10 +151,12 @@ model Transaction {
   recurrence      Json?
   areaId          String?
   categoryGroupId String?
+  deletedAt       DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
   @@index([userId, date])
+  @@index([userId, deletedAt, date])
   @@index([userId, status])
   @@index([userId, categoryId])
 }
@@ -178,6 +196,7 @@ model Budget {
 
   @@index([userId, categoryGroupId])
   @@index([userId, month, year])
+  @@unique([userId, categoryGroupId, year, month])
 }
 
 model BudgetAllocation {
@@ -196,6 +215,7 @@ model BudgetAllocation {
 
   @@index([userId, budgetGroupId])
   @@index([userId, month])
+  @@unique([userId, budgetGroupId, month])
 }
 
 model Area {

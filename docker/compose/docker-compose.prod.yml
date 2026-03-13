@@ -34,5 +34,29 @@ services:
       retries: 3
       start_period: 30s
 
+  monitor:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../env/app.prod.env
+    environment:
+      - MONITOR_BASE_URL=http://app:3000
+      - MONITOR_START_PATH=/dashboard
+      - MONITOR_INTERVAL_SECONDS=300
+    depends_on:
+      app:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        pnpm exec playwright install chromium &&
+        while true; do
+          node monitor/engine/runner.js --baseUrl "$$MONITOR_BASE_URL" --startPath "$$MONITOR_START_PATH"
+          sleep "$$MONITOR_INTERVAL_SECONDS"
+        done
+
 volumes:
   postgres_prod_data:

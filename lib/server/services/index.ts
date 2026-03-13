@@ -1,4 +1,12 @@
-import { areaRepository, categoryGroupRepository, categoryRepository, contactRepository, transactionRepository, userRepository } from "@/lib/server/repositories"
+import {
+	areaRepository,
+	categoryGroupRepository,
+	categoryRepository,
+	contactRepository,
+	ledgerEventRepository,
+	transactionRepository,
+	userRepository,
+} from "@/lib/server/repositories"
 import { TransactionService } from "./transaction-service"
 import { CategoryService } from "./category-service"
 import { ContactService } from "./contact-service"
@@ -9,8 +17,10 @@ import { CategoryGroupService } from "./category-group-service"
 import { ReportService } from "./report-service"
 import { OAuthAuthService } from "./oauth-auth-service"
 import { SettingsMaintenanceService } from "./settings-maintenance-service"
+import { LedgerEventService } from "./ledger-event-service"
 
-export const transactionService = new TransactionService(transactionRepository)
+export const ledgerEventService = new LedgerEventService(ledgerEventRepository)
+export const transactionService = new TransactionService(transactionRepository, ledgerEventService)
 export const categoryService = new CategoryService(categoryRepository)
 export const contactService = new ContactService(contactRepository)
 export const budgetService = new BudgetService()
@@ -32,4 +42,5 @@ export {
 	ReportService,
 	OAuthAuthService,
 	SettingsMaintenanceService,
+	LedgerEventService,
 }

@@ -66,6 +66,7 @@ POSTGRES_DB=mmx
 Usa `docker-compose.dev.yml`:
 - **Hot Module Replacement (HMR)** via bind mount do código fonte
 - Banco PostgreSQL local em container
+- Serviço `monitor` em loop para execuções de monitoramento
 - `node_modules` e `.next` preservados no container (não sobrescritos pelo bind mount)
 - Migrações Prisma rodadas automaticamente na inicialização
 - Projeto compose nomeado como `mmx-dev` (containers e volumes previsíveis)
@@ -85,6 +86,9 @@ docker compose -f docker/compose/docker-compose.dev.yml up -d
 
 # Acompanhar logs em segundo plano
 docker compose -f docker/compose/docker-compose.dev.yml logs -f app
+
+# Logs do monitor
+docker compose -f docker/compose/docker-compose.dev.yml logs -f monitor
 
 # Parar e remover containers (volumes preservados)
 docker compose -f docker/compose/docker-compose.dev.yml down
@@ -123,6 +127,7 @@ Usa `docker-compose.prod.yml`:
 - Usuário não-root (`nextjs`) para segurança
 - Healthcheck em `/api/health`
 - `restart: unless-stopped` na aplicação
+- Serviço `monitor` em loop com dependência do healthcheck da aplicação
 - Migrações Prisma rodadas via `scripts/docker/migrate-and-start.sh` no startup
 - Projeto compose nomeado como `mmx-prod` (isolado do ambiente dev)
 
@@ -141,6 +146,9 @@ docker compose -f docker/compose/docker-compose.prod.yml up --build -d
 
 # Acompanhar logs
 docker compose -f docker/compose/docker-compose.prod.yml logs -f app
+
+# Logs do monitor
+docker compose -f docker/compose/docker-compose.prod.yml logs -f monitor
 
 # Parar
 docker compose -f docker/compose/docker-compose.prod.yml down
@@ -204,6 +212,12 @@ docker image prune -f
 | `docker/env/app.env` | `app` (dev compose) | Variáveis da aplicação para desenvolvimento |
 | `docker/env/app.prod.env` | `app` (prod compose) | Variáveis da aplicação para produção |
 | `docker/env/postgres.env` | `postgres` service | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
+
+Variáveis adicionais do serviço `monitor` no compose:
+
+- `MONITOR_BASE_URL`: URL alvo monitorada pelo runner (padrão no compose: `http://app:3000`).
+- `MONITOR_START_PATH`: rota inicial de monitoramento (padrão: `/dashboard`).
+- `MONITOR_INTERVAL_SECONDS`: intervalo entre execuções do monitor (padrão: `300`).
 
 O `DATABASE_URL` em `app.env` e `app.prod.env` já está configurado para o hostname `postgres` (nome do serviço no compose). Não é necessário alterar para usar o compose.
 

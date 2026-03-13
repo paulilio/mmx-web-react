@@ -17,8 +17,10 @@ type Delegate = {
 }
 
 export interface DbClient {
+  $queryRaw: (query: unknown, ...values: unknown[]) => Promise<unknown>
   user: Delegate
   transaction: Delegate
+  ledgerEvent: Delegate
   category: Delegate
   categoryGroup: Delegate
   contact: Delegate

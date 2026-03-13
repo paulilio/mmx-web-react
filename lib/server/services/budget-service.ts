@@ -9,6 +9,15 @@ import {
   type UpdateBudgetAllocationInput,
 } from "../repositories/budget-allocation-repository"
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  )
+}
+
 export class BudgetService {
   constructor(private readonly repository = new BudgetRepository(), private readonly allocationRepo = new BudgetAllocationRepository()) {}
 
@@ -23,16 +32,24 @@ export class BudgetService {
   async create(input: CreateBudgetInput) {
     const entity = BudgetEntity.create(input)
 
-    return this.repository.create({
-      userId: entity.value.userId,
-      categoryGroupId: entity.value.categoryGroupId,
-      month: entity.value.month,
-      year: entity.value.year,
-      planned: entity.value.planned,
-      funded: entity.value.funded,
-      rolloverEnabled: entity.value.rolloverEnabled,
-      rolloverAmount: entity.value.rolloverAmount,
-    })
+    try {
+      return await this.repository.create({
+        userId: entity.value.userId,
+        categoryGroupId: entity.value.categoryGroupId,
+        month: entity.value.month,
+        year: entity.value.year,
+        planned: entity.value.planned,
+        funded: entity.value.funded,
+        rolloverEnabled: entity.value.rolloverEnabled,
+        rolloverAmount: entity.value.rolloverAmount,
+      })
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new Error("Ja existe um orçamento para este grupo no mes informado")
+      }
+
+      throw error
+    }
   }
 
   async update(id: string, userId: string, input: UpdateBudgetInput) {
@@ -78,7 +95,15 @@ export class BudgetService {
   }
 
   async createAllocation(input: CreateBudgetAllocationInput) {
-    return this.allocationRepo.create(input)
+    try {
+      return await this.allocationRepo.create(input)
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new Error("Ja existe uma alocacao para este grupo no mes informado")
+      }
+
+      throw error
+    }
   }
 
   async updateAllocation(id: string, userId: string, input: UpdateBudgetAllocationInput) {

@@ -38,5 +38,34 @@ services:
       postgres:
         condition: service_healthy
 
+  monitor:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.dev
+    restart: unless-stopped
+    env_file:
+      - ../env/app.env
+    environment:
+      - MONITOR_BASE_URL=http://app:3000
+      - MONITOR_START_PATH=/dashboard
+      - MONITOR_INTERVAL_SECONDS=300
+    volumes:
+      - ../..:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      app:
+        condition: service_started
+    command:
+      - sh
+      - -c
+      - |
+        pnpm prisma:generate &&
+        pnpm exec playwright install chromium &&
+        while true; do
+          node monitor/engine/runner.js --baseUrl "$$MONITOR_BASE_URL" --startPath "$$MONITOR_START_PATH"
+          sleep "$$MONITOR_INTERVAL_SECONDS"
+        done
+
 volumes:
   postgres_dev_data:
