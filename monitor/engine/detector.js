@@ -33,11 +33,15 @@ function classifyHttpResponse(response) {
     return null
   }
 
+  const headers = response.headers()
+
   return {
     kind: "http-error",
     status,
     method: response.request().method(),
     url: response.url(),
+    requestId: headers["x-request-id"] || null,
+    contentType: headers["content-type"] || null,
     at: new Date().toISOString()
   }
 }

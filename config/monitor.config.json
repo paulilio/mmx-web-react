@@ -7,5 +7,12 @@
   "criticalSelectors": [
     "main"
   ],
-  "maxHttpErrorsToCapture": 5
+  "maxHttpErrorsToCapture": 5,
+  "ignoreConsoleErrorPatterns": [
+    "Cross-Origin-Opener-Policy header has been ignored"
+  ],
+  "phase1": {
+    "enabled": true,
+    "enforce": true
+  }
 }

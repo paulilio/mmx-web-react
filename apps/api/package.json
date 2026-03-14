@@ -7,8 +7,8 @@
     "dev": "nest start --watch",
     "start": "node dist/main",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run",
-    "test:unit": "vitest run",
+    "test": "pnpm --package=vitest@4.0.18 dlx vitest run",
+    "test:unit": "pnpm --package=vitest@4.0.18 dlx vitest run",
     "db:migrate": "pnpm dlx prisma@6.19.2 migrate deploy --schema ./prisma/schema.prisma",
     "db:generate": "pnpm dlx prisma@6.19.2 generate --schema ./prisma/schema.prisma"
   },

@@ -46,6 +46,13 @@ Fluxo atual:
 4. `evidence.js` persiste artefatos em `artifacts` e `logs/debug`.
 5. `report.js` gera o relatorio em `reports/incidentes`.
 
+Checklist de monitoramento da Phase 1 (agora validado no relatorio):
+
+- frontend tracking (Sentry detectado ou erro frontend capturado)
+- stack traces de runtime (`pageerror`)
+- contexto basico de request (`method`, `url`, `status`)
+- correlacao por `x-request-id` quando presente
+
 ---
 
 ## Estrutura De Pastas
@@ -113,6 +120,40 @@ Probe de validacao (forca 404):
 ```bash
 node monitor/engine/runner.js --startPath /monitor-probe-404
 ```
+
+Probe dedicado da Phase 1 (console + pageerror + http-error com x-request-id):
+
+```bash
+node monitor/engine/runner.js --startPath /monitor-probe-phase1
+```
+
+### Execucao via Docker
+
+Com stack dev em Docker, o servico `monitor` executa em loop automaticamente.
+
+Subir stack:
+
+```bash
+pnpm docker:dev:up
+```
+
+Ver logs do monitor:
+
+```bash
+pnpm docker:dev:logs:monitor
+```
+
+No compose, o monitor usa:
+
+- `MONITOR_BASE_URL=http://host.docker.internal:3000`
+- `MONITOR_START_PATH=/dashboard`
+- `MONITOR_PHASE1_ENABLED=true`
+- `MONITOR_PHASE1_ENFORCE=true`
+
+Observacao:
+
+- Em Docker Desktop (Windows/macOS), `host.docker.internal` evita falhas de navegacao do Chromium com hostname de servico.
+- Em ambientes onde esse hostname nao existir, ajuste `MONITOR_BASE_URL` para a URL acessivel do app e mantenha `extra_hosts` quando suportado.
 
 ---
 
@@ -186,6 +227,11 @@ Quando erros sao detectados:
 - `monitor/artifacts/html/error-<timestamp>.html`
 - `monitor/logs/debug/error-<timestamp>.log`
 
+O relatorio tambem inclui:
+
+- secao `Phase 1 Checklist`
+- secao `Request Context`
+
 ---
 
 ## Configuracao
@@ -201,6 +247,7 @@ Arquivo: `config/monitor.config.json`
 | `waitAfterLoadMs` | Espera apos carregamento da pagina |
 | `criticalSelectors` | Seletores CSS obrigatorios |
 | `maxHttpErrorsToCapture` | Limite de erros HTTP por execucao |
+| `ignoreConsoleErrorPatterns` | Lista de regex para ignorar ruidos conhecidos de `console.error` |
 
 ---
 

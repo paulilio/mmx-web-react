@@ -64,14 +64,18 @@ services:
   monitor:
     build:
       context: ../..
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.monitor
     restart: unless-stopped
     env_file:
       - ../env/app.prod.env
     environment:
-      - MONITOR_BASE_URL=http://app:3000
+      - MONITOR_BASE_URL=http://host.docker.internal:3000
       - MONITOR_START_PATH=/dashboard
       - MONITOR_INTERVAL_SECONDS=300
+      - MONITOR_PHASE1_ENABLED=true
+      - MONITOR_PHASE1_ENFORCE=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       app:
         condition: service_healthy
@@ -79,7 +83,6 @@ services:
       - sh
       - -c
       - |
-        pnpm exec playwright install chromium &&
         while true; do
           node monitor/engine/runner.js --baseUrl "$$MONITOR_BASE_URL" --startPath "$$MONITOR_START_PATH"
           sleep "$$MONITOR_INTERVAL_SECONDS"
