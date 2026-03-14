@@ -16,13 +16,13 @@ type PersistedEntityRecord = {
 const tempCache = new Map<string, { data: object[]; timestamp: number; userId?: string }>()
 const CACHE_DURATION = 2000 // 2 seconds
 
-// JSON file paths - always use /data folder when in mock mode
+// JSON file paths usados pelo armazenamento mock local
 const DATA_FILES = {
-  areas: "/data/areas.json",
-  categoryGroups: "/data/category-groups.json",
-  categories: "/data/categories.json",
-  transactions: "/data/transactions.json",
-  contacts: "/data/contacts.json",
+  areas: "/lib/mock/data/areas.json",
+  categoryGroups: "/lib/mock/data/category-groups.json",
+  categories: "/lib/mock/data/categories.json",
+  transactions: "/lib/mock/data/transactions.json",
+  contacts: "/lib/mock/data/contacts.json",
 } as const
 
 function getCurrentUserId(): string | null {
@@ -42,12 +42,12 @@ function getCurrentUserId(): string | null {
 }
 
 async function loadFromFile<T extends object>(filePath: string): Promise<T[]> {
-  // Ensure we're always using /data folder in mock mode
+  // Mantem um caminho canônico de dataset para chaveamento e compatibilidade
   const normalizedPath = USE_API
     ? filePath
-    : filePath.startsWith("/data/")
+    : filePath.startsWith("/lib/mock/data/")
       ? filePath
-      : `/data/${filePath.split("/").pop()}`
+      : `/lib/mock/data/${filePath.split("/").pop()}`
 
   const currentUserId = getCurrentUserId()
 
@@ -113,12 +113,12 @@ async function loadFromFile<T extends object>(filePath: string): Promise<T[]> {
 }
 
 async function saveToCache<T extends object>(filePath: string, data: T[]): Promise<void> {
-  // Ensure we're always using /data folder in mock mode
+  // Mantem um caminho canônico de dataset para chaveamento e compatibilidade
   const normalizedPath = USE_API
     ? filePath
-    : filePath.startsWith("/data/")
+    : filePath.startsWith("/lib/mock/data/")
       ? filePath
-      : `/data/${filePath.split("/").pop()}`
+      : `/lib/mock/data/${filePath.split("/").pop()}`
 
   const currentUserId = getCurrentUserId()
   storageLogger.debug(`Saving to file: ${normalizedPath}`, {

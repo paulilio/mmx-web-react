@@ -38,12 +38,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 # Prisma schema + migrations necessarios para migrate deploy no startup
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 # Script de startup
-COPY --chown=nextjs:nodejs scripts/docker/migrate-and-start.sh ./scripts/docker/migrate-and-start.sh
-RUN chmod +x scripts/docker/migrate-and-start.sh
+COPY --chown=nextjs:nodejs docker/scripts/migrate-and-start.sh ./docker/scripts/migrate-and-start.sh
+RUN chmod +x docker/scripts/migrate-and-start.sh
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "scripts/docker/migrate-and-start.sh"]
+CMD ["sh", "docker/scripts/migrate-and-start.sh"]

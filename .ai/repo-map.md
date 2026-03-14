@@ -5,7 +5,9 @@
 - app/api/: local frontend route handlers (technical/local scope only).
 - components/: feature UI and shared UI primitives.
 - hooks/: frontend domain hooks.
+- hooks/compat/: compatibility aliases during hook naming transitions.
 - lib/: frontend adapter, shared utils, and server-side support utilities.
+- lib/mock/data/: mock datasets co-located with mock storage implementation.
 - apps/api/: dedicated NestJS backend (mmx-api).
 - prisma/: Prisma schema and migrations.
 - docs/: architecture, contracts, deployment, and ADRs.
@@ -41,5 +43,4 @@
 - scripts/validate-env.mjs for environment checks.
 
 ## Operational Compatibility
-- Legacy paths under scripts/docker are temporary compatibility shims.
 - New operational references should target docker/scripts and monitor/runtime.

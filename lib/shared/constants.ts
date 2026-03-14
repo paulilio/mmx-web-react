@@ -24,11 +24,11 @@ export const MAX_PAGE_SIZE = 100
 
 // File paths
 export const DATA_PATHS = {
-  areas: '/data/areas.json',
-  categoryGroups: '/data/category-groups.json',
-  categories: '/data/categories.json',
-  transactions: '/data/transactions.json',
-  contacts: '/data/contacts.json',
+  areas: "/lib/mock/data/areas.json",
+  categoryGroups: "/lib/mock/data/category-groups.json",
+  categories: "/lib/mock/data/categories.json",
+  transactions: "/lib/mock/data/transactions.json",
+  contacts: "/lib/mock/data/contacts.json",
 } as const
 
 // Storage keys

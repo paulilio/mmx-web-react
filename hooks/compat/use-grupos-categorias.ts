@@ -1,5 +1,5 @@
 import type { GrupoCategoria, GrupoCategoriaFormData } from "@/lib/shared/types"
-import { useCategoryGroups } from "./use-category-groups"
+import { useCategoryGroups } from "../use-category-groups"
 
 export function useGruposCategorias() {
   const {

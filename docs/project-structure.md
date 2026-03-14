@@ -13,6 +13,7 @@ Este documento resume as principais pastas e responsabilidades.
 - docs/: documentacao tecnica
 - scripts/: scripts de suporte
 - docker/scripts/: scripts operacionais canonicos para compose/runtime
+- monitor/runtime/: saidas operacionais do monitor (reports, artifacts, logs)
 
 ## Frontend
 
@@ -20,8 +21,10 @@ Este documento resume as principais pastas e responsabilidades.
 - app/api/: route handlers locais do frontend (uso tecnico/local, ex.: probes e health local)
 - components/: UI reutilizavel
 - hooks/: estado remoto e casos de uso da interface
+- hooks/compat: aliases de compatibilidade para migracoes graduais de naming
 - lib/client/api.ts: fronteira unica de dados
 - lib/mock: servicos de mock/localStorage para modo local
+- lib/mock/data: datasets mock versionados junto da implementacao mock
 - lib/shared: tipos, helpers e utilitarios compartilhados
 
 ### Fronteira app/api vs apps/api
@@ -34,7 +37,6 @@ Este documento resume as principais pastas e responsabilidades.
 ## Operacao Docker/Monitor
 
 - docker/scripts e o caminho canonico de scripts de compose/runtime.
-- scripts/docker e mantido como shim de compatibilidade temporaria.
 - saidas do monitor devem ser gravadas em monitor/runtime (reports, artifacts e logs).
 
 ## Backend (apps/api)

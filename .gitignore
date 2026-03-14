@@ -49,15 +49,6 @@ next-env.d.ts
 # pasta privada temp do dev
 .dev-workspace/*
 
-# monitor - legacy paths (compat)
-monitor/artifacts/screenshots/*.png
-monitor/artifacts/html/*.html
-monitor/artifacts/network/*
-monitor/logs/debug/*.log
-monitor/logs/sessions/
-monitor/reports/incidentes/*.md
-monitor/reports/analysis/
-
 # monitor - runtime outputs
 monitor/runtime/**
 !monitor/runtime/**/

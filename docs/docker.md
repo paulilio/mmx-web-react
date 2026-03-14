@@ -24,7 +24,6 @@ pnpm docker:dev:logs
 
 Observacao:
 - comandos Docker usam o caminho canonico `docker/scripts/run-compose.mjs`.
-- `scripts/docker/*` permanece apenas como compatibilidade temporaria (shim).
 
 ## Derrubar ambiente
 
