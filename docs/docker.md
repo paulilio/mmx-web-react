@@ -63,10 +63,10 @@ Monitor:
 - MONITOR_INTERVAL_SECONDS
 
 Saidas de runtime do monitor:
-- monitor/runtime/reports/incidentes
-- monitor/runtime/artifacts/screenshots
-- monitor/runtime/artifacts/html
-- monitor/runtime/logs/debug
+- runtime/monitor/reports/incidentes
+- runtime/monitor/artifacts/screenshots
+- runtime/monitor/artifacts/html
+- runtime/monitor/logs/debug
 
 ## Prisma no backend
 

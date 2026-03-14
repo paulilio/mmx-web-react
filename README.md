@@ -63,6 +63,7 @@ prisma/
 docs/
 docker/
 scripts/
+runtime/            # saidas operacionais centralizadas (front/api/monitor)
 ```
 
 ## Desenvolvimento
@@ -77,6 +78,11 @@ pnpm test:unit
 pnpm test:integration
 pnpm build
 ```
+
+## Runtime e logs
+
+- Logs e artefatos operacionais ficam em `runtime/<servico>/...`.
+- Servicos atuais com saida centralizada: `front`, `api` e `monitor`.
 
 ## Variaveis de ambiente
 

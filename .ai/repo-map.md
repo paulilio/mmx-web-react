@@ -13,7 +13,7 @@
 - docs/: architecture, contracts, deployment, and ADRs.
 - scripts/: validation and operational helper scripts.
 - docker/scripts/: canonical Docker compose/runtime scripts.
-- monitor/runtime/: monitor execution outputs (reports/artifacts/logs).
+- runtime/: centralized runtime outputs by service (front, api, monitor).
 
 ## Important Frontend Boundary
 - lib/client/api.ts: canonical frontend data adapter.
@@ -43,4 +43,4 @@
 - scripts/validate-env.mjs for environment checks.
 
 ## Operational Compatibility
-- New operational references should target docker/scripts and monitor/runtime.
+- New operational references should target docker/scripts and runtime/<service>/.

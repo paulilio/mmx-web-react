@@ -13,7 +13,7 @@ Este documento resume as principais pastas e responsabilidades.
 - docs/: documentacao tecnica
 - scripts/: scripts de suporte
 - docker/scripts/: scripts operacionais canonicos para compose/runtime
-- monitor/runtime/: saidas operacionais do monitor (reports, artifacts, logs)
+- runtime/: saidas operacionais centralizadas por servico (front, api, monitor)
 
 ## Frontend
 
@@ -37,7 +37,7 @@ Este documento resume as principais pastas e responsabilidades.
 ## Operacao Docker/Monitor
 
 - docker/scripts e o caminho canonico de scripts de compose/runtime.
-- saidas do monitor devem ser gravadas em monitor/runtime (reports, artifacts e logs).
+- logs e artefatos operacionais devem ser gravados em runtime/<servico>/...
 
 ## Backend (apps/api)
 

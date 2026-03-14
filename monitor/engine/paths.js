@@ -1,11 +1,11 @@
 const path = require("path")
 
-function getRuntimeDir(rootDir) {
-  return path.join(rootDir, "runtime")
+function getRuntimeDir(projectRoot) {
+  return path.join(projectRoot, "runtime", "monitor")
 }
 
-function getRuntimePaths(rootDir, stamp) {
-  const runtimeDir = getRuntimeDir(rootDir)
+function getRuntimePaths(projectRoot, stamp) {
+  const runtimeDir = getRuntimeDir(projectRoot)
 
   return {
     screenshotPath: path.join(runtimeDir, "artifacts", "screenshots", `error-${stamp}.png`),

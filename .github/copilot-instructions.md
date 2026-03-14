@@ -5,6 +5,7 @@
 - Frontend: Next.js 14 App Router, React 19, TypeScript 5.
 - Backend: NestJS in apps/api, Modular Monolith + DDD, Prisma + PostgreSQL.
 - Runtime: Node.js 22+, pnpm.
+- Operational runtime outputs: runtime/<service>/... (front, api, monitor).
 
 ## Architecture Rules
 - Frontend data boundary is lib/client/api.ts.

@@ -15,6 +15,7 @@ Use este arquivo como ponto de entrada para agentes de IA neste repositorio.
 - Siga convencoes de naming, estrutura e estilo do repositorio.
 - Nao altere components/ui sem solicitacao explicita.
 - Prefira mensagens para usuario em portugues.
+- Logs e artefatos operacionais devem ser centralizados em runtime/<servico>/...
 
 ## Direcao arquitetural obrigatoria
 - Frontend dedicado: mmx-web-react.

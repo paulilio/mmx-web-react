@@ -4,6 +4,7 @@ const { chromium } = require(require.resolve("playwright", { paths: [process.cwd
 const { attachMonitors } = require("./monitor")
 const { collectEvidence } = require("./evidence")
 const { buildReport, writeReport } = require("./report")
+const { writeSystemLog } = require("./system-log")
 
 function loadConfig(projectRoot) {
   const configPath = path.join(projectRoot, "config", "monitor.config.json")
@@ -196,8 +197,8 @@ function evaluatePhase1(state, sentryDetected) {
 }
 
 async function run() {
-  const rootDir = path.resolve(__dirname, "..")       // monitor/
-  const projectRoot = path.resolve(rootDir, "..")    // project root
+  const monitorRoot = path.resolve(__dirname, "..")   // monitor/
+  const projectRoot = path.resolve(monitorRoot, "..") // project root
   const baseConfig = loadConfig(projectRoot)
   const withEnv = applyEnvOverrides(baseConfig)
   const config = applyCliOverrides(withEnv)
@@ -226,7 +227,28 @@ async function run() {
   const startPath = normalizeStartPath(config.startPath)
   const url = `${config.baseUrl}${startPath}`
 
+  function logInfo(message, metadata = {}) {
+    console.log(message)
+    writeSystemLog(projectRoot, "info", message, metadata)
+  }
+
+  function logError(message, error) {
+    console.error(message, error)
+    writeSystemLog(projectRoot, "error", message, {
+      error: error instanceof Error
+        ? { message: error.message, stack: error.stack }
+        : { value: String(error) }
+    })
+  }
+
   try {
+    writeSystemLog(projectRoot, "info", "Iniciando execucao do monitor", {
+      baseUrl: config.baseUrl,
+      startPath,
+      phase1Enabled: Boolean(config.phase1?.enabled),
+      phase1Enforce: Boolean(config.phase1?.enforce)
+    })
+
     await gotoWithRetry(page, url, {
       timeout: config.timeoutMs,
       waitUntil: "domcontentloaded"
@@ -245,28 +267,32 @@ async function run() {
     const shouldCollectByPhase1 = Boolean(config.phase1?.enabled && config.phase1?.enforce && phase1?.overall === "fail")
 
     if (state.errors.length === 0 && !shouldCollectByPhase1) {
-      console.log("[monitor] Execucao concluida sem erros detectados")
+      logInfo("[monitor] Execucao concluida sem erros detectados")
       if (phase1) {
-        console.log(`[monitor] Phase 1 checks: ${phase1.overall}`)
+        logInfo(`[monitor] Phase 1 checks: ${phase1.overall}`, { phase1 })
       }
       return
     }
 
-    const evidence = await collectEvidence(page, state, rootDir)
+    const evidence = await collectEvidence(page, state, projectRoot)
     const reportContent = buildReport({
       url,
       errors: state.errors,
       phase1,
       requestContexts: state.httpContexts,
       evidence,
-      rootDir
+      rootDir: projectRoot
     })
-    const reportPath = writeReport(rootDir, evidence.stamp, reportContent)
+    const reportPath = writeReport(projectRoot, evidence.stamp, reportContent)
 
-    console.log("[monitor] Erros detectados e evidencias coletadas")
-    console.log(`[monitor] Report: ${reportPath}`)
+    logInfo("[monitor] Erros detectados e evidencias coletadas", {
+      reportPath,
+      errorCount: state.errors.length,
+      requestContextCount: state.httpContexts.length
+    })
+    logInfo(`[monitor] Report: ${reportPath}`)
   } catch (error) {
-    console.error("[monitor] Falha durante execucao:", error)
+    logError("[monitor] Falha durante execucao:", error)
     process.exitCode = 1
   } finally {
     await browser.close()

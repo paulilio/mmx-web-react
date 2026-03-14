@@ -19,11 +19,11 @@ O monitor tem dois blocos principais:
 
 | Vertente | Status | Objetivo | Pasta principal |
 |---------|--------|----------|-----------------|
-| Debug Runtime | Ativo (Phase 1) | Capturar erros de execucao e gerar pacote de evidencia | `monitor/engine`, `monitor/runtime/artifacts`, `monitor/runtime/reports/incidentes`, `monitor/runtime/logs/debug` |
-| Sessions | Estrutura pronta | Persistir historico de execucoes/sessoes | `monitor/runtime/logs/sessions` |
+| Debug Runtime | Ativo (Phase 1) | Capturar erros de execucao e gerar pacote de evidencia | `monitor/engine`, `runtime/monitor/artifacts`, `runtime/monitor/reports/incidentes`, `runtime/monitor/logs/debug` |
+| Sessions | Estrutura pronta | Persistir historico de execucoes/sessoes | `runtime/monitor/logs/sessions` |
 | Observabilidade | Planejado (Phase 3+) | Correlacionar logs, traces e metricas | `monitor/telemetry`, `monitor/dashboards` |
 | Synthetic Tests | Planejado (Phase 2+) | Executar fluxos automatizados para detectar regressao | `monitor/synthetic-tests` |
-| AI Analysis | Planejado (Phase 4+) | Analisar incidentes e sugerir causa raiz | `monitor/ai-agents`, `monitor/runtime/reports/analysis` |
+| AI Analysis | Planejado (Phase 4+) | Analisar incidentes e sugerir causa raiz | `monitor/ai-agents`, `runtime/monitor/reports/analysis` |
 
 ---
 
@@ -36,15 +36,15 @@ Capacidades atuais:
 - monitora respostas HTTP `4xx` e `5xx`
 - valida seletores criticos da pagina
 - coleta screenshot, HTML e log de eventos
-- gera relatorio Markdown em `runtime/reports/incidentes`
+- gera relatorio Markdown em `runtime/monitor/reports/incidentes`
 
 Fluxo atual:
 
 1. `runner.js` inicia o browser e navega para a rota alvo.
 2. `monitor.js` conecta listeners de console/pageerror/response.
 3. `detector.js` classifica os eventos de erro.
-4. `evidence.js` persiste artefatos em `runtime/artifacts` e `runtime/logs/debug`.
-5. `report.js` gera o relatorio em `runtime/reports/incidentes`.
+4. `evidence.js` persiste artefatos em `runtime/monitor/artifacts` e `runtime/monitor/logs/debug`.
+5. `report.js` gera o relatorio em `runtime/monitor/reports/incidentes`.
 
 Checklist de monitoramento da Phase 1 (agora validado no relatorio):
 
@@ -69,7 +69,8 @@ monitor/
 |   |-- detector.js
 |   |-- evidence.js
 |   `-- report.js
-|-- runtime/
+runtime/
+`-- monitor/
 |   |-- logs/
 |   |   |-- system/              # Logs do sistema/engine
 |   |   |-- debug/               # Logs gerados por execucao
@@ -223,10 +224,10 @@ node monitor/engine/runner.js --baseUrl https://seu-dominio.com --startPath /tra
 
 Quando erros sao detectados:
 
-- `monitor/runtime/reports/incidentes/bug-<timestamp>.md`
-- `monitor/runtime/artifacts/screenshots/error-<timestamp>.png`
-- `monitor/runtime/artifacts/html/error-<timestamp>.html`
-- `monitor/runtime/logs/debug/error-<timestamp>.log`
+- `runtime/monitor/reports/incidentes/bug-<timestamp>.md`
+- `runtime/monitor/artifacts/screenshots/error-<timestamp>.png`
+- `runtime/monitor/artifacts/html/error-<timestamp>.html`
+- `runtime/monitor/logs/debug/error-<timestamp>.log`
 
 O relatorio tambem inclui:
 

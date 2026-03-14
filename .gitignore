@@ -49,7 +49,7 @@ next-env.d.ts
 # pasta privada temp do dev
 .dev-workspace/*
 
-# monitor - runtime outputs
-monitor/runtime/**
-!monitor/runtime/**/
-!monitor/runtime/**/.gitkeep
+# runtime outputs (front/api/monitor)
+runtime/**
+!runtime/**/
+!runtime/**/.gitkeep

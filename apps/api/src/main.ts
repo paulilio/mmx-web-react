@@ -6,10 +6,17 @@ import { AppModule } from "./app.module"
 import { ApiExceptionFilter } from "./common/filters/api-exception.filter"
 import { EnvelopeInterceptor } from "./common/interceptors/envelope.interceptor"
 import { RequestIdInterceptor } from "./common/interceptors/request-id.interceptor"
+import { RequestLoggingInterceptor } from "./common/interceptors/request-logging.interceptor"
 import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor"
+import { RuntimeFileLoggerService } from "./common/logging/runtime-file-logger.service"
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: ["warn", "error", "log"] })
+  const app = await NestFactory.create(AppModule, {
+    logger: false,
+    bufferLogs: true,
+  })
+
+  app.useLogger(new RuntimeFileLoggerService())
 
   app.use(cookieParser())
 
@@ -25,6 +32,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(
     new RequestIdInterceptor(),
+    new RequestLoggingInterceptor(),
     new EnvelopeInterceptor(),
     new TimeoutInterceptor(),
   )
