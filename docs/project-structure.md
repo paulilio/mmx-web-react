@@ -2,106 +2,53 @@
 
 Este documento resume as principais pastas e responsabilidades.
 
-Para onboarding tecnico consolidado (proposito, arquitetura, modulos e fluxo), veja `docs/system-overview.md`.
+## Raiz
 
-## Pastas principais
+- app/: paginas e layouts do frontend
+- components/: componentes de UI
+- hooks/: hooks de dominio do frontend
+- lib/: client API boundary, mock/localStorage e utilitarios compartilhados
+- apps/api/: backend dedicado NestJS
+- prisma/: schema e migrations
+- docs/: documentacao tecnica
+- scripts/: scripts de suporte
 
-### `app/`
+## Frontend
 
-Camada de rotas e paginas do Next.js App Router.
+- app/: rotas e composicao de telas
+- components/: UI reutilizavel
+- hooks/: estado remoto e casos de uso da interface
+- lib/client/api.ts: fronteira unica de dados
+- lib/mock: servicos de mock/localStorage para modo local
+- lib/shared: tipos, helpers e utilitarios compartilhados
 
-Exemplos:
+## Backend (apps/api)
 
-- `app/auth/page.tsx`
-- `app/dashboard/page.tsx`
-- `app/api/transactions/route.ts`
+- src/modules/<context>/presentation
+- src/modules/<context>/application
+- src/modules/<context>/domain
+- src/modules/<context>/infrastructure
+- src/infrastructure/database/prisma
+- src/common
+- src/config
 
-### `components/`
+## Dominios backend
 
-Componentes reutilizaveis de interface.
+- health
+- auth
+- transactions
+- categories
+- category-groups
+- contacts
+- budget
+- budget-allocations
+- areas
+- settings
+- reports
 
-Exemplos:
+## Regra de acoplamento
 
-- `components/transactions/transaction-form-modal.tsx`
-- `components/layout/sidebar.tsx`
-- `components/ui/*` (primitivos de design system)
-
-### `hooks/`
-
-Hooks de dominio e estado da aplicacao.
-
-Exemplos:
-
-- `hooks/use-auth.tsx`
-- `hooks/use-auth.test.tsx`
-- `hooks/use-session.test.tsx`
-- `components/auth/auth-guard.test.tsx`
-- `hooks/use-transactions.ts`
-- `hooks/use-budget-allocations.ts` (principal para fluxos de budget)
-- `hooks/use-budget.ts` (legado de compatibilidade transitoria)
-- `hooks/use-settings-maintenance.ts` (principal para import/export/clear em settings)
-
-### `server/` (equivalente logico)
-
-No projeto atual, a camada server esta organizada em `lib/server/`.
-
-Exemplos:
-
-- `lib/server/services/`
-- `lib/server/services/index.ts` (composition root consumido por `app/api/**`)
-- `lib/server/services/auth-service.ts`
-- `lib/server/services/oauth-auth-service.ts`
-- `lib/server/repositories/`
-- `lib/server/db/prisma.ts`
-- `lib/server/security/rate-limit.ts`
-- `lib/server/security/cors.ts`
-- `lib/server/security/password-hash.ts`
-- `lib/server/services/settings-maintenance-service.ts`
-
-### `app/api/settings/` (primeira parte)
-
-Rotas de manutencao de dados da tela de settings no modo API.
-
-Exemplos:
-
-- `app/api/settings/import/route.ts`
-- `app/api/settings/export/route.ts`
-- `app/api/settings/clear/route.ts`
-
-### `domain/` (equivalente logico)
-
-No projeto atual, o dominio esta em `lib/domain/`.
-
-Exemplos:
-
-- `lib/domain/transactions/transaction-entity.ts`
-- `lib/domain/transactions/transaction-rules.ts`
-- `lib/domain/budgets/budget-entity.ts`
-- `lib/domain/auth/auth-rules.ts`
-
-### `repositories/` (equivalente logico)
-
-No projeto atual, repositorios estao em `lib/server/repositories/`.
-
-Exemplos:
-
-- `lib/server/repositories/transaction-repository.ts`
-- `lib/server/repositories/user-repository.ts`
-
-## Outras pastas relevantes
-
-- `lib/client/`: adaptador de API para consumo no cliente
-- `lib/shared/`: tipos, utils e configuracoes compartilhadas
-- `prisma/`: schema e migrations do banco
-- `docs/`: documentacao tecnica
-- `scripts/`: utilitarios de validacao e testes auxiliares
-
-## Fluxo arquitetural (backend)
-
-```text
-app/api -> lib/server/services -> lib/domain -> lib/server/repositories -> Prisma/PostgreSQL
-```
-
-Regra de fronteira atual:
-- `app/api/**/route.ts` deve depender de instancias de `lib/server/services/index.ts`
-- imports diretos de `lib/server/repositories/**` e `lib/server/db/prisma` em rotas sao bloqueados por guardrail no `.eslintrc.json`
+- controllers delegam para use-cases
+- application depende de ports
+- domain e independente de framework
+- infraestrutura implementa ports com Prisma

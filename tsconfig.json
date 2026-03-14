@@ -11,6 +11,8 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "jsx": "preserve",
     "incremental": true,
     "noUncheckedIndexedAccess": true,
@@ -28,5 +30,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "scripts"]
+  "exclude": ["node_modules", "scripts", "apps/api", "apps/api/**", "**/dist/**"]
 }

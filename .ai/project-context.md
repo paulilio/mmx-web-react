@@ -1,76 +1,68 @@
 # Project Context
 
 ## System Purpose
-- Product: MoedaMix web frontend for personal finance management.
-- Main areas: auth, dashboard, transactions, budget, categories, contacts, settings, admin audit logs.
-- Current mode: hybrid mock-first + first-party backend routes.
-- Target mode (Option B): separated frontend (`mmx-web-react`) and dedicated backend service (`mmx-api`).
+- Product: MMX personal finance platform.
+- This repository hosts:
+  - frontend: mmx-web-react
+  - dedicated backend workspace: apps/api (mmx-api)
 
-## Current Backend Coverage
-- Implemented first-party domains: `transactions`, `categories`, `category-groups`, `contacts`, `budget`, `budget-allocations`, `areas`, `settings`, `auth`, `reports/summary`, `reports/aging`, `reports/cashflow`.
-- API route composition is centralized in `lib/server/services/index.ts`; route handlers should consume service instances from this composition root.
-- Auth base is implemented with `AuthService` (`register/login`), password hashing via `bcryptjs`, and `lastLogin` update on successful login.
-- JWT auth is active with access+refresh tokens, refresh rotation/revocation, and logout route (`POST /api/auth/logout`).
-- OAuth providers implemented: Google and Microsoft.
-- OAuth callback create/update/login orchestration is centralized in `lib/server/services/oauth-auth-service.ts`.
-- API hardening implemented: rate limiting on auth endpoints, CORS by environment, security headers, secure auth cookies, and central middleware auth gate for protected APIs.
+## Architectural Baseline
+- Backend architecture is final and mandatory:
+  - Modular Monolith
+  - Domain-Driven Design (DDD)
+  - NestJS + Prisma + PostgreSQL
+- Canonical decision: docs/adr/0012-backend-architecture.md
 
-## Current Frontend Auth Status
-- In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` login already integrates with `POST /api/auth/login`.
-- In `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` logout already integrates with `POST /api/auth/logout`.
-- In `NEXT_PUBLIC_USE_API=true`, `hooks/use-session.ts` refresh now integrates with `POST /api/auth/refresh`.
-- In `NEXT_PUBLIC_USE_API=true`, auth bootstrap no longer depends on `auth_session` local persistence.
+## Backend Domains
+- health
+- auth
+- transactions
+- categories
+- category-groups
+- contacts
+- budget
+- budget-allocations
+- areas
+- settings
+- reports (summary, aging, cashflow)
 
-## Current Frontend Budget Status
-- Budget frontend convergence is in E3 mode: `hooks/use-budget-allocations.ts` is the primary path for active product flows.
-- `hooks/use-budget.ts` is kept only as legacy compatibility during transition and should not be used by new flows.
+## Security Baseline
+- JWT access + refresh tokens.
+- Refresh rotation and revocation.
+- Cookie-based auth with secure production flags.
+- Rate limiting.
+- CORS by environment.
+- OAuth Google and Microsoft.
 
-## Current Frontend Settings Status
-- In `NEXT_PUBLIC_USE_API=true`, settings maintenance (`import/export/clear`) now uses first-party routes under `/api/settings/*`.
-- `app/settings/page.tsx` now uses `hooks/use-settings-maintenance.ts` and should not access storage/localStorage directly for maintenance flows.
-
-## Business Terms
-- `Area`: top-level financial grouping.
-- `CategoryGroup`: group inside an area.
-- `Category`: transaction classification.
-- `Transaction`: income/expense record with status and optional recurrence.
-- `Budget` / `BudgetAllocation`: planned vs funded vs spent values by period.
-- `Contact`: customer or supplier linked to transactions.
-- `User` + `Session`: authenticated scope used for data isolation.
-
-## Key Goals
-- Keep feature behavior consistent while backend evolves.
-- Preserve multi-user isolation via `userId` in data operations.
-- Keep UI isolated from transport mode (mock vs API) via hooks + adapter boundary.
-- Maintain typed contracts and envelope responses `{ data, error }`.
-- Treat `app/api/**` as transitional first-party backend surface until domains are migrated to `mmx-api`.
+## Frontend Data Boundary
+- All data access from UI goes through hooks + lib/client/api.ts.
+- Keep envelope contract { data, error }.
+- In NEXT_PUBLIC_USE_API=true:
+  - explicit ApiError behavior
+  - no automatic mock fallback
+  - external NEXT_PUBLIC_API_BASE uses credentials include
 
 ## Core Technologies
-- Framework: Next.js 14 App Router.
-- UI: React 19, Tailwind CSS v4, shadcn/ui + Radix UI.
-- Language: TypeScript 5.
-- State/data: SWR for async state, React Context for auth/session.
-- Forms/validation: React Hook Form + Zod.
-- Charts: Recharts.
-- Runtime/tooling: Node.js 22+, pnpm.
+- Next.js 14, React 19, TypeScript 5.
+- SWR, React Hook Form, Zod, Tailwind v4.
+- Node.js 22+, pnpm.
 
-## Runtime Modes
-- Mock mode: `NEXT_PUBLIC_USE_API=false`.
-- API mode: `NEXT_PUBLIC_USE_API=true` + `NEXT_PUBLIC_API_BASE`.
-- In API mode, `lib/client/api.ts` unwraps `{ data, error }`, keeps temporary legacy non-envelope compatibility, and throws explicit `ApiError` on envelope/network errors.
-- In `NEXT_PUBLIC_USE_API=true`, external requests routed to `NEXT_PUBLIC_API_BASE` use `credentials: "include"`; first-party `/api/*` routing behavior is preserved.
-- In `NEXT_PUBLIC_USE_API=true`, there is no automatic fallback to mock on connectivity failure.
-- Rule: feature code should not branch by mode directly; use hooks + `lib/client/api.ts`.
+## Environment Variables
+- NEXT_PUBLIC_API_BASE
+- NEXT_PUBLIC_USE_API
+- MMX_APP_ENV
+- CORS_ORIGINS_DEV
+- CORS_ORIGINS_STAGING
+- CORS_ORIGINS_PROD
+- GOOGLE_CLIENT_ID
+- GOOGLE_CLIENT_SECRET
+- GOOGLE_REDIRECT_URI
+- MICROSOFT_CLIENT_ID
+- MICROSOFT_CLIENT_SECRET
+- MICROSOFT_REDIRECT_URI
+- MICROSOFT_TENANT_ID
 
-## Environment Variables (Important)
-- Mode and routing: `NEXT_PUBLIC_USE_API`, `NEXT_PUBLIC_API_BASE`, `MMX_APP_ENV`.
-- CORS policy: `CORS_ORIGINS_DEV`, `CORS_ORIGINS_STAGING`, `CORS_ORIGINS_PROD`.
-- OAuth Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
-- OAuth Microsoft: `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI`, `MICROSOFT_TENANT_ID`.
-
-## AI Contribution Rules (Practical)
-- Prefer extending existing hook/service/repository patterns instead of parallel flows.
-- Keep auth/security cross-cutting logic under `lib/server/security/**`.
-- When updating docs, keep `.ai/*`, `README.md`, and `docs/*` consistent with each other.
-- For architecture/contracts/security/runtime updates, use `docs/documentation-governance-checklist.md` before finalizing.
-- Before finalizing: run `pnpm test:unit`, `pnpm test:integration`, `pnpm type-check`, `pnpm build`, `pnpm lint`, and `pnpm validate:env` as needed.
+## AI Contribution Rules
+- Keep docs synchronized across README, docs, AGENTS, .github, and .ai files.
+- Preserve security invariants and API envelope.
+- Validate changes with lint, tests, type-check, and build.

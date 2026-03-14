@@ -10,12 +10,14 @@ import {
 } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
-import { budgetService } from "@mmx/lib/server/services"
-import { mapBudget, mapBudgetAllocation } from "@mmx/lib/server/http/budgets-mapper"
+import { BudgetApplicationService } from "./application/budget.service"
+import { mapBudget, mapBudgetAllocation } from "@/core/lib/server/http/budgets-mapper"
 
 @Controller("budget")
 @UseGuards(JwtAuthGuard)
 export class BudgetController {
+  constructor(private readonly budgetService: BudgetApplicationService) {}
+
   @Put(":groupId/:year/:month")
   @HttpCode(HttpStatus.OK)
   async upsertBudget(
@@ -33,11 +35,11 @@ export class BudgetController {
     const monthNum = Number(month)
     const yearNum = Number(year)
 
-    const existing = await budgetService.list({ userId, categoryGroupId: groupId, month: monthNum, year: yearNum })
+    const existing = await this.budgetService.list({ userId, categoryGroupId: groupId, month: monthNum, year: yearNum })
     const currentBudget = existing.data?.[0]
 
     if (currentBudget) {
-      const updated = await budgetService.update(currentBudget.id, userId, {
+      const updated = await this.budgetService.update(currentBudget.id, userId, {
         planned: body.planned,
         funded: body.funded,
         rolloverEnabled: body.rolloverEnabled,
@@ -46,7 +48,7 @@ export class BudgetController {
       return mapBudget(updated)
     }
 
-    const created = await budgetService.create({
+    const created = await this.budgetService.create({
       userId,
       categoryGroupId: groupId,
       month: monthNum,
@@ -74,15 +76,15 @@ export class BudgetController {
     }
 
     const monthString = `${year}-${month.toString().padStart(2, "0")}`
-    const list = await budgetService.listAllocations({ userId, month: monthString, budgetGroupId: groupId })
+    const list = await this.budgetService.listAllocations({ userId, month: monthString, budgetGroupId: groupId })
     const alloc = list.data?.[0]
 
     if (alloc) {
-      const updated = await budgetService.addFunds(alloc.id, amount, userId)
+      const updated = await this.budgetService.addFunds(alloc.id, amount, userId)
       return mapBudgetAllocation(updated)
     }
 
-    const created = await budgetService.createAllocation({
+    const created = await this.budgetService.createAllocation({
       userId,
       budgetGroupId: groupId,
       categoryGroupId: null,
@@ -105,14 +107,14 @@ export class BudgetController {
     const monthNum = Number(month)
     const yearNum = Number(year)
 
-    const existing = await budgetService.list({ userId, categoryGroupId: groupId, month: monthNum, year: yearNum })
+    const existing = await this.budgetService.list({ userId, categoryGroupId: groupId, month: monthNum, year: yearNum })
     const currentBudget = existing.data?.[0]
 
     if (!currentBudget) {
       throw Object.assign(new Error("Orcamento nao encontrado para este mes"), { status: 404, code: "BUDGET_NOT_FOUND" })
     }
 
-    const updated = await budgetService.update(currentBudget.id, userId, {
+    const updated = await this.budgetService.update(currentBudget.id, userId, {
       rolloverEnabled: body.enabled,
       rolloverAmount: body.amount,
     })

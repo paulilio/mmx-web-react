@@ -38,14 +38,6 @@ async function loadApiModule() {
 async function loadApiModuleApiMode() {
   vi.resetModules()
   process.env.NEXT_PUBLIC_USE_API = "true"
-  process.env.NEXT_PUBLIC_API_MIGRATION_DOMAINS = ""
-  return import("./api")
-}
-
-async function loadApiModuleApiModeWithMigration(domains: string) {
-  vi.resetModules()
-  process.env.NEXT_PUBLIC_USE_API = "true"
-  process.env.NEXT_PUBLIC_API_MIGRATION_DOMAINS = domains
   return import("./api")
 }
 
@@ -273,7 +265,7 @@ describe("lib/client/api API mode compatibility", () => {
     })
   })
 
-  it("should route category-groups to first-party API in USE_API=true", async () => {
+  it("should route category-groups to dedicated backend in USE_API=true", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -292,12 +284,15 @@ describe("lib/client/api API mode compatibility", () => {
     await getJSON("/category-groups")
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/category-groups",
-      expect.objectContaining({ method: "GET" }),
+      "http://127.0.0.1:8000/category-groups",
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+      }),
     )
   })
 
-  it("should route reports to first-party API in USE_API=true", async () => {
+  it("should route reports to dedicated backend in USE_API=true", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -324,41 +319,6 @@ describe("lib/client/api API mode compatibility", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { getJSON } = await loadApiModuleApiMode()
-    await getJSON("/reports/summary")
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/reports/summary",
-      expect.objectContaining({ method: "GET" }),
-    )
-  })
-
-  it("should route reports to external API when reports migration is enabled", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          data: {
-            totalOpen: 0,
-            totalOverdue: 0,
-            totalNext7Days: 0,
-            totalNext30Days: 0,
-            totalReceivables: 0,
-            totalPayables: 0,
-            completedReceivables: 0,
-            completedPayables: 0,
-            pendingReceivables: 0,
-            pendingPayables: 0,
-          },
-          error: null,
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      ),
-    )
-    vi.stubGlobal("fetch", fetchMock)
-
-    const { getJSON } = await loadApiModuleApiModeWithMigration("reports")
     await getJSON("/reports/summary")
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -397,7 +357,7 @@ describe("lib/client/api API mode compatibility", () => {
     )
   })
 
-  it("should preserve first-party requests without explicit credentials override", async () => {
+  it("should include credentials for first-party dedicated backend requests", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -416,10 +376,10 @@ describe("lib/client/api API mode compatibility", () => {
     await getJSON("/areas")
 
     const firstCallArgs = fetchMock.mock.calls[0]
-    expect(firstCallArgs?.[0]).toBe("/api/areas")
+    expect(firstCallArgs?.[0]).toBe("http://127.0.0.1:8000/areas")
 
     const requestInit = firstCallArgs?.[1] as Record<string, unknown>
     expect(requestInit.method).toBe("GET")
-    expect("credentials" in requestInit).toBe(false)
+    expect(requestInit.credentials).toBe("include")
   })
 })

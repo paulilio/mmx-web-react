@@ -1,262 +1,122 @@
 # mmx-web-react
 
-Frontend web do projeto **MMX**, construido com **Next.js + TypeScript**.
+Frontend web do projeto MMX, consumindo um backend dedicado (mmx-api) via REST.
 
-O repositorio esta em modo **mock-first com migracao incremental para backend real**.
-Atualmente, transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`) e relatorios (`reports/summary`, `reports/aging`, `reports/cashflow`) ja possuem rotas backend em `app/api/**`.
+## Estado arquitetural
 
-Importante: em estrategia alvo (Opcao B), frontend e backend ficam separados. As rotas em `app/api/**` existem hoje como etapa transitoria para acelerar desenvolvimento e migracao gradual para um servico dedicado (`mmx-api`).
+A estrategia oficial e backend dedicado, sem camada transitoria como baseline.
 
----
+- frontend: mmx-web-react (Next.js)
+- backend: mmx-api (NestJS em apps/api)
+- banco: PostgreSQL + Prisma
 
 ## Stack
 
-- **Next.js 14.2** (App Router)
-- **React 19**
-- **TypeScript 5**
-- **pnpm**
-- **Prisma + PostgreSQL**
-- **ESLint + Prettier**
-- **Vitest** (testes unitarios)
-- (Opcional) **Playwright** (E2E)
-- Deploy: **Vercel**
+- Next.js 14.2 (App Router)
+- React 19
+- TypeScript 5
+- pnpm
+- Prisma + PostgreSQL
+- ESLint + Prettier
+- Vitest (unit/integration)
+- Playwright (E2E opcional)
 
----
-
-## Inicio Rapido
-
-Rode localmente em menos de 2 minutos:
+## Inicio rapido
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Abrir: `http://localhost:3000`
-
----
+Aplicacao: http://localhost:3000
 
 ## Arquitetura
 
-### Estado atual (transicao)
-
-O backend segue arquitetura em camadas:
-
-`API -> Services -> Domain -> Repositories -> Prisma -> PostgreSQL`
-
-Essa estrutura separa:
-- transporte HTTP
-- regras de negocio
-- acesso a dados
-
-Regra atual de composicao no backend:
-- `app/api/**` consome instancias do composition root em `lib/server/services/index.ts`
-- rotas nao devem importar repositories/prisma diretamente
-
-Diagrama simplificado:
-
-```text
-Frontend (React)
-	|
-	v
-Next.js API routes
-	|
-	v
-Services
-	|
-	v
-Domain
-	|
-	v
-Repositories
-	|
-	v
-Prisma
-	|
-	v
-PostgreSQL
-```
-
-### Arquitetura alvo (Opcao B)
-
-Separacao intencional de servicos:
+Fluxo principal:
 
 ```text
 Browser
-	|
-	v
-mmx-web-react (frontend)
-	|
-	v
-HTTP REST
-	|
-	v
-mmx-api (backend)
-	|
-	v
-PostgreSQL
+  -> mmx-web-react
+  -> HTTP REST
+  -> mmx-api (NestJS)
+  -> PostgreSQL
 ```
 
-Regra de migracao: manter `lib/client/api.ts` como unica fronteira de dados no frontend durante toda a transicao, sem criar camadas paralelas de cliente HTTP.
+Fronteira de dados do frontend:
 
----
+- lib/client/api.ts
+
+Regra:
+
+- componentes e hooks nao acessam storage persistente diretamente
+- consumo de dados sempre via hooks + lib/client/api.ts
 
 ## Estrutura principal
-
-Visao rapida da estrutura do projeto:
 
 ```text
 app/
 components/
 hooks/
 lib/
-  domain/
-  server/
-    services/
-    repositories/
+apps/api/           # backend dedicado NestJS (modular monolith + DDD)
 prisma/
-
 docs/
 docker/
 scripts/
 ```
 
-Para a estrutura completa, veja `docs/project-structure.md`.
-
----
-
-## Desenvolvimento local
+## Desenvolvimento
 
 ```bash
 corepack enable
 pnpm install
 pnpm dev
-```
-
-Aplicacao local: `http://localhost:3000`
-
-Comandos principais:
-
-```bash
 pnpm lint
 pnpm type-check
 pnpm test:unit
-pnpm test:unit:watch
 pnpm test:integration
 pnpm build
 ```
 
----
-
-## Estrategia de testes
-
-Como testamos o projeto:
-
-- Testes unitarios: Vitest
-- Testes de integracao: Vitest + API routes + middleware
-- E2E (opcional): Playwright
-
-Comandos principais:
-
-```bash
-pnpm test:unit
-pnpm test:integration
-```
-
----
-
 ## Variaveis de ambiente
 
-Crie um `.env.local` na raiz do projeto:
+Criar .env.local na raiz:
 
 ```bash
+DATABASE_URL=postgresql://mmx:mmx_password@localhost:5432/mmx?schema=public
 NEXT_PUBLIC_API_BASE=http://localhost:4000
-NEXT_PUBLIC_USE_API=false
+NEXT_PUBLIC_USE_API=true
 MMX_APP_ENV=development
 CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
 CORS_ORIGINS_STAGING=
 CORS_ORIGINS_PROD=
 ```
 
-- `NEXT_PUBLIC_USE_API=false`: usa modo mock/local
-- `NEXT_PUBLIC_USE_API=true`: usa chamadas de API
-- `MMX_APP_ENV`: seleciona ambiente efetivo para matriz de CORS (`development|staging|production`)
-- `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
+Para ambiente local real (API + banco), mantenha `NEXT_PUBLIC_USE_API=true` e `DATABASE_URL` valida.
 
----
+## Seguranca esperada
+
+- JWT access + refresh
+- rotacao/revogacao de refresh token
+- cookies HttpOnly, SameSite, Secure (producao)
+- rate limiting
+- CORS por ambiente
+- OAuth Google e Microsoft
 
 ## Documentacao
 
-- Onboarding tecnico: `docs/system-overview.md`
-- Arquitetura geral: `docs/architecture.md`
-- Contratos de API: `docs/api-contracts.md`
-- Deploy e CI: `docs/deployment.md`
-- Desenvolvimento local (sem Docker): `docs/local-development.md`
-- Docker (dev e produção): `docs/docker.md`
-- Estrutura do projeto: `docs/project-structure.md`
-- Diretrizes de frontend: `docs/frontend-guidelines.md`
-- ADRs (decisoes arquiteturais): `docs/adr/README.md`
-
----
-
-## Docker (Checklist Rapido)
-
-Operacao recomendada com atalhos `pnpm`:
-
-```bash
-# preparar envs uma vez
-cp docker/env/app.env.example docker/env/app.env
-cp docker/env/app.prod.env.example docker/env/app.prod.env
-cp docker/env/postgres.env.example docker/env/postgres.env
-
-# desenvolvimento
-pnpm docker:dev:up
-pnpm docker:dev:ps
-pnpm docker:dev:logs
-pnpm docker:dev:rebuild
-pnpm docker:dev:down
-
-# producao (self-hosted)
-pnpm docker:prod:up
-pnpm docker:prod:ps
-pnpm docker:prod:logs
-pnpm docker:prod:rebuild
-pnpm docker:prod:down
-```
-
-Observacoes:
-- `docker:dev:*` usa o projeto compose `mmx-dev`
-- `docker:prod:*` usa o projeto compose `mmx-prod`
-- Os comandos validam env files obrigatorios antes de executar o compose
-
----
+- docs/system-overview.md
+- docs/architecture.md
+- docs/api-contracts.md
+- docs/deployment.md
+- docs/docker.md
+- docs/project-structure.md
+- docs/adr/README.md
+- docs/adr/0012-backend-architecture.md
 
 ## Convencoes
 
-- Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)
-- Estilo: TypeScript estrito, sem `any` quando possivel
-- UI base: `components/ui/**` (evitar alteracoes sem necessidade)
-- Mensagens para usuario: preferencialmente em portugues
-
----
-
-## Status atual (resumo)
-
-- Fluxo completo em transacoes, categorias, grupos de categorias, contatos, orcamento e areas: `API -> Service -> Domain -> Repository -> Prisma`
-- Budget no frontend convergido em E3: `use-budget-allocations` como caminho principal; `use-budget.ts` mantido apenas como legado de compatibilidade transitoria
-- Relatorios de primeira parte ativos em `app/api/reports/summary`, `app/api/reports/aging` e `app/api/reports/cashflow`
-- Manutencao de configuracoes de primeira parte ativa em `app/api/settings/import`, `app/api/settings/export` e `app/api/settings/clear`
-- Settings no frontend convergido para boundary: `app/settings/page.tsx` usa `hooks/use-settings-maintenance.ts` + `lib/client/api.ts` (sem acesso direto a storage/localStorage)
-- Contrato HTTP padronizado com envelope `{ data, error }`
-- Adapter cliente (`lib/client/api.ts`) em `NEXT_PUBLIC_USE_API=true`: desembrulha envelope, aceita payload legado sem envelope temporariamente, envia `credentials: "include"` para chamadas externas via `API_BASE` e lanca erro explicito de conectividade (`ApiError`, `status: 0`) sem fallback automatico para mock
-- Endpoints de auth backend: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
-- OAuth Google backend: `GET /api/auth/oauth/google` + `GET /api/auth/oauth/google/callback`
-- OAuth Microsoft backend: `GET /api/auth/oauth/microsoft` + `GET /api/auth/oauth/microsoft/callback`
-- OAuth callback orquestrado por `lib/server/services/oauth-auth-service.ts`
-- Composition root backend consolidado em `lib/server/services/index.ts`
-- Guardrail de arquitetura ativo em `.eslintrc.json` para bloquear import direto de `repositories/prisma` em `app/api/**/route.ts`
-- Hardening aplicado em auth/API: rate limiting (`429`) + CORS por ambiente com preflight no `middleware.ts`
-- Auth backend base concluido: hash de senha com `bcryptjs`, `AuthService` e atualizacao de `lastLogin` no login
-- Auth JWT concluido: emissao/validacao de access+refresh token, `POST /api/auth/logout` e gate central de autorizacao para APIs protegidas no `middleware.ts`
-- Frontend auth (migracao incremental): em `NEXT_PUBLIC_USE_API=true`, `use-auth` ja usa `POST /api/auth/login|logout`, `use-session` ja usa `POST /api/auth/refresh` e o bootstrap nao depende mais de `auth_session` local
-- Cobertura de teste de auth/frontend atualizada: `hooks/use-auth.test.tsx` cobre sucesso/falha/expiracao de sessao, `hooks/use-session.test.tsx` cobre refresh (`401` e `429`) e `components/auth/auth-guard.test.tsx` valida navegacao protegida sem regressao
+- Conventional Commits: feat, fix, chore, docs, refactor, test
+- TypeScript estrito
+- mensagens de usuario preferencialmente em portugues
+- evitar alteracoes em components/ui sem necessidade

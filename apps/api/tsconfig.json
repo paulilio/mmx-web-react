@@ -18,9 +18,8 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/*": ["../../*"],
-      "@mmx/lib/*": ["../../lib/*"],
-      "@mmx/prisma": ["../../prisma/schema.prisma"]
+      "@/*": ["src/*"],
+      "@/types/*": ["src/core/types/*"]
     }
   },
   "include": ["src/**/*"],

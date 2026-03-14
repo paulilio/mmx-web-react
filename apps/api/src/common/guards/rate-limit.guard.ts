@@ -6,7 +6,7 @@ import {
   HttpStatus,
 } from "@nestjs/common"
 import type { Request } from "express"
-import { applyRateLimit } from "@mmx/lib/server/security/rate-limit"
+import { applyRateLimit } from "@/core/lib/server/security/rate-limit"
 
 interface RateLimitOptions {
   namespace: string

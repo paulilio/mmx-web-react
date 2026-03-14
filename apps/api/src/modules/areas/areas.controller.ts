@@ -13,16 +13,17 @@ import {
 } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
-import { areaService } from "@mmx/lib/server/services"
+import { AreaApplicationService } from "./application/area.service"
 import {
   mapArea,
   parseAreaStatus,
   parseAreaType,
-} from "@mmx/lib/server/http/areas-mapper"
+} from "@/core/lib/server/http/areas-mapper"
 
 @Controller("areas")
 @UseGuards(JwtAuthGuard)
 export class AreasController {
+  constructor(private readonly areaService: AreaApplicationService) {}
   @Get()
   async list(
     @AuthUser() userId: string,
@@ -31,7 +32,7 @@ export class AreasController {
     @Query("type") type?: string,
     @Query("status") status?: string,
   ) {
-    const result = await areaService.list(
+    const result = await this.areaService.list(
       {
         userId,
         type: parseAreaType(type),
@@ -48,7 +49,7 @@ export class AreasController {
 
   @Get(":id")
   async getById(@AuthUser() userId: string, @Param("id") id: string) {
-    const record = await areaService.getById(id, userId)
+    const record = await this.areaService.getById(id, userId)
     if (!record) throw Object.assign(new Error("Area nao encontrada"), { status: 404, code: "AREA_NOT_FOUND" })
     return mapArea(record)
   }
@@ -70,7 +71,7 @@ export class AreasController {
       throw Object.assign(new Error("Campos obrigatorios: name, type, color, icon"), { status: 400, code: "INVALID_INPUT" })
     }
 
-    const created = await areaService.create({
+    const created = await this.areaService.create({
       userId,
       name: body.name,
       description: body.description,
@@ -95,7 +96,7 @@ export class AreasController {
       status?: string
     },
   ) {
-    const updated = await areaService.update(id, userId, {
+    const updated = await this.areaService.update(id, userId, {
       name: body.name,
       description: body.description,
       type: body.type ? parseAreaType(body.type) : undefined,
@@ -108,7 +109,7 @@ export class AreasController {
 
   @Delete(":id")
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
-    const deleted = await areaService.remove(id, userId)
+    const deleted = await this.areaService.remove(id, userId)
     return mapArea(deleted)
   }
 }

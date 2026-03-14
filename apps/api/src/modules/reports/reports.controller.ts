@@ -1,19 +1,21 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
-import { reportService } from "@mmx/lib/server/services"
+import { ReportsApplicationService } from "./application/reports.service"
 
 @Controller("reports")
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
+  constructor(private readonly reportsService: ReportsApplicationService) {}
+
   @Get("summary")
   async summary(@AuthUser() userId: string) {
-    return reportService.getSummary(userId)
+    return this.reportsService.getSummary(userId)
   }
 
   @Get("aging")
   async aging(@AuthUser() userId: string, @Query("dateFrom") dateFrom?: string, @Query("dateTo") dateTo?: string) {
-    return reportService.getAging(userId, { dateFrom, dateTo })
+    return this.reportsService.getAging(userId, { dateFrom, dateTo })
   }
 
   @Get("cashflow")
@@ -24,7 +26,7 @@ export class ReportsController {
     }
 
     const daysParam = Number(days ?? 30)
-    return reportService.getCashflow(userId, {
+    return this.reportsService.getCashflow(userId, {
       days: Number.isFinite(daysParam) ? daysParam : 30,
       status: statusParam as "all" | "completed" | "pending" | "cancelled",
     })

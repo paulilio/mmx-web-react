@@ -33,14 +33,14 @@ vi.mock("@/lib/client/api", () => ({
   },
 }))
 
-vi.mock("@/lib/server/user-data-service", () => ({
+vi.mock("@/lib/mock/user-data-service", () => ({
   userDataService: {
     setContext: mocked.setContextMock,
     cleanupUserData: mocked.cleanupUserDataMock,
   },
 }))
 
-vi.mock("@/lib/server/migration-service", () => ({
+vi.mock("@/lib/mock/migration-service", () => ({
   UNIFIED_STORAGE_KEYS: {
     users: "mmx_users",
     authSessions: "mmx_auth_sessions",

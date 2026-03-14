@@ -1,5 +1,5 @@
-import { USE_API, API_BASE, API_MIGRATION_DOMAINS } from "../shared/config"
-import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../server/storage"
+import { USE_API, API_BASE } from "../shared/config"
+import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../mock/storage"
 import { apiLogger } from "../shared/logger"
 
 class ApiError extends Error {
@@ -184,26 +184,8 @@ function writeMockBudgetAllocations(items: MockBudgetAllocationRecord[]) {
 }
 
 function resolveApiUrl(endpoint: string): string {
-  const firstPath = endpoint.split("/").filter(Boolean)[0]?.toLowerCase()
-  const firstPartyDomains = new Set([
-    "transactions",
-    "categories",
-    "category-groups",
-    "contacts",
-    "auth",
-    "areas",
-    "budget",
-    "budget-allocations",
-    "settings",
-    "reports",
-  ])
-
-  if (firstPath && firstPartyDomains.has(firstPath)) {
-    if (API_MIGRATION_DOMAINS.has(firstPath)) {
-      return `${API_BASE}${endpoint}`
-    }
-
-    return `/api${endpoint}`
+  if (/^https?:\/\//.test(endpoint)) {
+    return endpoint
   }
 
   return `${API_BASE}${endpoint}`

@@ -13,16 +13,17 @@ import {
 } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
-import { contactService } from "@mmx/lib/server/services"
+import { ContactApplicationService } from "./application/contact.service"
 import {
   mapContact,
   parseContactStatus,
   parseContactType,
-} from "@mmx/lib/server/http/contacts-mapper"
+} from "@/core/lib/server/http/contacts-mapper"
 
 @Controller("contacts")
 @UseGuards(JwtAuthGuard)
 export class ContactsController {
+  constructor(private readonly contactService: ContactApplicationService) {}
   @Get()
   async list(
     @AuthUser() userId: string,
@@ -31,7 +32,7 @@ export class ContactsController {
     @Query("type") type?: string,
     @Query("status") status?: string,
   ) {
-    const result = await contactService.list(
+    const result = await this.contactService.list(
       {
         userId,
         type: parseContactType(type),
@@ -47,7 +48,7 @@ export class ContactsController {
 
   @Get(":id")
   async getById(@AuthUser() userId: string, @Param("id") id: string) {
-    const record = await contactService.getById(id, userId)
+    const record = await this.contactService.getById(id, userId)
     if (!record) throw Object.assign(new Error("Contato nao encontrado"), { status: 404, code: "CONTACT_NOT_FOUND" })
     return mapContact(record)
   }
@@ -70,7 +71,7 @@ export class ContactsController {
       throw Object.assign(new Error("Campos obrigatorios: name, type"), { status: 400, code: "INVALID_INPUT" })
     }
 
-    const created = await contactService.create({
+    const created = await this.contactService.create({
       userId,
       name: body.name,
       email: body.email,
@@ -96,7 +97,7 @@ export class ContactsController {
       status?: string
     },
   ) {
-    const updated = await contactService.update(id, userId, {
+    const updated = await this.contactService.update(id, userId, {
       name: body.name,
       email: body.email,
       phone: body.phone,
@@ -109,7 +110,7 @@ export class ContactsController {
 
   @Delete(":id")
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
-    const deleted = await contactService.remove(id, userId)
+    const deleted = await this.contactService.remove(id, userId)
     return mapContact(deleted)
   }
 }

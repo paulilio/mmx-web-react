@@ -1,219 +1,47 @@
 # Contratos de API
 
-## Direcao Arquitetural (Opcao B)
+## Referencia arquitetural
 
-- Arquitetura alvo: frontend (`mmx-web-react`) e backend (`mmx-api`) separados.
-- Estado atual: este repositorio ainda possui rotas em `app/api/**` como backend de primeira parte para transicao incremental.
-- Regra de migracao: manter `lib/client/api.ts` como unica fronteira de consumo HTTP no frontend durante a migracao para `mmx-api`.
+- Backend dedicado: mmx-api (NestJS em apps/api)
+- Fronteira frontend: lib/client/api.ts
+- ADR normativo: docs/adr/0012-backend-architecture.md
 
-## Modo Atual: Hibrido (mock-first + backend parcial)
+## Envelope padrao
 
-Todas as chamadas de API passam por `lib/client/api.ts`.
+- sucesso: { data: T, error: null }
+- falha: { data: null, error: { code, message } }
 
-- Em modo mock (`NEXT_PUBLIC_USE_API=false`), os dados sao servidos por adaptadores locais.
-- Rotas Next.js de primeira parte ja estao ativas para transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`) e relatorios (`summary`, `aging`, `cashflow`).
-- Auth base em backend ja ativo: `register/login` com hash de senha (`bcryptjs`) e update de `lastLogin` no login.
-- Auth JWT ja ativo com access+refresh token, rotacao/revogacao de refresh e logout.
+## Regras de consumo no frontend
 
-```ts
-// lib/client/api.ts (pattern atual resumido)
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) throw new ApiError(response.status, await response.text())
+- Em NEXT_PUBLIC_USE_API=true, lib/client/api.ts deve:
+  - desembrulhar envelope
+  - lancar ApiError em erro de envelope/rede
+  - nao aplicar fallback automatico para mock
+  - usar credentials include para chamadas externas via NEXT_PUBLIC_API_BASE
 
-  const payload = (await response.json()) as unknown
+## Dominios de API
 
-  // Envelope padrao
-  if (isApiEnvelope<T>(payload)) {
-    if (payload.error) throw new ApiError(response.status, payload.error.message || "Erro na resposta da API")
-    return payload.data as T
-  }
+- /auth
+- /transactions
+- /categories
+- /category-groups
+- /contacts
+- /budget
+- /budget-allocations
+- /areas
+- /settings
+- /reports
 
-  // Compatibilidade legada (sem envelope)
-  return payload as T
-}
-```
+## Contratos de seguranca
 
-### Comportamento atual do adaptador cliente
+- Endpoints protegidos exigem token de acesso valido.
+- Fluxo de refresh deve suportar rotacao e revogacao.
+- Cookies de auth com flags seguras em producao.
+- Endpoints sensiveis com rate limiting.
+- CORS por ambiente.
 
-- Em `NEXT_PUBLIC_USE_API=true`, o adaptador aceita:
-  - payload com envelope `{ data, error }` (padrao atual)
-  - payload legado sem envelope (compatibilidade temporaria)
-- Em `NEXT_PUBLIC_USE_API=true`, chamadas externas roteadas para `NEXT_PUBLIC_API_BASE` enviam `credentials: "include"` para suportar auth cookie-based cross-origin.
-- Em `NEXT_PUBLIC_USE_API=true`, chamadas de primeira parte (`/api/*`) mantem comportamento atual de roteamento interno.
-- Se vier `error` no envelope, o adaptador lanca `ApiError` explicitamente.
-- Se a API estiver indisponivel (erro de rede), o adaptador lanca erro explicito de conectividade (`ApiError` com `status: 0`).
-- Nao ha fallback automatico para mock em indisponibilidade de API no modo `USE_API=true`.
+## Contratos de validacao
 
-### Estado atual da migracao de auth no frontend
-
-- Em `NEXT_PUBLIC_USE_API=true`, `login/logout` de `hooks/use-auth.tsx` ja usam `POST /api/auth/login|logout`.
-- Em `NEXT_PUBLIC_USE_API=true`, `refresh` de `hooks/use-session.ts` ja usa `POST /api/auth/refresh`.
-- Em `NEXT_PUBLIC_USE_API=true`, a restauracao de sessao no frontend usa `auth_user` + refresh backend (sem dependencia de `auth_session` local).
-- Em `NEXT_PUBLIC_USE_API=true`, erros de login no frontend sao normalizados para mensagens amigaveis em portugues (sem exposicao de erro tecnico bruto).
-
-## Chaves de localStorage
-
-| Chave | Entidade | Escopo |
-|---|---|---|
-| `mmx_users` | Usuarios | - |
-| `mmx_transactions` | Transacoes | `userId` |
-| `mmx_categories` | Categorias | `userId` |
-| `mmx_category_groups` | Grupos de categoria | `userId` |
-| `mmx_areas` | Areas | `userId` |
-| `mmx_budget_allocations` | Orcamento | `userId` |
-| `mmx_contacts` | Contatos | `userId` |
-| `mmx_auth_sessions` | Sessoes de auth | `userId` |
-| `mmx_audit_log` | Logs de auditoria | `userId` |
-
-## Interfaces TypeScript (referencia)
-
-```ts
-// types/auth.ts
-interface User {
-  id: string
-  email: string
-  firstName: string
-  lastName: string
-  phone?: string
-  cpfCnpj?: string
-  isEmailConfirmed: boolean
-  defaultOrganizationId?: string
-  createdAt: string
-  lastLogin?: string
-  planType: "free" | "premium" | "pro"
-}
-
-// lib/shared/types.ts
-interface Transaction {
-  id: string
-  description: string
-  amount: number
-  type: "income" | "expense"
-  categoryId: string
-  date: string
-  status: "completed" | "pending" | "cancelled"
-  notes?: string
-  createdAt: string
-  updatedAt: string
-}
-```
-
-## Endpoints Implementados (atual)
-
-```text
-GET    /api/transactions      -> { data: { data: Transaction[]; total; page; pageSize }, error: null } | { data: null, error }
-POST   /api/transactions      -> { data: Transaction, error: null } | { data: null, error }
-GET    /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
-PUT    /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
-DELETE /api/transactions/:id  -> { data: Transaction, error: null } | { data: null, error }
-
-GET    /api/categories         -> { data: Category[], error: null } | { data: null, error }
-POST   /api/categories         -> { data: Category, error: null } | { data: null, error }
-GET    /api/categories/:id     -> { data: Category, error: null } | { data: null, error }
-PUT    /api/categories/:id     -> { data: Category, error: null } | { data: null, error }
-DELETE /api/categories/:id     -> { data: Category, error: null } | { data: null, error }
-
-GET    /api/contacts           -> { data: Contact[], error: null } | { data: null, error }
-POST   /api/contacts           -> { data: Contact, error: null } | { data: null, error }
-GET    /api/contacts/:id       -> { data: Contact, error: null } | { data: null, error }
-PUT    /api/contacts/:id       -> { data: Contact, error: null } | { data: null, error }
-DELETE /api/contacts/:id       -> { data: Contact, error: null } | { data: null, error }
-
-GET    /api/budget/:groupId/:year/:month               -> { data: BudgetSnapshot, error: null } | { data: null, error }
-POST   /api/budget/:groupId/:year/:month/add-funds     -> { data: BudgetSnapshot, error: null } | { data: null, error }
-POST   /api/budget/:groupId/:year/:month/rollover      -> { data: BudgetSnapshot, error: null } | { data: null, error }
-GET    /api/budget-allocations                          -> { data: BudgetAllocation[], error: null } | { data: null, error }
-POST   /api/budget-allocations                          -> { data: BudgetAllocation, error: null } | { data: null, error }
-PUT    /api/budget-allocations/:id                      -> { data: BudgetAllocation, error: null } | { data: null, error }
-DELETE /api/budget-allocations/:id                      -> { data: BudgetAllocation, error: null } | { data: null, error }
-
-GET    /api/areas               -> { data: Area[], error: null } | { data: null, error }
-POST   /api/areas               -> { data: Area, error: null } | { data: null, error }
-GET    /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
-PUT    /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
-DELETE /api/areas/:id           -> { data: Area, error: null } | { data: null, error }
-
-GET    /api/category-groups     -> { data: { data: CategoryGroup[]; total; page; pageSize }, error: null } | { data: null, error }
-POST   /api/category-groups     -> { data: CategoryGroup, error: null } | { data: null, error }
-GET    /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
-PUT    /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
-DELETE /api/category-groups/:id -> { data: CategoryGroup, error: null } | { data: null, error }
-
-GET    /api/reports/summary     -> { data: DashboardSummary, error: null } | { data: null, error }
-GET    /api/reports/aging       -> { data: AgingReport, error: null } | { data: null, error }
-GET    /api/reports/cashflow    -> { data: CashflowData[], error: null } | { data: null, error }
-
-POST   /api/settings/import     -> { data: { imported: Record<SeedTableKey, number> }, error: null } | { data: null, error }
-POST   /api/settings/export     -> { data: Partial<SeedData>, error: null } | { data: null, error }
-POST   /api/settings/clear      -> { data: { cleared: Record<SeedTableKey, number> }, error: null } | { data: null, error }
-
-Observacao reports atual:
-- `GET /api/reports/summary`: consolida totais gerais e por status para dashboard.
-- `GET /api/reports/aging`: aceita `dateFrom` e `dateTo` e retorna buckets (`overdue`, `next7Days`, `next30Days`, `future`) com blocos `completed*` e `pending*`.
-- `GET /api/reports/cashflow`: aceita `days` (default `30`) e `status` (`all|completed|pending|cancelled`) e retorna serie agregada por data com saldos acumulados.
-
-Observacao settings atual:
-- No frontend, os fluxos de manutencao de settings (import/export/clear) usam `hooks/use-settings-maintenance.ts` e boundary `lib/client/api.ts`.
-- Em `NEXT_PUBLIC_USE_API=true`, o adaptador roteia `/settings/*` para primeira parte (`/api/settings/*`).
-- A tela `app/settings/page.tsx` nao deve acessar storage/localStorage diretamente para manutencao de dados.
-
-POST   /api/auth/login          -> { data: AuthLoginResponse, error: null } | { data: null, error }
-POST   /api/auth/register       -> { data: AuthRegisterResponse, error: null } | { data: null, error }
-POST   /api/auth/refresh        -> { data: AuthRefreshResponse, error: null } | { data: null, error }
-POST   /api/auth/logout         -> { data: AuthLogoutResponse, error: null } | { data: null, error }
-GET    /api/auth/oauth/google   -> redirect para consentimento Google
-GET    /api/auth/oauth/google/callback -> { data: OAuthLoginResponse, error: null } | { data: null, error }
-GET    /api/auth/oauth/microsoft -> redirect para consentimento Microsoft
-GET    /api/auth/oauth/microsoft/callback -> { data: OAuthLoginResponse, error: null } | { data: null, error }
-```
-
-Observacao auth atual:
-- `POST /api/auth/register`: persiste senha como hash (nao texto puro).
-- `POST /api/auth/login`: valida hash e atualiza `lastLogin` do usuario autenticado.
-- JWT (`access` + `refresh`) assinado e validado em `lib/server/security/jwt.ts`.
-- Rotacao/revogacao de refresh em `lib/server/security/refresh-session-store.ts`.
-- `POST /api/auth/logout`: revoga refresh ativo e limpa cookies de auth.
-
-## Hardening Ativo em API
-
-- Rate limiting em auth: `POST /api/auth/login`, `POST /api/auth/register`, `POST /api/auth/refresh`
-  - Ao exceder limite da janela: `429` com `error.code = "RATE_LIMITED"`
-- CORS por ambiente aplicado no `middleware.ts` para `/api`
-  - Preflight `OPTIONS`: `204` com headers `Access-Control-Allow-*`
-  - Origem bloqueada: `403` com `error.code = "CORS_ORIGIN_BLOCKED"`
-- Cookies de auth emitidos nas rotas de login/refresh/OAuth callback:
-  - `mmx_access_token` e `mmx_refresh_token`
-  - `HttpOnly`, `SameSite=Lax`, `Secure` em producao
-- Gate de autorizacao no `middleware.ts` para APIs protegidas:
-  - Sem bearer token/cookie de access token: `401` com `error.code = "AUTH_REQUIRED"`
-
-## Formato Padrao de Resposta
-
-```ts
-// Sucesso
-{ data: T, error: null }
-
-// Erro
-{ data: null, error: { code: string, message: string } }
-```
-
-## Padrao de Tratamento de Erros
-
-```ts
-// hooks/use-transactions.ts
-import { logger } from "@/lib/shared/logger"
-
-const transactionLogger = logger.scope("Transactions")
-
-try {
-  const data = await getTransactions(userId)
-  setTransactions(data)
-} catch (err) {
-  toast.error("Erro ao carregar transacoes")
-  transactionLogger.error("Erro ao carregar transacoes", err)
-}
-```
-
-- Nunca expor mensagens tecnicas brutas na UI
-- Sempre mostrar mensagem amigavel em portugues via `toast.error()`
-- Registrar detalhes tecnicos via logger central com escopo de modulo (`logger.scope("ModuleName")`)
+- DTOs de transporte validam formato e obrigatoriedade.
+- Dominio valida invariantes de negocio.
+- Mensagens de erro para usuario devem ser amigaveis.

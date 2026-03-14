@@ -14,7 +14,7 @@ Use este checklist quando o PR alterar arquitetura, contratos, seguranca, fluxos
 - docs/architecture.md
 - docs/api-contracts.md
 - docs/project-structure.md
-- docs/local-development.md e/ou docs/deployment.md (quando houver impacto operacional)
+- docs/local-development.md e/ou docs/deployment.md
 - AGENTS.md
 - .github/copilot-instructions.md
 - .ai/project-context.md
@@ -25,30 +25,31 @@ Use este checklist quando o PR alterar arquitetura, contratos, seguranca, fluxos
 
 ## 3) Regras de consistencia
 
-- A documentacao reflete o estado atual do codigo (sem itens legados apresentados como atuais).
-- O fluxo server em app/api segue composition root em lib/server/services/index.ts.
-- Rotas app/api nao importam repositories/prisma diretamente.
+- A documentacao reflete o estado atual do codigo.
+- O backend segue ADR-0012 (Modular Monolith + DDD).
+- O backend source of truth e apps/api.
+- Frontend usa lib/client/api.ts como fronteira unica de dados.
 - Contrato HTTP padrao permanece { data, error }.
-- Comportamento NEXT_PUBLIC_USE_API=true permanece sem fallback automatico para mock.
-- Chamadas externas via NEXT_PUBLIC_API_BASE usam credentials: "include".
+- Em NEXT_PUBLIC_USE_API=true nao existe fallback automatico para mock.
+- Chamadas externas via NEXT_PUBLIC_API_BASE usam credentials include.
 
 ## 4) Regras editoriais
 
-- Terminologia consistente entre docs e .ai (ex.: "de primeira parte", "adaptador", "modo API").
-- PT-BR para textos voltados ao time/produto; ingles tecnico apenas quando necessario.
-- Sem placeholders ambiguuos (ex.: ADR-XXXX) em documentos finais.
-- Titulos e secoes seguem estrutura clara e objetiva.
+- Terminologia consistente entre docs e .ai.
+- PT-BR para textos de produto/time; ingles tecnico quando necessario.
+- Sem placeholders ambiguos em documentos finais.
+- Titulos e secoes objetivas.
 
 ## 5) Evidencia de validacao
 
 - Rodei: pnpm lint
 - Rodei: pnpm type-check
-- Rodei: pnpm test:integration (quando alterar app/api, middleware ou contratos)
-- Rodei: pnpm test:unit (quando alterar regras de dominio/servico)
-- Rodei: pnpm build (quando alterar estrutura ou comportamento de runtime)
+- Rodei: pnpm test:unit
+- Rodei: pnpm test:integration
+- Rodei: pnpm build
 
 ## 6) Resultado do checklist
 
 - Marquei itens nao aplicaveis com justificativa curta no PR.
-- Registrei quais arquivos de docs foram atualizados no resumo final do PR.
-- Confirmei que nao ha divergencia entre README, docs, AGENTS, .github e .ai.
+- Registrei quais docs foram atualizados.
+- Confirmei ausencia de divergencia entre README, docs, AGENTS, .github e .ai.

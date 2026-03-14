@@ -13,15 +13,16 @@ import {
 } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
-import { categoryGroupService } from "@mmx/lib/server/services"
+import { CategoryGroupApplicationService } from "./application/category-group.service"
 import {
   mapCategoryGroup,
   parseCategoryGroupStatus,
-} from "@mmx/lib/server/http/category-groups-mapper"
+} from "@/core/lib/server/http/category-groups-mapper"
 
 @Controller("category-groups")
 @UseGuards(JwtAuthGuard)
 export class CategoryGroupsController {
+  constructor(private readonly categoryGroupService: CategoryGroupApplicationService) {}
   @Get()
   async list(
     @AuthUser() userId: string,
@@ -30,7 +31,7 @@ export class CategoryGroupsController {
     @Query("status") status?: string,
     @Query("areaId") areaId?: string,
   ) {
-    const result = await categoryGroupService.list(
+    const result = await this.categoryGroupService.list(
       {
         userId,
         status: parseCategoryGroupStatus(status),
@@ -46,7 +47,7 @@ export class CategoryGroupsController {
 
   @Get(":id")
   async getById(@AuthUser() userId: string, @Param("id") id: string) {
-    const record = await categoryGroupService.getById(id, userId)
+    const record = await this.categoryGroupService.getById(id, userId)
     if (!record) throw Object.assign(new Error("Grupo de categoria nao encontrado"), { status: 404, code: "CATEGORY_GROUP_NOT_FOUND" })
     return mapCategoryGroup(record)
   }
@@ -68,7 +69,7 @@ export class CategoryGroupsController {
       throw Object.assign(new Error("Campo obrigatorio: name"), { status: 400, code: "INVALID_INPUT" })
     }
 
-    const created = await categoryGroupService.create({
+    const created = await this.categoryGroupService.create({
       userId,
       name: body.name,
       description: body.description,
@@ -93,7 +94,7 @@ export class CategoryGroupsController {
       status?: string
     },
   ) {
-    const updated = await categoryGroupService.update(id, userId, {
+    const updated = await this.categoryGroupService.update(id, userId, {
       name: body.name,
       description: body.description,
       color: body.color,
@@ -106,7 +107,7 @@ export class CategoryGroupsController {
 
   @Delete(":id")
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
-    const deleted = await categoryGroupService.remove(id, userId)
+    const deleted = await this.categoryGroupService.remove(id, userId)
     return mapCategoryGroup(deleted)
   }
 }

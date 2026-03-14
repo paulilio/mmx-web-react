@@ -1,5 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule, RequestMethod } from "@nestjs/common"
 import { CorsMiddleware } from "./common/middleware/cors.middleware"
+import { SecurityHeadersMiddleware } from "./common/middleware/security-headers.middleware"
+import { PrismaModule } from "./infrastructure/database/prisma/prisma.module"
 import { HealthModule } from "./modules/health/health.module"
 import { AuthModule } from "./modules/auth/auth.module"
 import { TransactionsModule } from "./modules/transactions/transactions.module"
@@ -14,6 +16,7 @@ import { SettingsModule } from "./modules/settings/settings.module"
 
 @Module({
   imports: [
+    PrismaModule,
     HealthModule,
     AuthModule,
     TransactionsModule,
@@ -29,6 +32,8 @@ import { SettingsModule } from "./modules/settings/settings.module"
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CorsMiddleware).forRoutes({ path: "*", method: RequestMethod.ALL })
+    consumer
+      .apply(SecurityHeadersMiddleware, CorsMiddleware)
+      .forRoutes({ path: "*", method: RequestMethod.ALL })
   }
 }

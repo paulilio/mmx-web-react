@@ -13,16 +13,17 @@ import {
 } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
-import { transactionService } from "@mmx/lib/server/services"
+import { TransactionApplicationService } from "./application/transaction.service"
 import {
   mapTransaction,
   parseTransactionStatus,
   parseTransactionType,
-} from "@mmx/lib/server/http/transactions-mapper"
+} from "@/core/lib/server/http/transactions-mapper"
 
 @Controller("transactions")
 @UseGuards(JwtAuthGuard)
 export class TransactionsController {
+  constructor(private readonly transactionService: TransactionApplicationService) {}
   @Get()
   async list(
     @AuthUser() userId: string,
@@ -37,7 +38,7 @@ export class TransactionsController {
     const pageNum = Number.isFinite(Number(page)) ? Number(page) : 1
     const pageSizeNum = Number.isFinite(Number(pageSize)) ? Number(pageSize) : 20
 
-    const result = await transactionService.list(
+    const result = await this.transactionService.list(
       {
         userId,
         type: parseTransactionType(type ?? null),
@@ -54,7 +55,7 @@ export class TransactionsController {
 
   @Get(":id")
   async getById(@AuthUser() userId: string, @Param("id") id: string) {
-    const record = await transactionService.getById(id, userId)
+    const record = await this.transactionService.getById(id, userId)
     if (!record) throw Object.assign(new Error("Transacao nao encontrada"), { status: 404, code: "TRANSACTION_NOT_FOUND" })
     return mapTransaction(record)
   }
@@ -84,7 +85,7 @@ export class TransactionsController {
     const parsedType = parseTransactionType(body.type)
     if (!parsedType) throw Object.assign(new Error("Tipo da transacao invalido"), { status: 400, code: "INVALID_INPUT" })
 
-    const created = await transactionService.create(
+    const created = await this.transactionService.create(
       {
         userId,
         description: body.description ?? "",
@@ -122,7 +123,7 @@ export class TransactionsController {
       currentBalance?: number
     },
   ) {
-    const updated = await transactionService.update(
+    const updated = await this.transactionService.update(
       id,
       userId,
       {
@@ -144,7 +145,7 @@ export class TransactionsController {
 
   @Delete(":id")
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
-    const deleted = await transactionService.remove(id, userId)
+    const deleted = await this.transactionService.remove(id, userId)
     return mapTransaction(deleted)
   }
 }

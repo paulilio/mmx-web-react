@@ -19,35 +19,5 @@
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"
   },
-  "overrides": [
-    {
-      "files": ["app/api/**/route.ts"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": [
-                  "@/lib/server/repositories",
-                  "@/lib/server/repositories/*",
-                  "**/lib/server/repositories",
-                  "**/lib/server/repositories/*"
-                ],
-                "message": "Rotas em app/api devem depender de instancias em lib/server/services (composition root), nao de repositories diretamente."
-              },
-              {
-                "group": [
-                  "@/lib/server/db/prisma",
-                  "**/lib/server/db/prisma"
-                ],
-                "message": "Rotas em app/api nao devem acessar Prisma diretamente; use services."
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ],
   "ignorePatterns": ["scripts/**/*"]
 }

@@ -7,34 +7,29 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Get,
-  Redirect,
 } from "@nestjs/common"
 import type { Request, Response } from "express"
-import { authService } from "@mmx/lib/server/services"
-import {
-  issueAccessToken,
-  issueRefreshToken,
-} from "@mmx/lib/server/security/jwt"
-import {
-  verifyRefreshToken,
-} from "@mmx/lib/server/security/jwt"
-import {
-  isRefreshSessionValid,
-  rotateRefreshSession,
-  persistRefreshSession,
-  revokeRefreshSession,
-} from "@mmx/lib/server/security/refresh-session-store"
+import { RegisterUseCase } from "./application/use-cases/register.use-case"
+import { LoginUseCase } from "./application/use-cases/login.use-case"
+import { RefreshSessionUseCase } from "./application/use-cases/refresh-session.use-case"
+import { LogoutUseCase } from "./application/use-cases/logout.use-case"
 import { setAuthCookies, clearAuthCookies, resolveRefreshTokenFromCookie } from "../../common/utils/cookies"
 import { createRateLimitGuard } from "../../common/guards/rate-limit.guard"
+import { rateLimitConfig } from "../../config/rate-limit.config"
 
-const LoginRateLimit = createRateLimitGuard({ namespace: "auth:login", limit: 5, windowMs: 60_000 })
-const RegisterRateLimit = createRateLimitGuard({ namespace: "auth:register", limit: 5, windowMs: 60_000 })
-const RefreshRateLimit = createRateLimitGuard({ namespace: "auth:refresh", limit: 10, windowMs: 60_000 })
+const LoginRateLimit = createRateLimitGuard({ namespace: "auth:login", ...rateLimitConfig.auth.login })
+const RegisterRateLimit = createRateLimitGuard({ namespace: "auth:register", ...rateLimitConfig.auth.register })
+const RefreshRateLimit = createRateLimitGuard({ namespace: "auth:refresh", ...rateLimitConfig.auth.refresh })
 
 @Controller("auth")
 export class AuthController {
-  // POST /auth/register
+  constructor(
+    private readonly registerUseCase: RegisterUseCase,
+    private readonly loginUseCase: LoginUseCase,
+    private readonly refreshSessionUseCase: RefreshSessionUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
+  ) {}
+
   @Post("register")
   @UseGuards(RegisterRateLimit)
   @HttpCode(HttpStatus.CREATED)
@@ -49,12 +44,11 @@ export class AuthController {
     },
   ) {
     if (!body.email || !body.password || !body.firstName || !body.lastName) {
-      throw Object.assign(new Error("Campos obrigatorios: email, password, firstName, lastName"), {
+      throw Object.assign(new Error("Campos obrigatórios: email, password, firstName, lastName"), {
         status: 400, code: "INVALID_INPUT",
       })
     }
-
-    const created = await authService.register({
+    return this.registerUseCase.execute({
       email: body.email,
       password: body.password,
       firstName: body.firstName,
@@ -62,11 +56,8 @@ export class AuthController {
       phone: body.phone,
       cpfCnpj: body.cpfCnpj,
     })
-
-    return { id: created.id, email: created.email, firstName: created.firstName, lastName: created.lastName }
   }
 
-  // POST /auth/login
   @Post("login")
   @UseGuards(LoginRateLimit)
   @HttpCode(HttpStatus.OK)
@@ -75,79 +66,49 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!body.email || !body.password) {
-      throw Object.assign(new Error("Campos obrigatorios: email, password"), { status: 400, code: "INVALID_INPUT" })
+      throw Object.assign(new Error("Campos obrigatórios: email, password"), { status: 400, code: "INVALID_INPUT" })
     }
-
-    const user = await authService.login({ email: body.email, password: body.password })
-
-    const accessTokenResult = issueAccessToken({ id: user.id, email: user.email })
-    const refreshTokenResult = issueRefreshToken({ id: user.id, email: user.email })
-
-    persistRefreshSession(refreshTokenResult.token, user.id, refreshTokenResult.expiresInSeconds)
-    setAuthCookies(res, accessTokenResult.token, refreshTokenResult.token)
-
+    const result = await this.loginUseCase.execute({ email: body.email, password: body.password })
+    setAuthCookies(res, result.accessToken, result.refreshToken)
     return {
-      accessToken: accessTokenResult.token,
-      refreshToken: refreshTokenResult.token,
-      expiresIn: accessTokenResult.expiresInSeconds,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        planType: user.planType,
-      },
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      expiresIn: result.expiresIn,
+      user: result.user,
     }
   }
 
-  // POST /auth/logout
   @Post("logout")
   @HttpCode(HttpStatus.OK)
-  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: { refreshToken?: string }) {
-    const refreshToken = body.refreshToken ?? resolveRefreshTokenFromCookie(req as Request & { cookies?: Record<string, string> })
-    if (refreshToken) {
-      revokeRefreshSession(refreshToken)
-    }
+  logout(
+    @Req() req: Request & { cookies?: Record<string, string> },
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: { refreshToken?: string },
+  ) {
+    const token = body.refreshToken ?? resolveRefreshTokenFromCookie(req)
+    this.logoutUseCase.execute(token ?? null)
     clearAuthCookies(res)
     return { success: true }
   }
 
-  // POST /auth/refresh
   @Post("refresh")
   @UseGuards(RefreshRateLimit)
   @HttpCode(HttpStatus.OK)
-  async refresh(
-    @Req() req: Request,
+  refresh(
+    @Req() req: Request & { cookies?: Record<string, string> },
     @Res({ passthrough: true }) res: Response,
     @Body() body: { refreshToken?: string },
   ) {
-    const refreshToken = body.refreshToken ?? resolveRefreshTokenFromCookie(req as Request & { cookies?: Record<string, string> })
-
-    if (!refreshToken) {
-      throw Object.assign(new Error("Campo obrigatorio: refreshToken"), { status: 400, code: "INVALID_INPUT" })
+    const token = body.refreshToken ?? resolveRefreshTokenFromCookie(req)
+    if (!token) {
+      throw Object.assign(new Error("Campo obrigatório: refreshToken"), { status: 400, code: "INVALID_INPUT" })
     }
-
-    let payload
-    try {
-      payload = verifyRefreshToken(refreshToken)
-    } catch {
-      throw Object.assign(new Error("Refresh token invalido"), { status: 401, code: "INVALID_REFRESH_TOKEN" })
-    }
-
-    if (!isRefreshSessionValid(refreshToken, payload.sub)) {
-      throw Object.assign(new Error("Refresh token invalido"), { status: 401, code: "INVALID_REFRESH_TOKEN" })
-    }
-
-    const accessTokenResult = issueAccessToken({ id: payload.sub, email: payload.email })
-    const nextRefreshTokenResult = issueRefreshToken({ id: payload.sub, email: payload.email })
-
-    rotateRefreshSession(refreshToken, nextRefreshTokenResult.token, payload.sub, nextRefreshTokenResult.expiresInSeconds)
-    setAuthCookies(res, accessTokenResult.token, nextRefreshTokenResult.token)
-
+    const result = this.refreshSessionUseCase.execute(token)
+    setAuthCookies(res, result.accessToken, result.refreshToken)
     return {
-      accessToken: accessTokenResult.token,
-      refreshToken: nextRefreshTokenResult.token,
-      expiresIn: accessTokenResult.expiresInSeconds,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      expiresIn: result.expiresIn,
     }
   }
 }

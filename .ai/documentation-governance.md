@@ -1,16 +1,16 @@
 # Documentation Governance
 
 ## Purpose
-- Keep docs synchronized with real code behavior.
-- Prevent drift between README, docs, AGENTS, .github instructions, and .ai context files.
+- Keep documentation synchronized with the implemented architecture.
+- Prevent drift between README, docs, AGENTS, .github instructions, and .ai context.
 
 ## Mandatory Trigger Cases
 Update docs when changes affect:
 - architecture boundaries
 - API contracts/envelopes
 - auth/security behavior
-- runtime/env behavior
-- operational/deployment workflows
+- runtime/environment behavior
+- deployment and operations
 
 ## Required Sync Set
 - README.md
@@ -24,13 +24,16 @@ Update docs when changes affect:
 - .ai/repo-map.md
 
 ## Consistency Rules
-- app/api routes must consume services from lib/server/services/index.ts.
-- No direct repository/prisma imports in app/api route handlers.
-- Keep API envelope contract as { data, error }.
-- In NEXT_PUBLIC_USE_API=true, do not add automatic fallback to mock.
-- In NEXT_PUBLIC_USE_API=true, external NEXT_PUBLIC_API_BASE requests use credentials: "include".
+- Architecture baseline is ADR-0012.
+- Backend source of truth is apps/api.
+- Frontend data boundary is lib/client/api.ts.
+- Envelope contract remains { data, error }.
+- In NEXT_PUBLIC_USE_API=true:
+  - explicit adapter error behavior
+  - no automatic mock fallback
+  - external API base requests use credentials include
 
 ## PR Checklist
-- Use docs/documentation-governance-checklist.md before finalizing.
-- Report in PR summary which docs were updated.
-- Explicitly mark non-applicable checklist items with a short reason.
+- Execute docs/documentation-governance-checklist.md for architecture/security/runtime updates.
+- Report which docs were updated.
+- Mark non-applicable checklist items with a brief reason.

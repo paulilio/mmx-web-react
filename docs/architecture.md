@@ -1,151 +1,98 @@
 # Arquitetura
 
-Para onboarding tecnico consolidado (visao de produto, modulos, fluxo e deploy), veja `docs/system-overview.md`.
+Para onboarding consolidado, veja docs/system-overview.md.
 
-## Visao Geral do Sistema
+## Decisao oficial
 
-MoedaMix e um dashboard de financas pessoais construido com Next.js 14 (App Router). A persistencia atual e hibrida (localStorage + API de primeira parte), com camada de adaptador preparada para migracao incremental sem mudancas de UI.
+A arquitetura oficial do MMX e:
 
-## Direcao Arquitetural (Opcao B)
+- Modular Monolith
+- Domain-Driven Design (DDD)
+- Backend dedicado em NestJS (apps/api)
+- Prisma + PostgreSQL
 
-A direcao alvo do produto e separar frontend e backend em servicos distintos.
+A referencia normativa e o ADR 0012:
+- docs/adr/0012-backend-architecture.md
 
-Estado atual:
-- parte do backend ainda roda em `app/api/**` neste repositorio para acelerar entrega incremental.
-
-Estado alvo:
-- `mmx-web-react` (frontend)
-- `mmx-api` (backend dedicado)
-- PostgreSQL
-
-Fluxo alvo:
+## Topologia de servicos
 
 ```text
 Browser
-        -> mmx-web-react
-        -> HTTP REST
-        -> mmx-api
-        -> PostgreSQL
+  -> mmx-web-react (frontend)
+  -> HTTP REST
+  -> mmx-api (backend dedicado)
+  -> PostgreSQL
 ```
 
-Regra de transicao:
-- manter `lib/client/api.ts` como fronteira unica de consumo de dados no frontend.
+## Fronteiras de camada
 
-## Stack
+Frontend:
 
-| Camada | Tecnologia |
-|---|---|
-| Framework | Next.js 14.2 - App Router |
-| Linguagem | TypeScript 5 |
-| UI | React 19 + shadcn/ui + Radix UI |
-| Estilizacao | Tailwind CSS v4 |
-| Formularios | React Hook Form + Zod |
-| Graficos | Recharts |
-| Estado | React Context + SWR |
-| Runtime | Node.js 22 |
+- app e components: apresentacao
+- hooks: orquestracao de UI e estado remoto
+- lib/client/api.ts: fronteira unica de dados
 
-## Camadas de Frontend
+Backend (apps/api):
 
-\`\`\`
-UI (paginas + componentes)
-        ↓
-Hooks customizados (use-transactions, use-budget, use-auth ...)
-        ↓
-Camada de servicos (lib/server/persistence-service, lib/server/storage, lib/server/user-data-service)
-        ↓
-Repositorio / adaptador (lib/client/api.ts  <- substituir adaptadores mock progressivamente)
-        ↓
-localStorage (mock) | REST API (producao)
-\`\`\`
+- modules/<context>/presentation: controllers e DTOs
+- modules/<context>/application: use cases e ports
+- modules/<context>/domain: entidades, value objects, regras
+- modules/<context>/infrastructure: implementacoes Prisma e adapters
 
-## Fluxo de Dados
+Infra compartilhada:
 
-1. A pagina renderiza e chama o hook de dominio (ex.: `useTransactions`)
-2. O hook chama o servico de persistencia, que chama `lib/client/api.ts`
-3. `lib/client/api.ts` le/escreve adaptadores locais e roteia para endpoints de primeira parte ja conectados no adaptador (`/api/transactions`, `/api/categories`, `/api/category-groups`, `/api/contacts`, `/api/budget`, `/api/budget-allocations`, `/api/areas`, `/api/settings/*`, `/api/auth`, `/api/reports/*`)
-4. Rotas de primeira parte para `category-groups` e `reports` (`summary`, `aging`, `cashflow`) estao implementadas em `app/api/**` e ja convergidas no adaptador (`resolveApiUrl`).
-5. Rotas em `app/api/**` consomem instancias do composition root (`lib/server/services/index.ts`) e nao importam `repositories/prisma` diretamente.
-6. O hook retorna dados tipados e o componente re-renderiza
+- src/infrastructure/database/prisma: PrismaService
+- src/common: guards, filters, interceptors, decorators
+- src/config: configuracoes por ambiente
 
-## Isolamento por Usuario
+## Dominios do backend
 
-Todos os registros armazenados possuem campo `userId`. `UserDataService` filtra toda leitura/escrita pelo usuario autenticado. `MigrationService` atualiza chaves legadas no primeiro login.
+- health
+- auth
+- transactions
+- categories
+- category-groups
+- contacts
+- budget
+- budget-allocations
+- areas
+- settings
+- reports
 
-## Estrutura de Pastas
+## Regras de acoplamento
 
-\`\`\`
-app/                  # Next.js App Router pages & layouts
-components/
-  auth/               # AuthGuard, SessionMonitor
-  layout/             # Sidebar, MainLayout, Footer
-  profile/            # UserProfileButton, modals
-  dashboard/          # Charts, SummaryCard
-  transactions/       # Forms, recurring modals
-  budget/             # Add/Transfer/Rollover modals
-  categories/         # Category & group forms
-  contacts/           # Contact form
-  ui/                 # shadcn/ui primitives
-hooks/                # Domain hooks (use-auth, use-transactions …)
-lib/                  # Services, utils, types, validations
-types/                # Shared TypeScript interfaces
-data/                 # JSON seed files (mock mode)
-config/               # app-config.json (version, env, feature flags)
-scripts/              # Migration validators & test utilities
-docs/                 # This folder
-\`\`\`
+- dominio nao depende de NestJS ou Prisma
+- use cases dependem de ports, nao de implementacoes
+- PrismaClient apenas via PrismaService na infraestrutura
+- controllers permanecem finos
+- acesso entre contextos via contratos/eventos de aplicacao
 
-## Pontos de Integracao
+## Contrato HTTP
 
-| Tema | Arquivo |
-|---|---|
-| Auth context | `hooks/use-auth.tsx` |
-| Session | `hooks/use-session.ts` |
-| Adaptador de storage/API | `lib/client/api.ts` |
-| Multi-user migration | `lib/server/migration-service.ts` |
-| Audit log | `lib/shared/audit-logger.ts` |
-| Route protection | `middleware.ts` + `components/auth/auth-guard.tsx` |
+Envelope padrao:
 
-Estado atual de auth no frontend:
-- Em `NEXT_PUBLIC_USE_API=true`, `hooks/use-auth.tsx` usa `POST /api/auth/login|logout` para autenticacao e encerramento de sessao.
-- Em `NEXT_PUBLIC_USE_API=true`, `hooks/use-session.ts` usa `POST /api/auth/refresh` para renovacao de sessao.
-- Em `NEXT_PUBLIC_USE_API=true`, o bootstrap de auth nao depende de `auth_session` local.
+- sucesso: { data, error: null }
+- falha: { data: null, error }
 
-## Backend de Primeira Parte (estado atual)
+No frontend em NEXT_PUBLIC_USE_API=true:
 
-- Vertical slices completos no fluxo `API -> Service -> Domain -> Repository -> Prisma`:
-        - transactions
-        - categories
-        - category-groups
-        - contacts
-        - budget + budget-allocations
-        - areas
-- Relatorios de primeira parte:
-        - `summary` ativo (`/api/reports/summary`)
-        - `aging` ativo (`/api/reports/aging`)
-        - `cashflow` ativo (`/api/reports/cashflow`)
-- Manutencao de configuracoes de primeira parte:
-        - `import` ativo (`/api/settings/import`)
-        - `export` ativo (`/api/settings/export`)
-        - `clear` ativo (`/api/settings/clear`)
-- Auth backend base concluido:
-        - `POST /api/auth/login`
-        - `POST /api/auth/register`
-        - `POST /api/auth/refresh`
-        - `POST /api/auth/logout`
-        - `lib/server/services/auth-service.ts` (register/login)
-        - `lib/server/services/oauth-auth-service.ts` (orquestracao de callback OAuth Google/Microsoft)
-        - `lib/domain/auth/auth-rules.ts` (validacoes de auth)
-        - `lib/server/security/password-hash.ts` (`bcryptjs` para hash/compare)
-        - `lib/server/security/jwt.ts` (access/refresh token)
-        - `lib/server/security/refresh-session-store.ts` (rotacao/revogacao de refresh)
+- lib/client/api.ts deve manter erro explicito (ApiError)
+- sem fallback automatico para mock em falha de conectividade
+- requests externas para NEXT_PUBLIC_API_BASE com credentials include
 
-## Hardening HTTP (estado atual)
+## Seguranca (baseline)
 
-- Envelope padrao de resposta: `{ data, error }` em `lib/server/http/api-response.ts`
-- Adaptador cliente em `NEXT_PUBLIC_USE_API=true` desembrulha envelope e mantem compatibilidade legada temporaria (sem envelope) apenas no proprio adaptador.
-- Erros de envelope e indisponibilidade de API sao explicitos (`ApiError`), sem fallback automatico para mock no modo API.
-- Em settings, manutencao de dados no frontend foi convergida para `hooks/use-settings-maintenance.ts` + `lib/client/api.ts` (sem bypass direto para storage/localStorage na pagina).
-- Rate limiting de auth em `lib/server/security/rate-limit.ts`
-- CORS por ambiente para `/api` em `lib/server/security/cors.ts` aplicado no `middleware.ts`
-- Gate de autorizacao central no `middleware.ts` para APIs protegidas (`401 AUTH_REQUIRED` sem access token)
-- Guardrail de arquitetura no `.eslintrc.json`: `no-restricted-imports` bloqueando import direto de `lib/server/repositories/**` e `lib/server/db/prisma` em `app/api/**/route.ts`
+- JWT access e refresh
+- rotacao/revogacao de refresh token
+- cookies seguros
+- rate limiting
+- CORS por ambiente
+- OAuth Google e Microsoft
+- headers de seguranca e gate de autorizacao central
+
+## Status de cutover
+
+- Cutover backend dedicado concluido no escopo TK-101.
+- Modulos ativos no runtime em apps/api: health, auth, transactions, categories, category-groups, contacts, areas, budget, budget-allocations, settings e reports.
+- Removido do source de runtime o legado alvo de cutover: core/lib/domain, core/lib/server/repositories, core/lib/server/services e core/lib/server/db/prisma.ts.
+- Mantidos no runtime atual de apps/api os utilitarios de contrato e seguranca em core/lib/server/http e core/lib/server/security.

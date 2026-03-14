@@ -1,66 +1,33 @@
-import { describe, expect, it, vi } from "vitest"
-
-vi.mock("./lib/server/security/cors", () => ({
-  resolveRuntimeEnvironment: vi.fn(() => "development"),
-  resolveCorsOriginMatrix: vi.fn(() => ({
-    development: ["http://localhost:3000"],
-    staging: [],
-    production: [],
-  })),
-  evaluateCorsRequest: vi.fn(() => ({
-    allowed: true,
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:3000",
-    },
-  })),
-}))
+import { describe, expect, it } from "vitest"
 
 import { middleware } from "./middleware"
 
-function makeRequest(pathname: string, options?: { method?: string; authHeader?: string; cookieToken?: string }) {
+function makeRequest(pathname: string, options?: { method?: string }) {
   return {
     nextUrl: {
       pathname,
     },
     method: options?.method ?? "GET",
-    headers: new Headers(options?.authHeader ? { authorization: options.authHeader } : {}),
+    headers: new Headers(),
     cookies: {
-      get: (name: string) => {
-        if (name === "mmx_access_token" && options?.cookieToken) {
-          return { value: options.cookieToken }
-        }
-
-        return undefined
-      },
+      get: () => undefined,
     },
   }
 }
 
-describe("middleware auth for protected api", () => {
-  it("retorna 401 para rota protegida sem access token", async () => {
-    const response = middleware(makeRequest("/api/transactions") as never)
-    const payload = await response.json()
-
-    expect(response.status).toBe(401)
-    expect(payload.error.code).toBe("AUTH_REQUIRED")
-  })
-
-  it("permite rota protegida com bearer token", () => {
-    const response = middleware(makeRequest("/api/transactions", { authHeader: "Bearer token-123" }) as never)
+describe("middleware", () => {
+  it("aplica headers de seguranca em rotas da aplicacao", () => {
+    const response = middleware(makeRequest("/dashboard") as never)
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("X-Frame-Options")).toBe("DENY")
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff")
   })
 
-  it("permite rota protegida com access token em cookie", () => {
-    const response = middleware(makeRequest("/api/transactions", { cookieToken: "cookie-token-123" }) as never)
+  it("permite rotas publicas de auth com headers de seguranca", () => {
+    const response = middleware(makeRequest("/auth/login") as never)
 
     expect(response.status).toBe(200)
-  })
-
-  it("permite rota publica de auth sem access token", () => {
-    const response = middleware(makeRequest("/api/auth/login") as never)
-
-    expect(response.status).toBe(200)
+    expect(response.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin")
   })
 })

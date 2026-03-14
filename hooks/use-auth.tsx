@@ -12,8 +12,8 @@ import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEve
 import { validateRegistrationForm } from "@/lib/shared/auth-validations"
 import { hashMockPassword, isHashedMockPassword, verifyMockPassword } from "@/lib/shared/mock-auth-password"
 import { consumeTimedValue, generateConfirmationCode, generateResetToken } from "@/lib/shared/mock-auth-flow"
-import { userDataService } from "@/lib/server/user-data-service"
-import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/server/migration-service"
+import { userDataService } from "@/lib/mock/user-data-service"
+import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/mock/migration-service"
 
 interface AuthContextType {
   user: User | null

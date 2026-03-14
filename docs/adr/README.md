@@ -44,8 +44,6 @@ Example structure:
 docs/
   adr/
     0001-use-postgresql.md
-    0002-use-nextjs-api-routes.md
-    0003-adopt-clean-architecture.md
     0004-auth-local-session-first.md
     0005-adopt-backend-jwt-auth.md
     ...
@@ -56,7 +54,11 @@ Rules:
 - one decision per file
 - files are numbered sequentially (`0001`, `0002`, `0003`...)
 - numbers must never change
-- ADR files are never deleted
+- ADR files should not be deleted in normal operation
+
+Exception policy:
+- conflicting ADRs can be deleted when a newer accepted ADR explicitly replaces the architecture baseline and the team requests repository cleanup
+- when this happens, keep the replacement ADR as the single source of truth and document the cleanup in commit/PR notes
 
 If a decision changes, create a **new ADR** that supersedes the old one.
 

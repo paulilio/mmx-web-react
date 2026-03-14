@@ -4,7 +4,7 @@ import {
   evaluateCorsRequest,
   resolveCorsOriginMatrix,
   resolveRuntimeEnvironment,
-} from "@mmx/lib/server/security/cors"
+} from "@/core/lib/server/security/cors"
 
 const environment = resolveRuntimeEnvironment()
 const originMatrix = resolveCorsOriginMatrix()

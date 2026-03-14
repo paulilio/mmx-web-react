@@ -1,16 +1,14 @@
 # Desenvolvimento Local (Sem Docker)
 
-Este documento cobre como rodar o projeto **sem Docker**, usando Node.js e pnpm diretamente. Para rodar **com Docker**, veja [`docs/docker.md`](docker.md).
-
-Para onboarding tecnico consolidado (proposito, arquitetura, modulos e fluxo), veja `docs/system-overview.md`.
+Este guia cobre execucao local direta com Node.js e pnpm.
 
 ## Requisitos
 
 - Node.js 22+
 - pnpm
-- PostgreSQL (opcional — em modo mock não é necessário)
+- PostgreSQL local (recomendado para API mode)
 
-## Como instalar dependencias
+## Instalar dependencias
 
 ```bash
 pnpm install
@@ -18,83 +16,59 @@ pnpm install
 
 ## Variaveis de ambiente
 
-Crie um arquivo `.env.local` na raiz do projeto:
+Crie .env.local na raiz:
 
 ```bash
+DATABASE_URL=postgresql://mmx:mmx_password@localhost:5432/mmx?schema=public
 NEXT_PUBLIC_API_BASE=http://localhost:4000
-NEXT_PUBLIC_USE_API=false
-NEXT_PUBLIC_API_MIGRATION_DOMAINS=
+NEXT_PUBLIC_USE_API=true
 MMX_APP_ENV=development
 CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
 CORS_ORIGINS_STAGING=
 CORS_ORIGINS_PROD=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:4000/auth/oauth/google/callback
 MICROSOFT_CLIENT_ID=
 MICROSOFT_CLIENT_SECRET=
-MICROSOFT_REDIRECT_URI=http://localhost:3000/api/auth/oauth/microsoft/callback
+MICROSOFT_REDIRECT_URI=http://localhost:4000/auth/oauth/microsoft/callback
 MICROSOFT_TENANT_ID=common
 ```
 
-Variaveis principais:
+Observacao:
+- para rodar em API mode local real, `NEXT_PUBLIC_USE_API=true` e `DATABASE_URL` devem estar definidos.
 
-- `NEXT_PUBLIC_USE_API`: `false` usa modo mock/local; `true` usa chamadas de API
-- `NEXT_PUBLIC_API_BASE`: URL base para endpoints externos ainda nao de primeira parte quando `NEXT_PUBLIC_USE_API=true`
-- `NEXT_PUBLIC_API_MIGRATION_DOMAINS`: lista CSV de dominios migrados para backend externo (ex.: `reports,categories`)
-- `MMX_APP_ENV`: ambiente efetivo para politicas server (`development|staging|production`)
-- `CORS_ORIGINS_DEV|STAGING|PROD`: lista CSV de origens permitidas para `/api`
-- `GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET|GOOGLE_REDIRECT_URI`: configuracao do OAuth Google (`BE-06.1`)
-- `MICROSOFT_CLIENT_ID|MICROSOFT_CLIENT_SECRET|MICROSOFT_REDIRECT_URI|MICROSOFT_TENANT_ID`: configuracao do OAuth Microsoft (`BE-06.2`)
+## Execucao
 
-## Execucao local
+Frontend:
 
 ```bash
-# desenvolvimento
 pnpm dev
 ```
 
-Aplicacao disponivel em:
-
-- `http://localhost:3000`
-
-## Comandos principais
+Backend dedicado:
 
 ```bash
-# desenvolvimento
+cd apps/api
+pnpm install
 pnpm dev
+```
 
-# lint
+## Comandos de validacao
+
+```bash
 pnpm lint
-
-# checagem de tipos
 pnpm type-check
-
-# testes unitarios
 pnpm test:unit
-
-# testes de integracao (rotas API + middleware)
 pnpm test:integration
-
-# build de validacao
 pnpm build
-
-# validacao de env/secrets por ambiente
 pnpm validate:env -- --env=development
-
-# prisma
-pnpm prisma:generate
-pnpm prisma:migrate:dev
-pnpm prisma:studio
 ```
 
-## Observacoes rapidas
+## Prisma (backend)
 
-- Em modo mock (`NEXT_PUBLIC_USE_API=false`), o projeto funciona sem backend completo e sem PostgreSQL.
-- Em modo API (`NEXT_PUBLIC_USE_API=true`), é necessário PostgreSQL com `DATABASE_URL` configurado no `.env.local`.
-- Em modo API com migracao por dominio, use `NEXT_PUBLIC_API_MIGRATION_DOMAINS` para direcionar dominios especificos ao backend externo mantendo rollback simples.
-- Dominios com rotas de primeira parte ja ativos: transacoes (`transactions`), categorias (`categories`), grupos de categorias (`category-groups`), contatos (`contacts`), orcamento (`budget`), alocacoes de orcamento (`budget-allocations`), areas (`areas`), configuracoes (`settings`), autenticacao (`auth`), `reports/summary`, `reports/aging` e `reports/cashflow`.
-
----
-
-Para rodar com Docker (banco isolado, HMR, sem instalar PostgreSQL localmente), veja [`docs/docker.md`](docker.md).
+```bash
+cd apps/api
+pnpm db:generate
+pnpm db:migrate
+```

@@ -1,109 +1,33 @@
 # Repository Map
 
 ## Top-Level Folders
-- `app/`: Next.js App Router pages, route layouts, loading boundaries.
-- `components/`: feature UI + shared UI primitives.
-- `hooks/`: domain hooks (`use-auth`, `use-transactions`, etc).
-- `lib/`: client adapter, server layers, domain logic, shared utilities.
-- `types/`: shared auth-related types.
-- `data/`: mock seed JSON files.
-- `config/`: app-level config JSON.
-- `docs/`: architecture, API contracts, deployment, frontend conventions.
-- `scripts/`: local validation/migration utility scripts.
-- `.dev-workspace/tsk/`: local task/workspace artifacts (developer-local, not product runtime).
+- app/: Next.js App Router pages and layouts.
+- components/: feature UI and shared UI primitives.
+- hooks/: frontend domain hooks.
+- lib/: frontend adapter, shared utils, and server-side support utilities.
+- apps/api/: dedicated NestJS backend (mmx-api).
+- prisma/: Prisma schema and migrations.
+- docs/: architecture, contracts, deployment, and ADRs.
+- scripts/: validation and operational helper scripts.
 
-## Important Files
-- `lib/client/api.ts`: canonical data adapter boundary.
-- `lib/client/api.ts` (API mode): unwraps `{ data, error }`, supports temporary legacy non-envelope payloads, uses `credentials: "include"` for external `NEXT_PUBLIC_API_BASE` requests, and throws explicit `ApiError` for envelope/network errors (no auto mock fallback).
-- `hooks/use-auth.tsx`: auth context; in `USE_API=true` login/logout use `POST /api/auth/login|logout`.
-- `hooks/use-auth.test.tsx`: unit coverage for login/logout success/failure, friendly API error mapping, and local-mode expired session cleanup.
-- `hooks/use-session.ts`: session validity and extension behavior; in `USE_API=true` refreshes session via `POST /api/auth/refresh`.
-- `hooks/use-settings-maintenance.ts`: settings maintenance hook for import/export/clear via `lib/client/api.ts`.
-- `hooks/use-session.test.tsx`: unit coverage for API refresh bootstrap/extension and failure handling (`401` cleanup + `429` warning path).
-- `hooks/use-budget-allocations.ts`: primary budget hook for active flows (add funds, transfer, rollover, allocation CRUD).
-- `hooks/use-budget.ts`: legacy compatibility hook; do not use for new product flows.
-- `components/auth/auth-guard.test.tsx`: coverage for protected navigation redirects and valid-session rendering behavior.
-- `middleware.test.ts`: validates `AUTH_REQUIRED` without token and allow-list behavior for bearer/cookie access tokens.
-- `lib/server/storage.ts`: mock storage helpers and cache behavior.
-- `lib/server/migration-service.ts`: legacy key migration and user-scoped storage helpers.
-- `middleware.ts`: `/api` CORS handling (including preflight), origin enforcement, centralized auth gate for protected APIs, and security headers.
-- `lib/server/services/index.ts`: backend composition root used by `app/api/**` routes.
-- `lib/server/services/oauth-auth-service.ts`: OAuth callback orchestration for Google/Microsoft user create/update/login.
-- `.eslintrc.json`: architecture guardrails (`no-restricted-imports`) blocking direct repositories/prisma imports in `app/api/**/route.ts`.
-- `app/layout.tsx`: root providers and app shell wiring.
-- `.github/copilot-instructions.md`: AI generation constraints.
+## Important Frontend Boundary
+- lib/client/api.ts: canonical frontend data adapter.
+- In API mode, it unwraps envelope and throws explicit ApiError.
 
-## API Endpoint Usage (Current)
-- Implemented in `lib/client/api.ts` mock adapter when `NEXT_PUBLIC_USE_API=false`:
-  - `GET/POST/PUT/DELETE /areas`
-  - `GET/POST/PUT/DELETE /category-groups`
-  - `GET/POST/PUT/DELETE /categories`
-  - `GET/POST/PUT/DELETE /contacts`
-  - `GET/POST/PUT/DELETE /transactions`
-  - `GET /reports/summary`
-  - `GET /reports/aging`
-  - `GET /reports/cashflow?days=&status=`
-- Resolved to first-party Next.js routes by `resolveApiUrl` in `lib/client/api.ts` when `NEXT_PUBLIC_USE_API=true`:
-  - `/transactions`, `/categories`, `/category-groups`, `/contacts`, `/auth`, `/areas`, `/budget`, `/budget-allocations`, `/settings/*`, `/reports/*`
-- Note: first-party routes for `category-groups` and `reports` (`summary`, `aging`, `cashflow`) are implemented under `app/api/**` and adapter routing in `resolveApiUrl` is converged.
+## Backend Source of Truth
+- apps/api/src: Modular Monolith + DDD implementation.
+- apps/api/src/infrastructure/database/prisma: PrismaModule + PrismaService.
+- apps/api/prisma/schema.prisma: data model source of truth.
 
-## Target Direction (Option B)
-- Target deployment shape is separated frontend (`mmx-web-react`) + backend (`mmx-api`) + PostgreSQL.
-- Current `app/api/**` routes are transitional first-party surfaces during migration.
-- Keep `lib/client/api.ts` as the single frontend adapter boundary while migrating domains to `mmx-api`.
+## Canonical Architecture Reference
+- docs/adr/0012-backend-architecture.md
 
-## First-Party API Routes (Active)
-- Transactions: `app/api/transactions/**`
-- Categories: `app/api/categories/**`
-- Category Groups: `app/api/category-groups/**`
-- Contacts: `app/api/contacts/**`
-- Budget: `app/api/budget/**`, `app/api/budget-allocations/**`
-- Areas: `app/api/areas/**`
-- Reports:
-  - `app/api/reports/summary/route.ts`
-  - `app/api/reports/aging/route.ts`
-  - `app/api/reports/cashflow/route.ts`
-- Settings:
-  - `app/api/settings/import/route.ts`
-  - `app/api/settings/export/route.ts`
-  - `app/api/settings/clear/route.ts`
-- Auth:
-  - `app/api/auth/login/route.ts`
-  - `app/api/auth/register/route.ts`
-  - `app/api/auth/refresh/route.ts`
-  - `app/api/auth/logout/route.ts`
-  - `app/api/auth/oauth/google/**`
-  - `app/api/auth/oauth/microsoft/**`
+## Security-Critical Areas
+- backend auth/login/register/refresh/logout and OAuth flows.
+- JWT, refresh token rotation/revocation.
+- CORS and rate limiting.
+- secure cookie behavior in production.
 
-## Shared Utilities
-- `lib/shared/utils.ts`: class merge (`cn`), format helpers, audit wrappers.
-- `lib/shared/date-utils.ts`: date parsing/formatting helpers.
-- `lib/shared/validations.ts`: Zod schemas and form data types.
-- `lib/shared/audit-logger.ts`: audit event persistence and filtering.
-
-## Service Layer
-- `lib/server/persistence-service.ts`: transaction persistence abstraction.
-- `lib/server/user-data-service.ts`: user-context data operations.
-- `lib/server/migration-service.ts`: key migration + user data isolation helper.
-- `lib/server/services/index.ts`: service composition root consumed by route handlers.
-- `lib/server/services/auth-service.ts`: auth register/login orchestration and `lastLogin` update.
-- `lib/server/services/oauth-auth-service.ts`: OAuth callback orchestration (Google/Microsoft).
-- `lib/server/services/settings-maintenance-service.ts`: server-side maintenance orchestration for settings import/export/clear.
-- `lib/server/security/rate-limit.ts`: auth rate limiting.
-- `lib/server/security/cors.ts`: CORS by environment.
-- `lib/server/security/auth-cookies.ts`: secure auth cookie helpers.
-- `lib/server/security/password-hash.ts`: password hash/verify with `bcryptjs`.
-- `lib/server/security/jwt.ts`: access/refresh token sign/verify helpers.
-- `lib/server/security/refresh-session-store.ts`: refresh token rotation/revocation store.
-- `lib/server/security/auth-identity.ts`: authenticated user identity resolver from bearer/cookie.
-
-## Build and Deployment References
-- `package.json`: scripts (`dev`, `build`, `lint`) and dependencies.
-- `next.config.mjs`: Next.js build/lint behavior.
-- `docs/deployment.md`: Vercel and environment guidance.
-- `scripts/validate-env.mjs`: environment and secret validation.
-- Environment flags:
-  - `NEXT_PUBLIC_USE_API`, `NEXT_PUBLIC_API_BASE`
-  - `MMX_APP_ENV`, `CORS_ORIGINS_DEV`, `CORS_ORIGINS_STAGING`, `CORS_ORIGINS_PROD`
-  - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
-  - `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI`, `MICROSOFT_TENANT_ID`
+## Build and Validation References
+- package.json scripts for lint, tests, type-check and build.
+- scripts/validate-env.mjs for environment checks.

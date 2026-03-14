@@ -4,6 +4,9 @@ services:
 
   backend:
     profiles: ["split"]
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
     image: ${MMX_API_IMAGE:-mmx-api:local}
     restart: unless-stopped
     ports:
