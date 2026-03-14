@@ -1,5 +1,6 @@
 const fs = require("fs")
 const path = require("path")
+const { getRuntimePaths } = require("./paths")
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true })
@@ -18,9 +19,7 @@ function nowStamp() {
 
 async function collectEvidence(page, state, rootDir) {
   const stamp = nowStamp()
-  const screenshotPath = path.join(rootDir, "artifacts", "screenshots", `error-${stamp}.png`)
-  const htmlPath = path.join(rootDir, "artifacts", "html", `error-${stamp}.html`)
-  const logPath = path.join(rootDir, "logs", "debug", `error-${stamp}.log`)
+  const { screenshotPath, htmlPath, logPath } = getRuntimePaths(rootDir, stamp)
 
   ensureDir(path.dirname(screenshotPath))
   ensureDir(path.dirname(htmlPath))

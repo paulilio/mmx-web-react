@@ -27,6 +27,11 @@ Use este arquivo como ponto de entrada para agentes de IA neste repositorio.
 - Nao criar camada paralela de cliente HTTP.
 - Nao acessar persistencia diretamente em paginas/componentes.
 
+## Fronteira de APIs (obrigatoria)
+- apps/api e o backend oficial para dominios e contratos.
+- app/api e restrito a handlers locais/tecnicos do frontend.
+- Nao evoluir app/api como backend paralelo ao apps/api.
+
 ## Regras backend (apps/api)
 - Bounded contexts em src/modules.
 - Camadas por contexto: presentation, application, domain, infrastructure.

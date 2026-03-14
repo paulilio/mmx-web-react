@@ -1,16 +1,5 @@
 #!/bin/sh
-# Aguarda o PostgreSQL estar pronto para aceitar conexoes.
-# Util em pipelines CI ou execucao manual fora do compose.
+# Compat shim: migrate callers gradually to docker/scripts/wait-for-db.sh.
 
-HOST="${POSTGRES_HOST:-postgres}"
-PORT="${POSTGRES_PORT:-5432}"
-USER="${POSTGRES_USER:-mmx}"
-
-echo "[wait-for-db] Aguardando PostgreSQL em $HOST:$PORT..."
-
-until pg_isready -h "$HOST" -p "$PORT" -U "$USER" 2>/dev/null; do
-  echo "[wait-for-db] Banco nao disponivel. Tentando novamente em 2s..."
-  sleep 2
-done
-
-echo "[wait-for-db] PostgreSQL pronto."
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+exec "$SCRIPT_DIR/../../docker/scripts/wait-for-db.sh" "$@"

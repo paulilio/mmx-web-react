@@ -12,15 +12,30 @@ Este documento resume as principais pastas e responsabilidades.
 - prisma/: schema e migrations
 - docs/: documentacao tecnica
 - scripts/: scripts de suporte
+- docker/scripts/: scripts operacionais canonicos para compose/runtime
 
 ## Frontend
 
 - app/: rotas e composicao de telas
+- app/api/: route handlers locais do frontend (uso tecnico/local, ex.: probes e health local)
 - components/: UI reutilizavel
 - hooks/: estado remoto e casos de uso da interface
 - lib/client/api.ts: fronteira unica de dados
 - lib/mock: servicos de mock/localStorage para modo local
 - lib/shared: tipos, helpers e utilitarios compartilhados
+
+### Fronteira app/api vs apps/api
+
+- apps/api e o backend oficial (fonte de verdade para regras de negocio e contratos).
+- app/api nao substitui apps/api e nao deve evoluir como backend paralelo.
+- app/api deve ser restrito a endpoints locais/tecnicos do frontend.
+- Fluxos de dominio consumidos por UI/hooks devem continuar passando por lib/client/api.ts.
+
+## Operacao Docker/Monitor
+
+- docker/scripts e o caminho canonico de scripts de compose/runtime.
+- scripts/docker e mantido como shim de compatibilidade temporaria.
+- saidas do monitor devem ser gravadas em monitor/runtime (reports, artifacts e logs).
 
 ## Backend (apps/api)
 

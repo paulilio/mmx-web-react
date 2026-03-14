@@ -1,5 +1,6 @@
 const fs = require("fs")
 const path = require("path")
+const { getRuntimePaths } = require("./paths")
 
 function toProjectRelative(filePath, rootDir) {
   return path.relative(rootDir, filePath).split("\\").join("/")
@@ -96,7 +97,7 @@ function buildReport({ url, errors, phase1, requestContexts = [], evidence, root
 }
 
 function writeReport(rootDir, stamp, content) {
-  const reportPath = path.join(rootDir, "reports", "incidentes", `bug-${stamp}.md`)
+  const { reportPath } = getRuntimePaths(rootDir, stamp)
   fs.mkdirSync(path.dirname(reportPath), { recursive: true })
   fs.writeFileSync(reportPath, content, "utf8")
   return reportPath

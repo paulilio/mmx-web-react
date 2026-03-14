@@ -22,6 +22,10 @@ pnpm docker:dev:ps
 pnpm docker:dev:logs
 ```
 
+Observacao:
+- comandos Docker usam o caminho canonico `docker/scripts/run-compose.mjs`.
+- `scripts/docker/*` permanece apenas como compatibilidade temporaria (shim).
+
 ## Derrubar ambiente
 
 ```bash
@@ -58,6 +62,12 @@ Monitor:
 - MONITOR_BASE_URL
 - MONITOR_START_PATH
 - MONITOR_INTERVAL_SECONDS
+
+Saidas de runtime do monitor:
+- monitor/runtime/reports/incidentes
+- monitor/runtime/artifacts/screenshots
+- monitor/runtime/artifacts/html
+- monitor/runtime/logs/debug
 
 ## Prisma no backend
 

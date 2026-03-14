@@ -49,15 +49,16 @@ next-env.d.ts
 # pasta privada temp do dev
 .dev-workspace/*
 
-# monitor - artifacts
+# monitor - legacy paths (compat)
 monitor/artifacts/screenshots/*.png
 monitor/artifacts/html/*.html
 monitor/artifacts/network/*
-
-# monitor - logs
 monitor/logs/debug/*.log
 monitor/logs/sessions/
-
-# monitor - reports
 monitor/reports/incidentes/*.md
 monitor/reports/analysis/
+
+# monitor - runtime outputs
+monitor/runtime/**
+!monitor/runtime/**/
+!monitor/runtime/**/.gitkeep
