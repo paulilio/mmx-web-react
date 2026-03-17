@@ -36,52 +36,52 @@ Entry points:
   - POST /api/auth/logout
   - GET /api/auth/google, /api/auth/google/callback
   - GET /api/auth/microsoft, /api/auth/microsoft/callback
-Related modules: Settings
+Dependencies: Settings
 Tests: apps/api/src/modules/auth/**/*.test.ts
 
 ## Module: Transactions
 Purpose: Financial transaction CRUD
 Core files:
   - apps/api/src/modules/transactions/
-Related modules: Categories, Category Groups, Contacts, Areas
+Dependencies: Categories, Category Groups, Contacts, Areas
 Tests: apps/api/src/modules/transactions/**/*.test.ts
 
 ## Module: Categories
 Purpose: Transaction categorization
 Core files:
   - apps/api/src/modules/categories/
-Related modules: Transactions, Category Groups
+Dependencies: Transactions, Category Groups
 
 ## Module: Category Groups
 Purpose: Grouping of categories
 Core files:
   - apps/api/src/modules/category-groups/
-Related modules: Categories
+Dependencies: Categories
 
 ## Module: Contacts
 Purpose: Clients and suppliers management
 Core files:
   - apps/api/src/modules/contacts/
-Related modules: Transactions
+Dependencies: Transactions
 
 ## Module: Budget
 Purpose: Budget management and allocation
 Core files:
   - apps/api/src/modules/budget/
   - apps/api/src/modules/budget-allocations/
-Related modules: Categories, Transactions
+Dependencies: Categories, Transactions
 
 ## Module: Areas (Centros de Custo)
 Purpose: Cost center segmentation
 Core files:
   - apps/api/src/modules/areas/
-Related modules: Transactions
+Dependencies: Transactions
 
 ## Module: Reports
 Purpose: Financial reports (summary, aging, cashflow)
 Core files:
   - apps/api/src/modules/reports/
-Related modules: Transactions, Categories, Budget
+Dependencies: Transactions, Categories, Budget
 
 ## Module: Settings
 Purpose: User and application settings
@@ -104,8 +104,31 @@ Core files:
   - apps/api/src/common/filters/
   - apps/api/src/common/middleware/
   - apps/api/src/common/interceptors/
-Related modules: All backend modules
+Dependencies: All backend modules
 Tests: apps/api/src/common/**/*.test.ts
+
+---
+
+## Critical Paths
+
+User login flow:
+  app/login → hooks/use-auth → lib/client/api.ts
+  → apps/api/modules/auth/controller → use-case → domain
+  → infrastructure/prisma
+
+Transaction creation flow:
+  app/transactions → hooks/use-transactions → lib/client/api.ts
+  → apps/api/modules/transactions/controller → use-case → domain
+  → infrastructure/prisma
+
+Report generation flow:
+  app/reports → hooks → lib/client/api.ts
+  → apps/api/modules/reports/ → transactions + categories + budget
+
+Budget allocation flow:
+  app/budget → hooks/use-budget → lib/client/api.ts
+  → apps/api/modules/budget/controller → use-case → domain
+  → budget-allocations → infrastructure/prisma
 
 ---
 

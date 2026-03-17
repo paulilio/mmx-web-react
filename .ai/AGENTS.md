@@ -5,15 +5,15 @@
 1. .ai/AGENTS.md          ← voce esta aqui
 2. .ai/SYSTEM.md
 3. .ai/CODEBASE_MAP.md
-4. .ai/CONTEXT_SURFACES.md
-5. Task file (se aplicavel)
+4. Task file (se aplicavel)
+5. .ai/CONTEXT_SURFACES.md ← avaliar impacto depois de saber o que vai mudar
 ```
 
 ## Regras Operacionais
 - Siga convencoes de naming, estrutura e estilo do repositorio.
 - Nao altere components/ui sem solicitacao explicita.
 - Prefira mensagens para usuario em portugues.
-- Logs e artefatos operacionais devem ser centralizados em runtime/<servico>/.
+- Logs e artefatos operacionais do software (Docker, API, monitor) devem ser centralizados em runtime/<servico>/ (nao confundir com .ws-dev/runs/ que e historico de tasks).
 
 ## Coding Conventions
 - TypeScript strict-first.
@@ -86,6 +86,7 @@ pnpm validate:env -- --env=production
 ## Documentation Governance
 When changes affect architecture, contracts, security, or runtime:
 - Update: README.md, docs/**, .ai/**, .github/copilot-instructions.md, CLAUDE.md
+- Update docs/README.md index when adding or removing documents in docs/.
 - Use docs/documentation-governance-checklist.md before finalizing.
 - Architecture baseline: docs/adr/0012-backend-architecture.md.
 
@@ -95,7 +96,40 @@ When changes affect architecture, contracts, security, or runtime:
 - Envelope contract: { data, error }.
 - Canonical ADR: docs/adr/0012-backend-architecture.md.
 
-## Pipeline de Comandos (opcional, via .ai/commands/)
-```
-start-task → task-plan → write-tests → regression-check → task-done → ship
-```
+## Workspace Operacional (.ws-dev/)
+Estrutura:
+- `tasks/` — tarefas ativas
+- `tasks/done/` — tarefas concluidas
+- `knowledge/` — memoria tecnica do projeto (investigacoes, conceitos, padroes, decisoes, reviews)
+- `runs/` — historico de execucao de tasks
+- `references/` — referencias de produto e mercado
+- `templates/` — templates obrigatorios (ver abaixo)
+
+Templates (usar sempre ao criar artefatos):
+- Task: `.ws-dev/templates/task.md` → salvar em `tasks/`
+- Investigation: `.ws-dev/templates/investigation.md` → salvar em `knowledge/inv-*.md`
+- Concept: `.ws-dev/templates/concept.md` → salvar em `knowledge/con-*.md`
+- Pattern: `.ws-dev/templates/pattern.md` → salvar em `knowledge/pat-*.md`
+- Decision: `.ws-dev/templates/decision.md` → salvar em `knowledge/dec-*.md`
+- Review: `.ws-dev/templates/review.md` → salvar em `knowledge/rev-*.md` (sob demanda do usuario)
+- Run: `.ws-dev/templates/run.md` → salvar em `runs/`
+
+## Comandos (.ai/commands/)
+Biblioteca de comandos reutilizaveis. Usar como etapas no Plan da task.
+Cada task seleciona os comandos aplicaveis — nao ha pipeline fixo.
+
+Comandos disponiveis:
+- `task-loop` — loop unico para tasks simples (bugfix, chore). Executa o ciclo completo automaticamente
+- `start-task` — ler contexto e entender a task
+- `task-plan` — criar/refinar plano de execucao
+- `write-tests` — escrever testes
+- `regression-check` — validacao completa (lint, test, type-check, build)
+- `task-done` — finalizar task, registrar run, mover para done/, kernel-check se aplicavel
+- `ship` — commit, push, PR, gerar descricoes para PR e Jira
+- `kernel-check` — verificar se o kernel precisa de atualizacao apos mudancas estruturais
+
+## AI Command Dispatcher
+When the user writes a command starting with "/", interpret it as an engineering workflow command.
+Format: /command-name [arguments]
+Instructions are in: .ai/commands/{command-name}.md
+Steps: 1. Read the file. 2. Follow strictly. 3. Execute steps. 4. Output results.
