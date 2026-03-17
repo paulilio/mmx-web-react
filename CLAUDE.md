@@ -1,6 +1,4 @@
-# AGENTS
-
-Context Kernel location: .ai/
+# Context
 
 Read these files in order before any task:
 

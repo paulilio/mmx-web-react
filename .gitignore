@@ -48,6 +48,7 @@ next-env.d.ts
 
 # pasta privada temp do dev
 .dev-workspace/*
+.ws-dev/
 
 # runtime outputs (front/api/monitor)
 runtime/**
