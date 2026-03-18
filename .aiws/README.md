@@ -14,10 +14,12 @@ Para uso no dia a dia, veja: `references/aiws/generic-guide-ops.md`
 |---|---|
 | `tasks/` | Tarefas — uma pasta por task, independente da complexidade |
 | `tasks/backlog/` | Tasks planejadas, ainda nao iniciadas |
+| `tasks/doing/` | Tasks em andamento |
 | `tasks/done/` | Tasks concluidas — mesma estrutura das ativas |
+| `tasks/<tk>/ref/` | Historico e referencias especificas da task — documentos originais, specs, rascunhos |
 | `knowledge/` | Memoria tecnica — investigacoes, conceitos, padroes, decisoes, reviews |
 | `runs/` | Historico de execucao de tasks |
-| `references/` | Referencias externas e material de pesquisa |
+| `references/` | Referencias globais do projeto — material de pesquisa, seed data, guias externos |
 | `references/aiws/` | Guias e arquivos customizados do modelo AIWS |
 | `references/aiws/generic-blueprint.md` | Blueprint do modelo AIWS — instalacao, estrutura, camadas, governanca |
 | `references/aiws/generic-guide-ops.md` | Guia operacional — como criar tasks, executar comandos, pipelines |

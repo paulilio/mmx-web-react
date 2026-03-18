@@ -98,7 +98,8 @@ When changes affect architecture, contracts, security, or runtime:
 
 ## Workspace Operacional (.aiws/)
 Estrutura:
-- `tasks/` — tarefas ativas
+- `tasks/backlog/` — tasks planejadas, ainda nao iniciadas
+- `tasks/doing/` — tasks em andamento
 - `tasks/done/` — tarefas concluidas
 - `knowledge/` — memoria tecnica do projeto (investigacoes, conceitos, padroes, decisoes, reviews)
 - `runs/` — historico de execucao de tasks
