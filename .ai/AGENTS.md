@@ -13,7 +13,7 @@
 - Siga convencoes de naming, estrutura e estilo do repositorio.
 - Nao altere components/ui sem solicitacao explicita.
 - Prefira mensagens para usuario em portugues.
-- Logs e artefatos operacionais do software (Docker, API, monitor) devem ser centralizados em runtime/<servico>/ (nao confundir com .ws-dev/runs/ que e historico de tasks).
+- Logs e artefatos operacionais do software (Docker, API, monitor) devem ser centralizados em runtime/<servico>/ (nao confundir com .aiws/runs/ que e historico de tasks).
 
 ## Coding Conventions
 - TypeScript strict-first.
@@ -96,7 +96,7 @@ When changes affect architecture, contracts, security, or runtime:
 - Envelope contract: { data, error }.
 - Canonical ADR: docs/adr/0012-backend-architecture.md.
 
-## Workspace Operacional (.ws-dev/)
+## Workspace Operacional (.aiws/)
 Estrutura:
 - `tasks/` — tarefas ativas
 - `tasks/done/` — tarefas concluidas
@@ -106,13 +106,13 @@ Estrutura:
 - `templates/` — templates obrigatorios (ver abaixo)
 
 Templates (usar sempre ao criar artefatos):
-- Task: `.ws-dev/templates/task.md` → salvar em `tasks/`
-- Investigation: `.ws-dev/templates/investigation.md` → salvar em `knowledge/inv-*.md`
-- Concept: `.ws-dev/templates/concept.md` → salvar em `knowledge/con-*.md`
-- Pattern: `.ws-dev/templates/pattern.md` → salvar em `knowledge/pat-*.md`
-- Decision: `.ws-dev/templates/decision.md` → salvar em `knowledge/dec-*.md`
-- Review: `.ws-dev/templates/review.md` → salvar em `knowledge/rev-*.md` (sob demanda do usuario)
-- Run: `.ws-dev/templates/run.md` → salvar em `runs/`
+- Task: `.aiws/templates/task.md` → salvar em `tasks/`
+- Investigation: `.aiws/templates/investigation.md` → salvar em `knowledge/inv-*.md`
+- Concept: `.aiws/templates/concept.md` → salvar em `knowledge/con-*.md`
+- Pattern: `.aiws/templates/pattern.md` → salvar em `knowledge/pat-*.md`
+- Decision: `.aiws/templates/decision.md` → salvar em `knowledge/dec-*.md`
+- Review: `.aiws/templates/review.md` → salvar em `knowledge/rev-*.md` (sob demanda do usuario)
+- Run: `.aiws/templates/run.md` → salvar em `runs/`
 
 ## Comandos (.ai/commands/)
 Biblioteca de comandos reutilizaveis. Usar como etapas no Plan da task.

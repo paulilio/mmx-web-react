@@ -9,4 +9,4 @@ Read these files in order before any task:
 3. .ai/CODEBASE_MAP.md — mapa do codigo
 4. .ai/CONTEXT_SURFACES.md — superficies de impacto
 
-Workspace operacional: .ws-dev/
+Workspace operacional: .aiws/
