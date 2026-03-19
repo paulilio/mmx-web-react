@@ -1,9 +1,3 @@
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -17,9 +11,9 @@ const nextConfig = {
     // Never bypass ESLint during build.
     ignoreDuringBuilds: false,
   },
-  // Set the root directory for Turbopack in monorepo
+  // Set the root directory for Turbopack
   turbopack: {
-    root: __dirname,
+    root: '.',
   },
   // Optimize for production
   poweredByHeader: false,
