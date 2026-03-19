@@ -2,13 +2,13 @@
 
 # dependencies
 /node_modules
-/apps/*/node_modules
+/packages/*/node_modules
 
 # workspace build artifacts
-/apps/*/dist
+/packages/*/dist
 
 # workspace lockfiles (root lockfile is canonical)
-/apps/*/pnpm-lock.yaml
+/packages/*/pnpm-lock.yaml
 
 # monorepo/cache tools
 .turbo/

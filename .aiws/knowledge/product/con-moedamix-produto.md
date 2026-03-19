@@ -16,10 +16,10 @@ Define o escopo e as prioridades de desenvolvimento. Toda feature deve ser avali
 - Critério de saída Alpha: backlog de lacunas executando, cobertura de testes e UX em nível aceitável para ampliar exposição
 
 ## Where in the Codebase
-- apps/api/src/modules/ — domínios de negócio (transactions, budget, categories, contacts, areas, reports, settings)
-- app/ — frontend Next.js
-- hooks/ — acesso a dados do frontend
-- lib/client/api.ts — boundary de dados frontend
+- packages/api/src/modules/ — domínios de negócio (transactions, budget, categories, contacts, areas, reports, settings)
+- packages/web/app/ — frontend Next.js
+- packages/web/hooks/ — acesso a dados do frontend
+- packages/web/lib/client/api.ts — boundary de dados frontend
 
 ## Notes
 Top 3 objetivos do ciclo Alpha:

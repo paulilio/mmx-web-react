@@ -6,8 +6,8 @@ Frontend web do projeto MMX, consumindo um backend dedicado (mmx-api) via REST.
 
 A estrategia oficial e backend dedicado, sem camada transitoria como baseline.
 
-- frontend: mmx-web-react (Next.js)
-- backend: mmx-api (NestJS em apps/api)
+- frontend: packages/web (Next.js)
+- backend: packages/api (NestJS)
 - banco: PostgreSQL + Prisma
 
 ## Stack
@@ -54,14 +54,11 @@ Regra:
 ## Estrutura principal
 
 \`\`\`text
-app/
-components/
-hooks/
-lib/
-apps/api/           # backend dedicado NestJS (modular monolith + DDD)
-prisma/
+packages/web/       # frontend Next.js
+packages/api/       # backend dedicado NestJS (modular monolith + DDD)
+packages/api/prisma/
 docs/
-docker/
+tools/docker/
 scripts/
 runtime/            # saidas operacionais centralizadas (front/api/monitor)
 \`\`\`

@@ -27,8 +27,8 @@
 - Keep changes minimal and composable.
 
 ## Architecture Rules
-- Frontend data boundary: lib/client/api.ts.
-- Backend source of truth: apps/api.
+- Frontend data boundary: packages/web/lib/client/api.ts.
+- Backend source of truth: packages/api.
 - Do not introduce transitional architecture narratives.
 - DDD layering per backend module: presentation, application, domain, infrastructure.
 - Domain must not depend on NestJS, Prisma, or transport types.
@@ -37,10 +37,10 @@
 - PrismaClient must not be consumed outside infrastructure.
 
 ## API Boundary Rules
-- apps/api is the official backend for business domains and contracts.
-- app/api is limited to local/technical frontend route handlers.
-- Do not evolve app/api as a parallel backend.
-- UI/hooks must access data via hooks + lib/client/api.ts only.
+- packages/api is the official backend for business domains and contracts.
+- packages/web/app/api is limited to local/technical frontend route handlers.
+- Do not evolve packages/web/app/api as a parallel backend.
+- UI/hooks must access data via hooks + packages/web/lib/client/api.ts only.
 - Preserve envelope contract: { data, error }.
 - In NEXT_PUBLIC_USE_API=true:
   - explicit adapter errors (ApiError, including connectivity status 0)
@@ -91,8 +91,8 @@ When changes affect architecture, contracts, security, or runtime:
 - Architecture baseline: docs/adr/0012-backend-architecture.md.
 
 ## Consistency Rules
-- Backend source of truth: apps/api.
-- Frontend data boundary: lib/client/api.ts.
+- Backend source of truth: packages/api.
+- Frontend data boundary: packages/web/lib/client/api.ts.
 - Envelope contract: { data, error }.
 - Canonical ADR: docs/adr/0012-backend-architecture.md.
 

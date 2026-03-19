@@ -1,14 +1,14 @@
 # DEC: Backend Dedicado — NestJS + Prisma + DDD (Modular Monolith)
 
 ## Decision
-Migrar o backend de first-party API dentro do Next.js (app/api/) para backend dedicado em apps/api com NestJS + Prisma + DDD em corte único (Big Bang), sem coexistência com arquitetura legada.
+Migrar o backend de first-party API dentro do Next.js (packages/web/app/api/) para backend dedicado em packages/api com NestJS + Prisma + DDD em corte único (Big Bang), sem coexistência com arquitetura legada.
 
 ## Context
-O backend original era uma coleção de route handlers em app/api/ sem separação arquitetural real. Com o crescimento do produto e a necessidade de testes, segurança e escalabilidade, foi necessário um backend com arquitetura clara e testável.
+O backend original era uma coleção de route handlers em packages/web/app/api/ sem separação arquitetural real. Com o crescimento do produto e a necessidade de testes, segurança e escalabilidade, foi necessário um backend com arquitetura clara e testável.
 
 ## Options Considered
-- Opção A: Evolução incremental do first-party API (manter em app/api/ e adicionar camadas gradualmente)
-- Opção B: Big Bang — substituição completa em corte único para apps/api com NestJS + DDD
+- Opção A: Evolução incremental do first-party API (manter em packages/web/app/api/ e adicionar camadas gradualmente)
+- Opção B: Big Bang — substituição completa em corte único para packages/api com NestJS + DDD
 - Opção C: Microserviços (descartado pela complexidade operacional no estágio atual)
 
 ## Rationale
@@ -22,9 +22,9 @@ Regras inegociáveis:
 - Controllers finos, delegando para use-cases/services
 
 ## Impact
-- apps/api é o backend oficial para todos os domínios de negócio
-- app/api limitado a route handlers locais/técnicos do frontend
-- UI e hooks acessam dados SOMENTE via lib/client/api.ts
+- packages/api é o backend oficial para todos os domínios de negócio
+- packages/web/app/api limitado a route handlers locais/técnicos do frontend
+- UI e hooks acessam dados SOMENTE via packages/web/lib/client/api.ts
 - Envelope HTTP obrigatório: { data, error }
 - Baseline de segurança preservada: JWT, refresh rotation, cookies HttpOnly, rate limit, CORS, OAuth Google/Microsoft
 

@@ -4,11 +4,8 @@ Este documento resume as principais pastas e responsabilidades.
 
 ## Raiz
 
-- app/: paginas e layouts do frontend
-- components/: componentes de UI
-- hooks/: hooks de dominio do frontend
-- lib/: client API boundary, mock/localStorage e utilitarios compartilhados
-- apps/api/: backend dedicado NestJS
+- packages/web/: frontend Next.js (paginas, componentes, hooks, lib)
+- packages/api/: backend dedicado NestJS
 - prisma/: schema e migrations
 - docs/: documentacao tecnica
 - scripts/: scripts de suporte
@@ -17,29 +14,29 @@ Este documento resume as principais pastas e responsabilidades.
 
 ## Frontend
 
-- app/: rotas e composicao de telas
-- app/api/: route handlers locais do frontend (uso tecnico/local, ex.: probes e health local)
-- components/: UI reutilizavel
-- hooks/: estado remoto e casos de uso da interface
-- hooks/compat: aliases de compatibilidade para migracoes graduais de naming
-- lib/client/api.ts: fronteira unica de dados
-- lib/mock: servicos de mock/localStorage para modo local
-- lib/mock/data: datasets mock versionados junto da implementacao mock
-- lib/shared: tipos, helpers e utilitarios compartilhados
+- packages/web/app/: rotas e composicao de telas
+- packages/web/app/api/: route handlers locais do frontend (uso tecnico/local, ex.: probes e health local)
+- packages/web/components/: UI reutilizavel
+- packages/web/hooks/: estado remoto e casos de uso da interface
+- packages/web/hooks/compat: aliases de compatibilidade para migracoes graduais de naming
+- packages/web/lib/client/api.ts: fronteira unica de dados
+- packages/web/lib/mock: servicos de mock/localStorage para modo local
+- packages/web/lib/mock/data: datasets mock versionados junto da implementacao mock
+- packages/web/lib/shared: tipos, helpers e utilitarios compartilhados
 
-### Fronteira app/api vs apps/api
+### Fronteira packages/web/app/api vs packages/api
 
-- apps/api e o backend oficial (fonte de verdade para regras de negocio e contratos).
-- app/api nao substitui apps/api e nao deve evoluir como backend paralelo.
-- app/api deve ser restrito a endpoints locais/tecnicos do frontend.
-- Fluxos de dominio consumidos por UI/hooks devem continuar passando por lib/client/api.ts.
+- packages/api e o backend oficial (fonte de verdade para regras de negocio e contratos).
+- packages/web/app/api nao substitui packages/api e nao deve evoluir como backend paralelo.
+- packages/web/app/api deve ser restrito a endpoints locais/tecnicos do frontend.
+- Fluxos de dominio consumidos por UI/hooks devem continuar passando por packages/web/lib/client/api.ts.
 
 ## Operacao Docker/Monitor
 
 - docker/scripts e o caminho canonico de scripts de compose/runtime.
 - logs e artefatos operacionais devem ser gravados em runtime/<servico>/...
 
-## Backend (apps/api)
+## Backend (packages/api)
 
 - src/modules/<context>/presentation
 - src/modules/<context>/application

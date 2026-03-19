@@ -71,7 +71,7 @@ Saidas de runtime do monitor:
 ## Prisma no backend
 
 \`\`\`bash
-cd apps/api
+cd packages/api
 pnpm db:generate
 pnpm db:migrate
 \`\`\`

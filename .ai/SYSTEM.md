@@ -2,17 +2,17 @@
 
 ## Purpose
 MMX: plataforma pessoal de financas.
-Repositorio hospeda frontend (mmx-web-react) e backend dedicado (mmx-api em apps/api).
+Repositorio hospeda frontend (packages/web) e backend dedicado (packages/api).
 
 ## Architecture Overview
 - Frontend: Next.js 14 App Router consumindo REST via lib/client/api.ts.
-- Backend: NestJS dedicado em apps/api.
+- Backend: NestJS dedicado em packages/api.
 - Backend style: Modular Monolith com DDD.
 - Canonical ADR: docs/adr/0012-backend-architecture.md.
 
 ## Main Components
 
-### Backend Bounded Contexts (apps/api/src/modules/)
+### Backend Bounded Contexts (packages/api/src/modules/)
 - health
 - auth
 - transactions
@@ -33,7 +33,7 @@ Repositorio hospeda frontend (mmx-web-react) e backend dedicado (mmx-api em apps
 
 ## Data Flow
 \`\`\`
-UI → hooks → lib/client/api.ts → apps/api (controllers → use-cases → domain → repositories) → PostgreSQL
+UI → hooks → packages/web/lib/client/api.ts → packages/api (controllers → use-cases → domain → repositories) → PostgreSQL
 \`\`\`
 
 ## Tech Stack

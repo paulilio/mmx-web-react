@@ -8,7 +8,7 @@ A arquitetura oficial do MMX e:
 
 - Modular Monolith
 - Domain-Driven Design (DDD)
-- Backend dedicado em NestJS (apps/api)
+- Backend dedicado em NestJS (packages/api)
 - Prisma + PostgreSQL
 
 A referencia normativa e o ADR 0012:
@@ -28,11 +28,11 @@ Browser
 
 Frontend:
 
-- app e components: apresentacao
-- hooks: orquestracao de UI e estado remoto
-- lib/client/api.ts: fronteira unica de dados
+- packages/web/app e packages/web/components: apresentacao
+- packages/web/hooks: orquestracao de UI e estado remoto
+- packages/web/lib/client/api.ts: fronteira unica de dados
 
-Backend (apps/api):
+Backend (packages/api):
 
 - modules/<context>/presentation: controllers e DTOs
 - modules/<context>/application: use cases e ports
@@ -93,6 +93,6 @@ No frontend em NEXT_PUBLIC_USE_API=true:
 ## Status de cutover
 
 - Cutover backend dedicado concluido no escopo TK-101.
-- Modulos ativos no runtime em apps/api: health, auth, transactions, categories, category-groups, contacts, areas, budget, budget-allocations, settings e reports.
+- Modulos ativos no runtime em packages/api: health, auth, transactions, categories, category-groups, contacts, areas, budget, budget-allocations, settings e reports.
 - Removido do source de runtime o legado alvo de cutover: core/lib/domain, core/lib/server/repositories, core/lib/server/services e core/lib/server/db/prisma.ts.
-- Mantidos no runtime atual de apps/api os utilitarios de contrato e seguranca em core/lib/server/http e core/lib/server/security.
+- Mantidos no runtime atual de packages/api os utilitarios de contrato e seguranca em core/lib/server/http e core/lib/server/security.

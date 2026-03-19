@@ -49,7 +49,7 @@ pnpm dev
 Backend dedicado:
 
 \`\`\`bash
-cd apps/api
+cd packages/api
 pnpm install
 pnpm dev
 \`\`\`
@@ -68,7 +68,7 @@ pnpm validate:env -- --env=development
 ## Prisma (backend)
 
 \`\`\`bash
-cd apps/api
+cd packages/api
 pnpm db:generate
 pnpm db:migrate
 \`\`\`

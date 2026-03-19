@@ -2,8 +2,8 @@
 
 ## Referencia arquitetural
 
-- Backend dedicado: mmx-api (NestJS em apps/api)
-- Fronteira frontend: lib/client/api.ts
+- Backend dedicado: mmx-api (NestJS em packages/api)
+- Fronteira frontend: packages/web/lib/client/api.ts
 - ADR normativo: docs/adr/0012-backend-architecture.md
 
 ## Envelope padrao
@@ -13,7 +13,7 @@
 
 ## Regras de consumo no frontend
 
-- Em NEXT_PUBLIC_USE_API=true, lib/client/api.ts deve:
+- Em NEXT_PUBLIC_USE_API=true, packages/web/lib/client/api.ts deve:
   - desembrulhar envelope
   - lancar ApiError em erro de envelope/rede
   - nao aplicar fallback automatico para mock

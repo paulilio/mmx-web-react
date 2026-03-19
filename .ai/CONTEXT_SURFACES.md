@@ -6,10 +6,10 @@ Superficies de impacto de mudanca. Consulte antes de alterar codigo para prever 
 
 ## Authentication Surface
 Core files:
-  - apps/api/src/modules/auth/
-  - apps/api/src/core/lib/server/security/ (jwt, cors, password-hash, rate-limit, refresh-session-store)
-  - lib/client/api.ts (token handling)
-  - hooks/use-auth.tsx
+  - packages/api/src/modules/auth/
+  - packages/api/src/core/lib/server/security/ (jwt, cors, password-hash, rate-limit, refresh-session-store)
+  - packages/web/lib/client/api.ts (token handling)
+  - packages/web/hooks/use-auth.tsx
 Adjacent surfaces:
   - Settings
   - Security Infrastructure
@@ -19,10 +19,10 @@ Notes: JWT, refresh rotation, OAuth flows, cookies. Qualquer mudanca aqui afeta 
 
 ## Security Infrastructure Surface
 Core files:
-  - apps/api/src/core/lib/server/security/
-  - apps/api/src/common/guards/
-  - apps/api/src/common/middleware/
-  - apps/api/src/common/filters/
+  - packages/api/src/core/lib/server/security/
+  - packages/api/src/common/guards/
+  - packages/api/src/common/middleware/
+  - packages/api/src/common/filters/
 Adjacent surfaces:
   - Authentication
   - All backend endpoints
@@ -31,8 +31,8 @@ Notes: CORS, rate limiting, security headers, auth guards e exception filters sa
 
 ## Data Boundary Surface
 Core files:
-  - lib/client/api.ts
-  - hooks/ (all domain hooks)
+  - packages/web/lib/client/api.ts
+  - packages/web/hooks/ (all domain hooks)
 Adjacent surfaces:
   - All frontend components consuming data
   - All backend API endpoints
@@ -41,22 +41,22 @@ Notes: Envelope contract { data, error }. Mudanca aqui quebra toda a comunicacao
 
 ## Frontend Hooks Surface
 Core files:
-  - hooks/use-auth.tsx
-  - hooks/use-budget.ts
-  - hooks/use-transactions.ts
-  - hooks/ (all domain hooks)
+  - packages/web/hooks/use-auth.tsx
+  - packages/web/hooks/use-budget.ts
+  - packages/web/hooks/use-transactions.ts
+  - packages/web/hooks/ (all domain hooks)
 Adjacent surfaces:
-  - Data Boundary (lib/client/api.ts)
+  - Data Boundary (packages/web/lib/client/api.ts)
   - All frontend components
 Risk level: High
 Notes: Hooks definem o contrato entre componentes e dados. Mudanca em assinatura ou retorno quebra componentes globalmente.
 
 ## Transaction Surface
 Core files:
-  - apps/api/src/modules/transactions/
-  - apps/api/src/core/lib/server/http/transactions-mapper.ts
-  - components/transactions/
-  - hooks/ (transaction hooks)
+  - packages/api/src/modules/transactions/
+  - packages/api/src/core/lib/server/http/transactions-mapper.ts
+  - packages/web/components/transactions/
+  - packages/web/hooks/ (transaction hooks)
 Adjacent surfaces:
   - Categories
   - Category Groups
@@ -69,8 +69,8 @@ Notes: Modulo mais conectado. Mudancas em transactions podem afetar relatorios, 
 
 ## Categories Surface
 Core files:
-  - apps/api/src/modules/categories/
-  - apps/api/src/core/lib/server/http/categories-mapper.ts
+  - packages/api/src/modules/categories/
+  - packages/api/src/core/lib/server/http/categories-mapper.ts
 Adjacent surfaces:
   - Transactions
   - Category Groups
@@ -80,7 +80,7 @@ Risk level: Medium
 
 ## Category Groups Surface
 Core files:
-  - apps/api/src/modules/category-groups/
+  - packages/api/src/modules/category-groups/
 Adjacent surfaces:
   - Categories
   - Transactions
@@ -88,15 +88,15 @@ Risk level: Medium
 
 ## Contacts Surface
 Core files:
-  - apps/api/src/modules/contacts/
+  - packages/api/src/modules/contacts/
 Adjacent surfaces:
   - Transactions
 Risk level: Low
 
 ## Areas Surface
 Core files:
-  - apps/api/src/modules/areas/
-  - apps/api/src/core/lib/server/http/areas-mapper.ts
+  - packages/api/src/modules/areas/
+  - packages/api/src/core/lib/server/http/areas-mapper.ts
 Adjacent surfaces:
   - Transactions
   - Reports
@@ -105,9 +105,9 @@ Notes: Centros de custo. Usados para segmentacao de transacoes e relatorios.
 
 ## Budget Surface
 Core files:
-  - apps/api/src/modules/budget/
-  - apps/api/src/modules/budget-allocations/
-  - apps/api/src/core/lib/server/http/budgets-mapper.ts
+  - packages/api/src/modules/budget/
+  - packages/api/src/modules/budget-allocations/
+  - packages/api/src/core/lib/server/http/budgets-mapper.ts
 Adjacent surfaces:
   - Transactions
   - Categories
@@ -118,7 +118,7 @@ Notes: Transfer e rollover sao fluxos criticos.
 
 ## Reports Surface
 Core files:
-  - apps/api/src/modules/reports/
+  - packages/api/src/modules/reports/
 Adjacent surfaces:
   - Transactions
   - Categories
@@ -129,7 +129,7 @@ Notes: Consome dados de multiplos modulos. Mudancas em qualquer modulo adjacente
 
 ## Settings Surface
 Core files:
-  - apps/api/src/modules/settings/
+  - packages/api/src/modules/settings/
 Adjacent surfaces:
   - Authentication
   - Budget
@@ -137,9 +137,9 @@ Risk level: Low
 
 ## Database Surface
 Core files:
-  - apps/api/prisma/schema.prisma
-  - apps/api/prisma/migrations/
-  - apps/api/src/infrastructure/database/prisma/
+  - packages/api/prisma/schema.prisma
+  - packages/api/prisma/migrations/
+  - packages/api/src/infrastructure/database/prisma/
 Adjacent surfaces:
   - All backend modules (infrastructure layer)
 Risk level: High
@@ -147,7 +147,7 @@ Notes: Mudancas no schema afetam todos os modulos. Requer migration e validacao 
 
 ## HTTP Mappers Surface
 Core files:
-  - apps/api/src/core/lib/server/http/*-mapper.ts
+  - packages/api/src/core/lib/server/http/*-mapper.ts
 Adjacent surfaces:
   - All backend modules (presentation layer)
   - Data Boundary (define API contract shape)

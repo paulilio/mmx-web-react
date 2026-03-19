@@ -23,7 +23,7 @@ Topologia:
 Browser
   -> mmx-web-react
   -> HTTP REST
-  -> mmx-api (apps/api)
+  -> mmx-api (packages/api)
   -> PostgreSQL
 \`\`\`
 
@@ -37,11 +37,11 @@ Browser
 ## Fronteiras tecnicas
 
 Frontend:
-- UI em app e components
-- orquestracao em hooks
-- fronteira unica de dados em lib/client/api.ts
+- UI em packages/web/app e packages/web/components
+- orquestracao em packages/web/hooks
+- fronteira unica de dados em packages/web/lib/client/api.ts
 
-Backend (apps/api):
+Backend (packages/api):
 - presentation: controllers e DTOs
 - application: use-cases e ports
 - domain: entidades e regras
