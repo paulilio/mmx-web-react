@@ -32,8 +32,11 @@ yarn-error.log*
 .eslintcache
 coverage/
 
-# env files
-.env*
+# env files (per-package, not tracked — only .env.example is versioned)
+packages/api/.env*
+!packages/api/.env.example
+packages/web/.env*
+!packages/web/.env.example
 
 # docker env files (versionar apenas templates .example)
 docker/env/*.env

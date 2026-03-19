@@ -86,16 +86,26 @@ pnpm build
 
 ## Variaveis de ambiente
 
-Criar .env.local na raiz:
+Cada pacote tem seu proprio `.env`. Copie os exemplos e ajuste:
 
 \`\`\`bash
+cp packages/api/.env.example packages/api/.env
+cp packages/web/.env.example packages/web/.env.local
+\`\`\`
+
+**`packages/api/.env`** — backend (NestJS + Prisma):
+\`\`\`bash
 DATABASE_URL=postgresql://mmx:mmx_password@localhost:5432/mmx?schema=public
-NEXT_PUBLIC_API_BASE=http://localhost:4000
-NEXT_PUBLIC_USE_API=true
 MMX_APP_ENV=development
 CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
 CORS_ORIGINS_STAGING=
 CORS_ORIGINS_PROD=
+\`\`\`
+
+**`packages/web/.env.local`** — frontend (Next.js):
+\`\`\`bash
+NEXT_PUBLIC_API_BASE=http://localhost:8000
+NEXT_PUBLIC_USE_API=true
 \`\`\`
 
 Para ambiente local real (API + banco), mantenha `NEXT_PUBLIC_USE_API=true` e `DATABASE_URL` valida.
