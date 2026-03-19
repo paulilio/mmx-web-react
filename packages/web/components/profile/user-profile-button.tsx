@@ -54,9 +54,13 @@ export function UserProfileButton() {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={(open) => console.log("[v0] Dropdown open state:", open)}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-auto p-3 justify-start gap-3 hover:bg-slate-100 transition-colors">
+          <Button 
+            variant="ghost" 
+            className="h-auto p-3 justify-start gap-3 hover:bg-slate-100 transition-colors"
+            onClick={() => console.log("[v0] Button clicked")}
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.profilePhoto || "/placeholder.svg"} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
