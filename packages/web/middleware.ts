@@ -23,6 +23,9 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ["/auth", "/auth/confirm"]
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
+  // For mock implementation, we'll check localStorage on client side
+  // In production, this would validate JWT tokens or session IDs
+
   if (!isPublicRoute) {
     // Protected route - check if user has valid session
     // Since we can't access localStorage in middleware, we'll handle this client-side

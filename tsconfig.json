@@ -19,12 +19,16 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": false,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "references": [
-    { "path": "./packages/web" },
-    { "path": "./apps/api" }
-  ],
-  "include": [],
-  "exclude": ["node_modules", "scripts", "**/dist/**"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "scripts", "apps/api", "apps/api/**", "**/dist/**"]
 }
