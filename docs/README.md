@@ -18,6 +18,7 @@ Para quem está chegando no projeto.
 | [system-overview.md](onboarding/system-overview.md) | Ponto de entrada técnico — propósito, stack, componentes principais |
 | [project-structure.md](onboarding/project-structure.md) | Estrutura de pastas e responsabilidades |
 | [historia-criacao.md](onboarding/historia-criacao.md) | Origem do projeto, fases de desenvolvimento, estado atual |
+| [aiws-guide.md](onboarding/aiws-guide.md) | Guia de onboarding da estrutura AIWS (.ai/ + .aiws/) |
 
 ---
 
