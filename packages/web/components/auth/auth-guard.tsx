@@ -17,28 +17,30 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [isReady, setIsReady] = useState(false)
-  const checkDoneRef = useRef(false)
+  const hasRedirectedRef = useRef(false)
 
   useEffect(() => {
-    // Skip if already done or still loading
-    if (checkDoneRef.current || authLoading) return
-
-    // Mark as done immediately to prevent re-runs
-    checkDoneRef.current = true
+    // Wait for auth to finish loading
+    if (authLoading) return
+    
+    // Skip if already redirected or ready
+    if (hasRedirectedRef.current || isReady) return
 
     if (!user) {
+      hasRedirectedRef.current = true
       router.replace("/auth")
       return
     }
 
     if (!user.isEmailConfirmed) {
+      hasRedirectedRef.current = true
       router.replace(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
       return
     }
 
     // User is authenticated
     setIsReady(true)
-  }, [authLoading]) // Only depend on authLoading
+  }, [authLoading, user, isReady, router])
 
   // Show loading state while checking authentication
   if (authLoading || !isReady) {
