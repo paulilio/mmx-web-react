@@ -54,13 +54,9 @@ export function UserProfileButton() {
 
   return (
     <>
-      <DropdownMenu onOpenChange={(open) => console.log("[v0] Dropdown open state:", open)}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="h-auto p-3 justify-start gap-3 hover:bg-slate-100 transition-colors"
-            onClick={() => console.log("[v0] Button clicked")}
-          >
+          <Button variant="ghost" className="h-auto p-3 justify-start gap-3 hover:bg-slate-100 transition-colors">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.profilePhoto || "/placeholder.svg"} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
@@ -78,7 +74,7 @@ export function UserProfileButton() {
             <ChevronUp className="h-4 w-4 text-slate-400" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-64 z-50">
           <DropdownMenuLabel className="pb-2">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
