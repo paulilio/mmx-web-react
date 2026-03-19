@@ -74,7 +74,7 @@ export function UserProfileButton() {
             <ChevronUp className="h-4 w-4 text-slate-400" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-64 z-50">
           <DropdownMenuLabel className="pb-2">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">

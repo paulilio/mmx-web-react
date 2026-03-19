@@ -14,7 +14,7 @@ export default function ClientLayout({
 }>) {
   const pathname = usePathname()
 
-  const isPublicRoute = pathname.startsWith("/auth") || pathname.startsWith("/monitor-probe-phase1")
+  const isPublicRoute = pathname === "/" || pathname.startsWith("/auth") || pathname.startsWith("/monitor-probe-phase1")
 
   return (
     <>
