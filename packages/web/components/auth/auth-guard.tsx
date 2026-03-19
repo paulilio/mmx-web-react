@@ -2,10 +2,9 @@
 
 import type React from "react"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { useSession } from "@/hooks/use-session"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TrendingUp } from "lucide-react"
@@ -16,41 +15,36 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, isLoading: authLoading } = useAuth()
-  const { isSessionValid } = useSession()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
-  const hasCheckedRef = useRef(false)
+  const hasRedirectedRef = useRef(false)
 
-  useEffect(() => {
-    // Skip if still loading auth
+  const checkAuth = useCallback(() => {
+    // Don't check if still loading
     if (authLoading) return
 
-    // Skip if already checked and passed
-    if (hasCheckedRef.current && !isChecking) return
+    // Don't redirect twice
+    if (hasRedirectedRef.current) return
 
-    const checkAuth = () => {
-      if (!user) {
-        // No user found, redirect to auth
-        router.push("/auth")
-        return
-      }
-
-      if (!user.isEmailConfirmed) {
-        // User exists but email not confirmed
-        router.push(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
-        return
-      }
-
-      // User exists and email confirmed - allow access
-      // Session validity is handled by useSession hook separately
-      hasCheckedRef.current = true
-      setIsChecking(false)
+    if (!user) {
+      hasRedirectedRef.current = true
+      router.replace("/auth")
+      return
     }
 
-    // Small delay to ensure auth is fully initialized
-    const timer = setTimeout(checkAuth, 100)
-    return () => clearTimeout(timer)
+    if (!user.isEmailConfirmed) {
+      hasRedirectedRef.current = true
+      router.replace(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
+      return
+    }
+
+    // User is authenticated
+    setIsChecking(false)
   }, [user, authLoading, router])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   // Show loading state while checking authentication
   if (authLoading || isChecking) {
