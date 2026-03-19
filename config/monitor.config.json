@@ -1,0 +1,18 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "startPath": "/dashboard",
+  "headless": true,
+  "timeoutMs": 30000,
+  "waitAfterLoadMs": 1500,
+  "criticalSelectors": [
+    "main"
+  ],
+  "maxHttpErrorsToCapture": 5,
+  "ignoreConsoleErrorPatterns": [
+    "Cross-Origin-Opener-Policy header has been ignored"
+  ],
+  "phase1": {
+    "enabled": true,
+    "enforce": true
+  }
+}

@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { contactSchema, type ContactFormData } from "@/lib/validations"
-import { createContact, updateContact } from "@/hooks/use-contacts"
-import type { Contact } from "@/lib/types"
+import { contactSchema, type ContactFormData } from "@/lib/shared/validations"
+import { useContacts } from "@/hooks/use-contacts"
+import type { Contact } from "@/lib/shared/types"
 import { mutate } from "swr"
 import { Loader2 } from "lucide-react"
 
@@ -22,6 +22,7 @@ interface ContactFormModalProps {
 
 export function ContactFormModal({ open, onOpenChange, contact }: ContactFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { createContact, updateContact } = useContacts()
 
   const {
     register,

@@ -1,0 +1,35 @@
+# Dependencias
+node_modules
+
+# Build output
+.next
+out
+
+# Controle de versao
+.git
+.gitignore
+
+# Arquivos de ambiente (usar env_file no compose ou variaveis de ambiente)
+.env
+.env.local
+.env.*.local
+
+# Workspace de desenvolvimento
+.dev-workspace
+
+# Saidas geradas pelo monitor (nao necessarias na imagem)
+monitor/logs
+monitor/artifacts
+monitor/reports
+
+# Testes (nao necessarios na imagem de producao)
+*.test.ts
+*.test.tsx
+vitest.config.ts
+
+# Editor e OS
+.vscode
+.idea
+*.code-workspace
+.DS_Store
+Thumbs.db
