@@ -6,7 +6,7 @@ Criar pacotes de contexto por módulo do sistema, permitindo que a IA entenda um
 
 ## Estrutura proposta
 
-```
+\`\`\`
 .ai/context/modules/
   auth.md            ← propósito, atores, operações principais, regras, dependências
   transactions.md
@@ -15,7 +15,7 @@ Criar pacotes de contexto por módulo do sistema, permitindo que a IA entenda um
   reports.md
   settings.md
   ...
-```
+\`\`\`
 
 Cada arquivo responde: o que o módulo faz, quem usa, quais operações principais, regras importantes, onde está no código.
 

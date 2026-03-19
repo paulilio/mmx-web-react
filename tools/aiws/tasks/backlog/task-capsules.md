@@ -6,7 +6,7 @@ Evoluir o formato de task atual para uma estrutura autossuficiente que contém t
 
 ## Estrutura proposta
 
-```
+\`\`\`
 tasks/<tk>/
   1-task.md          ← objetivo, contexto, plano, DoD (já existe)
   2-context.md       ← módulos relevantes, entrypoints, dependências (NOVO)
@@ -14,7 +14,7 @@ tasks/<tk>/
   4-implementation.md ← registro de mudanças durante execução (NOVO)
   5-tests.md         ← testes associados à task (NOVO)
   ref/               ← histórico e documentos originais (já existe)
-```
+\`\`\`
 
 ## Por que fazer
 

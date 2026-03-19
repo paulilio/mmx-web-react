@@ -8,15 +8,15 @@ Adicionar distinção explícita entre `tasks/<tk>/ref/` e `references/` na docu
 
 **`.aiws/README.md`** — na tabela de estrutura, adicionar linha para `tasks/<tk>/ref/`:
 
-```
+\`\`\`
 | `tasks/<tk>/ref/` | Historico e referencias especificas da task — documentos originais, specs, rascunhos |
-```
+\`\`\`
 
 E atualizar a descrição de `references/`:
 
-```
+\`\`\`
 | `references/` | Referencias globais do projeto — material de pesquisa, seed data, guias externos |
-```
+\`\`\`
 
 ## Regra resultante
 
@@ -35,13 +35,13 @@ Reorganizar `knowledge/` em subpastas por domínio e adicionar README explicativ
 
 **`knowledge/`** — criar subpastas:
 
-```
+\`\`\`
 knowledge/
   README.md
   product/        — conceitos de produto, roadmap, contexto estratégico
   architecture/   — decisões e padrões de código, backend, frontend, infra
   ops/            — decisões e padrões de operação (workspace, deploy, CI/CD)
-```
+\`\`\`
 
 **`knowledge/README.md`** — criar arquivo documentando:
 - propósito da pasta
@@ -69,7 +69,7 @@ Reorganizar `docs/` em subpastas por tipo/audiência, separando onboarding, arqu
 
 **`docs/`** — criar subpastas e mover arquivos:
 
-```
+\`\`\`
 docs/
   README.md
   adr/              — ADRs numerados (já existente)
@@ -77,7 +77,7 @@ docs/
   architecture/     — architecture, api-contracts, frontend-guidelines
   ops/              — local-development, docker, deployment
   governance/       — documentation-governance-checklist
-```
+\`\`\`
 
 **`docs/README.md`** — atualizar links para refletir nova estrutura de subpastas, com descrição por seção.
 

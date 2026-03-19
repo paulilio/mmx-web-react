@@ -6,7 +6,7 @@ Criar uma pasta `.workspace/` (fora do git) como memória pessoal e scratchpad d
 
 ## Estrutura proposta
 
-```
+\`\`\`
 .workspace/         ← no .gitignore
   memory/
     insights.md     ← padrões descobertos no projeto
@@ -20,7 +20,7 @@ Criar uma pasta `.workspace/` (fora do git) como memória pessoal e scratchpad d
     scratch-plan.md ← rascunho de plano antes de formalizar
   experiments/
     prototype-notes.md
-```
+\`\`\`
 
 ## Por que fazer
 

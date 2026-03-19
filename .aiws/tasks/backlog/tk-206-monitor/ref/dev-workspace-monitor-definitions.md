@@ -17,7 +17,7 @@ Error Monitoring → Evidence Collection → Synthetic Testing → Observability
 
 ## Estrutura do Modulo
 
-```
+\`\`\`
 monitor/
   engine/    — runner.js, detector.js, evidence.js, report.js
   telemetry/ — collector.js, instrumentation.js
@@ -26,7 +26,7 @@ monitor/
   explorer/  — crawler.js, action-engine.js, exploration-runner.js
   state-graph/ — graph-store.js, node-builder.js, transition-recorder.js
   baseline/  — dom/, api/, screenshots/, performance/
-```
+\`\`\`
 
 ## Principios de Design
 

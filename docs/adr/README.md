@@ -40,14 +40,14 @@ All ADR files are stored in the repository.
 
 Example structure:
 
-```
+\`\`\`
 docs/
   adr/
     0001-use-postgresql.md
     0004-auth-local-session-first.md
     0005-adopt-backend-jwt-auth.md
     ...
-```
+\`\`\`
 
 Rules:
 
@@ -68,7 +68,7 @@ If a decision changes, create a **new ADR** that supersedes the old one.
 
 Each ADR should follow a simple and consistent format.
 
-```
+\`\`\`
 # ADR-0001: Title of the decision
 
 Date: YYYY-MM-DD  
@@ -101,7 +101,7 @@ Negative impacts:
 - option A
 - option B
 - option C
-```
+\`\`\`
 
 The document should be short and direct.
 Typical size: **20 to 50 lines**.
@@ -127,9 +127,9 @@ The decision was replaced by another ADR.
 
 Example:
 
-```
+\`\`\`
 Superseded by ADR-0007
-```
+\`\`\`
 
 ---
 
@@ -167,7 +167,7 @@ Architecture evolution becomes traceable over time.
 
 ## Quick Example
 
-```
+\`\`\`
 # ADR-0001: Use PostgreSQL as primary database
 
 Date: 2026-03-06
@@ -193,4 +193,4 @@ Negative impacts:
 ## Alternatives Considered
 - MySQL
 - MongoDB
-```
+\`\`\`

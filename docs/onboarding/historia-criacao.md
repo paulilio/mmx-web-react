@@ -16,9 +16,9 @@ A interface foi construída com o **v0**, usando dados armazenados em arquivos J
 ### Fase 2 — Backend com Copilot
 A construção do backend foi feita com o **GitHub Copilot**. O fluxo de trabalho seguia um pipeline estruturado:
 
-```
+\`\`\`
 1-definitions → 2-roadmap → tasks (work-main / work-alpha)
-```
+\`\`\`
 
 - **work-main** — execução do roadmap principal (fases 1 a 5)
 - **work-alpha** — versão simplificada criada quando o main ficou complexo demais; objetivo era ter um protótipo funcional para testes antes de continuar o main

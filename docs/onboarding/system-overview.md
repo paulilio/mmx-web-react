@@ -19,13 +19,13 @@ A arquitetura oficial e backend dedicado com Modular Monolith + DDD.
 
 Topologia:
 
-```text
+\`\`\`text
 Browser
   -> mmx-web-react
   -> HTTP REST
   -> mmx-api (apps/api)
   -> PostgreSQL
-```
+\`\`\`
 
 ## Stack
 

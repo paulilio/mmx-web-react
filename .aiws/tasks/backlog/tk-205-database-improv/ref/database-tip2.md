@@ -4,7 +4,7 @@ Abaixo está um **schema Prisma inicial** para o backend do **MMX**, baseado em 
 
 # schema.prisma
 
-```prisma
+\`\`\`prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -154,7 +154,7 @@ enum ContactType {
   person
   company
 }
-```
+\`\`\`
 
 ---
 
@@ -164,24 +164,24 @@ Exemplo de compra.
 
 Transação:
 
-```
+\`\`\`
 Compra supermercado
 2026-03-10
-```
+\`\`\`
 
 Linhas:
 
-```
+\`\`\`
 Conta: checking
 Categoria: food
 Valor: -120
-```
+\`\`\`
 
 Saldo da conta sempre vem de:
 
-```
+\`\`\`
 SUM(transaction_lines.amount)
-```
+\`\`\`
 
 ---
 
@@ -189,18 +189,18 @@ SUM(transaction_lines.amount)
 
 Adicione no Prisma:
 
-```prisma
+\`\`\`prisma
 @@index([userId, date])
-```
+\`\`\`
 
 no model `Transaction`.
 
 E:
 
-```prisma
+\`\`\`prisma
 @@index([accountId])
 @@index([categoryId])
-```
+\`\`\`
 
 no model `TransactionLine`.
 
@@ -212,34 +212,34 @@ Isso acelera relatórios.
 
 Saldo de conta:
 
-```sql
+\`\`\`sql
 SELECT SUM(amount)
 FROM "TransactionLine"
 WHERE accountId = $1;
-```
+\`\`\`
 
 Gastos por categoria:
 
-```sql
+\`\`\`sql
 SELECT categoryId, SUM(amount)
 FROM "TransactionLine"
 GROUP BY categoryId;
-```
+\`\`\`
 
 Cashflow mensal:
 
-```sql
+\`\`\`sql
 SELECT date_trunc('month', date), SUM(amount)
 FROM transactions
 JOIN transaction_lines
 GROUP BY 1;
-```
+\`\`\`
 
 ---
 
 # Estrutura final do backend
 
-```
+\`\`\`
 mmx-api
 
 src
@@ -256,7 +256,7 @@ shared
   database
   auth
   http
-```
+\`\`\`
 
 ---
 

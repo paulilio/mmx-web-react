@@ -10,9 +10,9 @@ Este documento descreve o deploy da aplicacao com frontend e backend dedicados.
 
 Fluxo:
 
-```text
+\`\`\`text
 Browser -> frontend -> backend (REST) -> PostgreSQL
-```
+\`\`\`
 
 ## Ambientes
 
@@ -51,20 +51,20 @@ Browser -> frontend -> backend (REST) -> PostgreSQL
 
 ## Pipeline minimo recomendado
 
-```bash
+\`\`\`bash
 pnpm lint
 pnpm type-check
 pnpm test:unit
 pnpm test:integration
 pnpm build
 pnpm validate:env -- --env=development
-```
+\`\`\`
 
 Para release/hardening:
 
-```bash
+\`\`\`bash
 pnpm validate:env -- --env=production
-```
+\`\`\`
 
 ## Hardening obrigatorio
 

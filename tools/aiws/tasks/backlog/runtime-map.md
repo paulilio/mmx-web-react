@@ -6,9 +6,9 @@ Criar um mapa de fluxos de execução reais do sistema — diferente do mapa est
 
 ## Estrutura proposta
 
-```
+\`\`\`
 .ai/runtime-map.md
-```
+\`\`\`
 
 Conteúdo:
 - **HTTP Request flow**: Browser → Next.js → lib/client/api.ts → apps/api → Controller → Service → Repository → Prisma → PostgreSQL

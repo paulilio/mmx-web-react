@@ -11,7 +11,7 @@ Funciona com Claude Code, Cursor ou GitHub Copilot.
 
 Cole este prompt na IA:
 
-```
+\`\`\`
 Verifique se existem os seguintes arquivos/pastas neste repositório:
 - .ai/ (pasta)
 - CLAUDE.md
@@ -24,7 +24,7 @@ Exemplo: .ai/ → .aiws-backup/ai/, CLAUDE.md → .aiws-backup/CLAUDE.md
 
 Se nenhum existir, informe e prossiga para a Etapa 2.
 Ao final, liste o que foi copiado.
-```
+\`\`\`
 
 ---
 
@@ -32,7 +32,7 @@ Ao final, liste o que foi copiado.
 
 Cole este prompt na IA:
 
-```
+\`\`\`
 Crie a estrutura completa do AI Engineering Workspace (AIWS) neste repositório.
 
 Estrutura a criar:
@@ -70,7 +70,7 @@ Adicionar ao .gitignore (se não existir):
   runtime/
 
 Ao final, liste todos os arquivos e pastas criados.
-```
+\`\`\`
 
 ---
 
@@ -80,7 +80,7 @@ Ao final, liste todos os arquivos e pastas criados.
 
 Cole este prompt na IA:
 
-```
+\`\`\`
 O backup dos arquivos originais está em .aiws-backup/.
 
 Migre o conteúdo para a nova estrutura AIWS seguindo estas regras:
@@ -112,7 +112,7 @@ Ao final:
 - Liste o que foi migrado e para onde
 - Liste o que foi descartado (e por quê)
 - Confirme que .aiws-backup/ ainda está intacto como referência
-```
+\`\`\`
 
 ---
 
@@ -120,12 +120,12 @@ Ao final:
 
 Com a estrutura criada e o backup migrado, execute os prompts de geração do Context Kernel:
 
-```
+\`\`\`
 tools/aiws/commands/init-kernel.md
-```
+\`\`\`
 
 Em seguida, gere os arquivos customizados do projeto:
 
-```
+\`\`\`
 tools/aiws/commands/init-custom.md
-```
+\`\`\`

@@ -16,13 +16,13 @@ Sempre derivar saldo de **transações registradas**.
 
 Modelo:
 
-```id="dbrh7g"
+\`\`\`id="dbrh7g"
 accounts
 transactions
 transaction_lines
 categories
 budgets
-```
+\`\`\`
 
 Isso segue lógica de **double-entry ledger simplificado**.
 
@@ -30,7 +30,7 @@ Isso segue lógica de **double-entry ledger simplificado**.
 
 # 2. Tabela users
 
-```id="mt6m8a"
+\`\`\`id="mt6m8a"
 users
 
 id
@@ -38,7 +38,7 @@ email
 password_hash
 created_at
 last_login
-```
+\`\`\`
 
 ---
 
@@ -46,7 +46,7 @@ last_login
 
 Contas financeiras.
 
-```id="b6p35y"
+\`\`\`id="b6p35y"
 accounts
 
 id
@@ -55,16 +55,16 @@ name
 type
 currency
 created_at
-```
+\`\`\`
 
 Exemplos de type:
 
-```id="3r71og"
+\`\`\`id="3r71og"
 checking
 credit_card
 cash
 investment
-```
+\`\`\`
 
 ---
 
@@ -72,7 +72,7 @@ investment
 
 Evento financeiro.
 
-```id="c7xjyd"
+\`\`\`id="c7xjyd"
 transactions
 
 id
@@ -80,7 +80,7 @@ user_id
 date
 description
 created_at
-```
+\`\`\`
 
 Uma transação pode ter **várias linhas financeiras**.
 
@@ -90,7 +90,7 @@ Uma transação pode ter **várias linhas financeiras**.
 
 Aqui fica o dinheiro real.
 
-```id="mkkjze"
+\`\`\`id="mkkjze"
 transaction_lines
 
 id
@@ -98,28 +98,28 @@ transaction_id
 account_id
 category_id
 amount
-```
+\`\`\`
 
 Exemplo.
 
 Compra de supermercado:
 
-```id="cfq2d7"
+\`\`\`id="cfq2d7"
 transaction
 
 description = supermercado
 date = 2026-03-10
-```
+\`\`\`
 
 Linhas:
 
-```id="ap5f21"
+\`\`\`id="ap5f21"
 account: checking
 amount: -120
 
 account: expenses
 amount: +120
-```
+\`\`\`
 
 Saldo sempre fecha.
 
@@ -129,22 +129,22 @@ Saldo sempre fecha.
 
 Categorias de gasto.
 
-```id="3gj7j6"
+\`\`\`id="3gj7j6"
 categories
 
 id
 user_id
 name
 type
-```
+\`\`\`
 
 Tipos:
 
-```id="ek9zhb"
+\`\`\`id="ek9zhb"
 expense
 income
 transfer
-```
+\`\`\`
 
 ---
 
@@ -152,23 +152,23 @@ transfer
 
 Agrupamento de categorias.
 
-```id="yfhwh8"
+\`\`\`id="yfhwh8"
 category_groups
 
 id
 user_id
 name
 order_index
-```
+\`\`\`
 
 Exemplo:
 
-```id="h9u4a4"
+\`\`\`id="h9u4a4"
 housing
 transport
 food
 subscriptions
-```
+\`\`\`
 
 ---
 
@@ -176,7 +176,7 @@ subscriptions
 
 Orçamento por categoria.
 
-```id="d57qiv"
+\`\`\`id="d57qiv"
 budgets
 
 id
@@ -184,15 +184,15 @@ user_id
 category_id
 month
 amount
-```
+\`\`\`
 
 Exemplo:
 
-```id="h7r84x"
+\`\`\`id="h7r84x"
 food
 2026-03
 1000
-```
+\`\`\`
 
 ---
 
@@ -200,22 +200,22 @@ food
 
 Pagador ou recebedor.
 
-```id="38f8au"
+\`\`\`id="38f8au"
 contacts
 
 id
 user_id
 name
 type
-```
+\`\`\`
 
 Tipos:
 
-```id="yxm6n4"
+\`\`\`id="yxm6n4"
 merchant
 person
 company
-```
+\`\`\`
 
 ---
 
@@ -225,21 +225,21 @@ Seu MMX tem `areas`.
 
 Isso pode representar:
 
-```id="qbyq63"
+\`\`\`id="qbyq63"
 family
 personal
 business
-```
+\`\`\`
 
 Tabela:
 
-```id="2tqk8s"
+\`\`\`id="2tqk8s"
 areas
 
 id
 user_id
 name
-```
+\`\`\`
 
 Accounts e transactions podem referenciar.
 
@@ -251,20 +251,20 @@ Relatórios não precisam de tabela.
 
 Eles derivam de:
 
-```id="jqsmkl"
+\`\`\`id="jqsmkl"
 transactions
 transaction_lines
 categories
-```
+\`\`\`
 
 Exemplo cashflow.
 
 Query:
 
-```id="3ar1p8"
+\`\`\`id="3ar1p8"
 sum(amount)
 group by month
-```
+\`\`\`
 
 ---
 
@@ -272,7 +272,7 @@ group by month
 
 Para performance.
 
-```id="9q9v9x"
+\`\`\`id="9q9v9x"
 transactions(user_id, date)
 
 transaction_lines(account_id)
@@ -280,7 +280,7 @@ transaction_lines(account_id)
 transaction_lines(category_id)
 
 budgets(user_id, month)
-```
+\`\`\`
 
 ---
 
@@ -290,15 +290,15 @@ Nunca deletar transações.
 
 Use:
 
-```id="o1m8bt"
+\`\`\`id="o1m8bt"
 soft delete
-```
+\`\`\`
 
 ou
 
-```id="y4o1yr"
+\`\`\`id="y4o1yr"
 reversal transaction
-```
+\`\`\`
 
 Isso preserva histórico financeiro.
 
@@ -308,17 +308,17 @@ Isso preserva histórico financeiro.
 
 Saldo de conta.
 
-```id="b5ss8d"
+\`\`\`id="b5ss8d"
 SELECT SUM(amount)
 FROM transaction_lines
 WHERE account_id = ?
-```
+\`\`\`
 
 ---
 
 # 15. estrutura final de banco para MMX
 
-```id="o9x0ae"
+\`\`\`id="o9x0ae"
 users
 
 accounts
@@ -334,7 +334,7 @@ budgets
 contacts
 
 areas
-```
+\`\`\`
 
 ---
 

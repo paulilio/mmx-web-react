@@ -19,7 +19,7 @@ Alem disso, gerar as descricoes abaixo para o usuario copiar.
 ## Output Templates
 
 ### PR Description
-```markdown
+\`\`\`markdown
 ## Summary
 [1-3 bullet points do que foi feito]
 
@@ -37,10 +37,10 @@ Alem disso, gerar as descricoes abaixo para o usuario copiar.
 ## Related
 - Task: TK-XXX
 - Jira: [ticket se houver]
-```
+\`\`\`
 
 ### Jira Comment
-```markdown
+\`\`\`markdown
 ## O que foi feito
 [Resumo curto das mudancas — 2-3 frases]
 
@@ -52,4 +52,4 @@ Alem disso, gerar as descricoes abaixo para o usuario copiar.
 
 ## Proximos passos
 - [Pendencias ou acoes futuras, se houver]
-```
+\`\`\`

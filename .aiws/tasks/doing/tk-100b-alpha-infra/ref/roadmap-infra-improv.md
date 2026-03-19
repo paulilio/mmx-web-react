@@ -11,13 +11,13 @@ Convergir o MMX para arquitetura com frontend e backend separados, sem quebrar o
 
 Fluxo alvo:
 
-```text
+\`\`\`text
 Browser
   -> mmx-web-react
   -> HTTP REST
   -> mmx-api
   -> PostgreSQL
-```
+\`\`\`
 
 ## Fases
 

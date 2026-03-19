@@ -29,7 +29,7 @@ Its main goal is to ensure that **when a problem occurs, enough evidence exists 
 
 The monitoring system is organized under the **monitor** directory.
 
-```text
+\`\`\`text
 config
 │   app-config.json
 │   monitor.config.json
@@ -64,7 +64,7 @@ monitor
     ├─ evidence.js
     ├─ report.js
     └─ runner.js
-```
+\`\`\`
 
 Key areas:
 
