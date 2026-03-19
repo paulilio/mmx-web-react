@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: '.',
+  },
   typescript: {
     // Never bypass TypeScript errors during build.
     ignoreBuildErrors: false,
