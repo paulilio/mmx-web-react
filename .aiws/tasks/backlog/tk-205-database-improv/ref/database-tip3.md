@@ -14,19 +14,19 @@ Cada mês tem um **pool de dinheiro disponível**.
 
 Exemplo:
 
-```id="n4oyay"
+\`\`\`id="n4oyay"
 Saldo disponível no mês: 5000
-```
+\`\`\`
 
 Distribuição:
 
-```id="oh7sy7"
+\`\`\`id="oh7sy7"
 Food: 1000
 Transport: 600
 Rent: 2000
 Subscriptions: 200
 Savings: 1200
-```
+\`\`\`
 
 Isso cria **envelopes financeiros**.
 
@@ -36,7 +36,7 @@ Isso cria **envelopes financeiros**.
 
 Modelo recomendado.
 
-```sql id="cdspop"
+\`\`\`sql id="cdspop"
 budget_months
 
 id
@@ -45,16 +45,16 @@ month
 income_planned
 income_received
 created_at
-```
+\`\`\`
 
 Exemplo:
 
-```id="nqkjsa"
+\`\`\`id="nqkjsa"
 user_id = 1
 month = 2026-03
 income_planned = 5000
 income_received = 4800
-```
+\`\`\`
 
 ---
 
@@ -62,7 +62,7 @@ income_received = 4800
 
 Define quanto cada categoria recebe.
 
-```sql id="cfjz0p"
+\`\`\`sql id="cfjz0p"
 budget_allocations
 
 id
@@ -70,15 +70,15 @@ budget_month_id
 category_id
 planned_amount
 created_at
-```
+\`\`\`
 
 Exemplo:
 
-```id="dnmdja"
+\`\`\`id="dnmdja"
 Food = 1000
 Transport = 600
 Subscriptions = 200
-```
+\`\`\`
 
 ---
 
@@ -88,7 +88,7 @@ Consumo vem das transações.
 
 Query:
 
-```sql id="s3c5p3"
+\`\`\`sql id="s3c5p3"
 SELECT
 category_id,
 SUM(amount)
@@ -96,7 +96,7 @@ FROM transaction_lines
 WHERE category_id IS NOT NULL
 AND date BETWEEN month_start AND month_end
 GROUP BY category_id
-```
+\`\`\`
 
 ---
 
@@ -104,20 +104,20 @@ GROUP BY category_id
 
 Fórmula:
 
-```id="ljuflu"
+\`\`\`id="ljuflu"
 remaining =
 planned_amount
 - expenses_in_month
-```
+\`\`\`
 
 Exemplo:
 
-```id="61dhts"
+\`\`\`id="61dhts"
 Food planned = 1000
 Food spent = 650
 
 Remaining = 350
-```
+\`\`\`
 
 ---
 
@@ -127,24 +127,24 @@ YNAB usa carry over automático.
 
 Se sobrar:
 
-```id="qotbif"
+\`\`\`id="qotbif"
 Food remaining = 200
-```
+\`\`\`
 
 Mês seguinte:
 
-```id="71fag5"
+\`\`\`id="71fag5"
 Food available = planned + carry_over
-```
+\`\`\`
 
 Exemplo:
 
-```id="hx7r5r"
+\`\`\`id="hx7r5r"
 planned = 1000
 carry_over = 200
 
 available = 1200
-```
+\`\`\`
 
 ---
 
@@ -152,7 +152,7 @@ available = 1200
 
 Adicionando ao schema anterior.
 
-```prisma id="r3w5x7"
+\`\`\`prisma id="r3w5x7"
 model BudgetMonth {
   id             String   @id @default(uuid())
   userId         String
@@ -165,11 +165,11 @@ model BudgetMonth {
 
   allocations    BudgetAllocation[]
 }
-```
+\`\`\`
 
 ---
 
-```prisma id="sb2ibg"
+\`\`\`prisma id="sb2ibg"
 model BudgetAllocation {
   id            String   @id @default(uuid())
   budgetMonthId String
@@ -180,7 +180,7 @@ model BudgetAllocation {
   budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
   category      Category    @relation(fields: [categoryId], references: [id])
 }
-```
+\`\`\`
 
 ---
 
@@ -188,7 +188,7 @@ model BudgetAllocation {
 
 Exemplo simplificado.
 
-```sql id="vwsu7y"
+\`\`\`sql id="vwsu7y"
 SELECT
 c.name,
 b.planned_amount,
@@ -198,7 +198,7 @@ JOIN categories c ON c.id = b.category_id
 LEFT JOIN transaction_lines t
   ON t.category_id = c.id
 GROUP BY c.name, b.planned_amount
-```
+\`\`\`
 
 ---
 
@@ -212,16 +212,16 @@ Evita problemas clássicos:
 
 Tudo deriva de:
 
-```id="htl8m5"
+\`\`\`id="htl8m5"
 transactions
 budget_allocations
-```
+\`\`\`
 
 ---
 
 # 10. Estrutura final recomendada do banco MMX
 
-```id="ifhx0c"
+\`\`\`id="ifhx0c"
 users
 
 areas
@@ -238,7 +238,7 @@ budget_months
 budget_allocations
 
 contacts
-```
+\`\`\`
 
 ---
 
@@ -246,12 +246,12 @@ contacts
 
 Com esse modelo:
 
-```id="r45w1q"
+\`\`\`id="r45w1q"
 cashflow
 spending by category
 budget vs actual
 aging
-```
+\`\`\`
 
 ficam simples.
 
@@ -265,9 +265,9 @@ Nunca float.
 
 Exemplo:
 
-```id="hyupnp"
+\`\`\`id="hyupnp"
 Decimal(12,2)
-```
+\`\`\`
 
 Evita erros de arredondamento.
 

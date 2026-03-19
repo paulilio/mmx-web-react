@@ -1,13 +1,13 @@
 # AGENTS — Manual Operacional para IAs
 
 ## Ordem de Leitura
-```
+\`\`\`
 1. .ai/AGENTS.md          ← voce esta aqui
 2. .ai/SYSTEM.md
 3. .ai/CODEBASE_MAP.md
 4. Task file (se aplicavel)
 5. .ai/CONTEXT_SURFACES.md ← avaliar impacto depois de saber o que vai mudar
-```
+\`\`\`
 
 ## Regras Operacionais
 - Siga convencoes de naming, estrutura e estilo do repositorio.
@@ -70,18 +70,18 @@
 
 ## Validation Checklist
 Before finalizing any change:
-```
+\`\`\`
 pnpm test:unit
 pnpm test:integration
 pnpm lint
 pnpm type-check
 pnpm build
 pnpm validate:env -- --env=development
-```
+\`\`\`
 For release/hardening:
-```
+\`\`\`
 pnpm validate:env -- --env=production
-```
+\`\`\`
 
 ## Documentation Governance
 When changes affect architecture, contracts, security, or runtime:

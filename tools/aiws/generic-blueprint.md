@@ -21,7 +21,7 @@ A arquitetura separa tres camadas:
 
 # Estrutura Geral
 
-```text
+\`\`\`text
 repo/
   .ai/                          ← Context Kernel (versionado, agnostico de AI)
     AGENTS.md                   ← Regras operacionais para qualquer AI
@@ -43,7 +43,7 @@ repo/
     README.md                   ← Indice navegavel (lido automaticamente por AI e GitHub)
     adr/                        ← Architecture Decision Records
     ...
-```
+\`\`\`
 
 ---
 
@@ -106,7 +106,7 @@ Ficam dentro de `.ai/` — nome agnostico, funciona com qualquer ferramenta de I
 Manual operacional da IA. Define como agentes devem trabalhar no projeto.
 
 ## Conteudo recomendado
-```
+\`\`\`
 Engineering Principles
 Context Reading Order
 Code Change Rules
@@ -117,16 +117,16 @@ Validation Checklist
 Documentation Governance
 Workspace Operacional (.aiws/)
 Comandos (.ai/commands/)
-```
+\`\`\`
 
 ## Ordem de leitura da IA
-```
+\`\`\`
 1. .ai/AGENTS.md            ← regras de como trabalhar
 2. .ai/SYSTEM.md            ← entender o sistema
 3. .ai/CODEBASE_MAP.md      ← localizar o codigo
 4. Task file (se aplicavel)  ← entender o que fazer
 5. .ai/CONTEXT_SURFACES.md  ← avaliar impacto do que vai mudar
-```
+\`\`\`
 A task vem antes das surfaces para que a AI saiba o que vai alterar antes de avaliar impacto.
 
 ## Limite recomendado
@@ -141,7 +141,7 @@ Explica o sistema em nivel conceitual.
 Responde: qual o objetivo, como a arquitetura funciona, quais os principais componentes.
 
 ## Conteudo recomendado
-```
+\`\`\`
 Purpose
 Architecture Overview
 Main Components
@@ -150,7 +150,7 @@ Tech Stack
 Environment Variables
 Constraints
 Known Limitations
-```
+\`\`\`
 
 ## Limite recomendado
 150-200 linhas. Detalhes arquiteturais profundos vao em `docs/architecture/`.
@@ -164,7 +164,7 @@ Mapa modular do codigo. Ajuda a IA a localizar rapidamente onde cada funcionalid
 E o arquivo com maior impacto em qualidade de resposta da AI — priorizá-lo reduz 80% dos erros de localizacao.
 
 ## Estrutura recomendada por modulo
-```
+\`\`\`
 ## Module: [nome]
 Purpose: [descricao curta]
 Core files:
@@ -175,16 +175,16 @@ Dependencies:
   - [modulos dos quais depende]
 Tests:
   - tests/module/
-```
+\`\`\`
 
 ## Critical Paths
 Secao no final do CODEBASE_MAP que descreve fluxos end-to-end do sistema.
 Ajuda a AI a entender quem chama quem em cenarios reais.
-```
+\`\`\`
 User login flow:
   frontend/login → hooks/use-auth → lib/api.ts
   → api/auth/controller → use-case → domain → database
-```
+\`\`\`
 
 ## Regras
 - Organizar por modulos funcionais (nao por estrutura de pastas)
@@ -206,7 +206,7 @@ Define superficies de impacto de mudanca.
 Ajuda a prever quais partes do sistema podem ser afetadas por uma alteracao.
 
 ## Estrutura recomendada por surface
-```
+\`\`\`
 ## [Nome] Surface
 Core files:
   - path/to/files
@@ -214,7 +214,7 @@ Adjacent surfaces:
   - [surface relacionada]
 Risk level: High | Medium | Low
 Notes: [contexto adicional]
-```
+\`\`\`
 
 ## Limite recomendado
 Apenas superficies criticas. Se crescer muito, revisar se nao ha sobreposicao com CODEBASE_MAP.
@@ -226,12 +226,12 @@ Apenas superficies criticas. Se crescer muito, revisar se nao ha sobreposicao co
 Biblioteca de comandos reutilizaveis. Cada task seleciona os comandos aplicaveis no Plan — nao ha pipeline fixo.
 
 ## Formato de cada comando (agnostico de AI)
-```
+\`\`\`
 # command-name
 ## Description — o que faz (uma frase)
 ## Steps — passos que a AI executa
 ## Output — o que a AI produz ao final
-```
+\`\`\`
 
 ## Comandos base recomendados
 
@@ -252,21 +252,21 @@ Biblioteca de comandos reutilizaveis. Cada task seleciona os comandos aplicaveis
 O comando `ship` gera descricoes prontas para copiar:
 
 **PR Description:**
-```
+\`\`\`
 ## Summary — bullet points do que foi feito
 ## Changes — lista de mudancas
 ## Code Surface — arquivos modificados
 ## Testing — checklist de testes
 ## Related — task e ticket Jira
-```
+\`\`\`
 
 **Jira / Issue Comment:**
-```
+\`\`\`
 ## O que foi feito — resumo curto
 ## Detalhes tecnicos — mudancas relevantes
 ## PR — link
 ## Proximos passos — pendencias
-```
+\`\`\`
 
 ---
 
@@ -301,25 +301,25 @@ Esse chat serve para:
 3. O chat ja conhece o sistema e o time — voce chega e pergunta direto
 
 **Estrutura recomendada do prompt:**
-```
+\`\`\`
 Contexto do projeto — o que e o sistema, stack, modulos principais
 Time — papeis relevantes (product, tech lead, qa, dev, scrum master)
 Ferramentas — Jira, Azure DevOps, GitHub, etc.
 Para que uso — tipos de duvidas e interacoes esperadas
 Como ajudar — tom, formato de resposta, nivel de detalhe
-```
+\`\`\`
 
 O arquivo e independente — nao e lido por nenhuma ferramenta automaticamente. E apenas um artefato salvo em `references/` para voce encontrar quando precisar recriar o chat.
 
 ## Estrutura de uma ponte
-```markdown
+\`\`\`markdown
 # Context
 Read these files in order before any task:
 1. .ai/AGENTS.md
 2. .ai/SYSTEM.md
 3. .ai/CODEBASE_MAP.md
 4. .ai/CONTEXT_SURFACES.md
-```
+\`\`\`
 
 **Principio: uma fonte (.ai/), multiplos ponteiros. Zero duplicacao de conteudo entre ferramentas.**
 
@@ -342,7 +342,7 @@ Quando presente, qualquer AI interpreta `/comando` como instrucao para ler `.ai/
 
 Concentra o trabalho em andamento. Pode ser versionado, ignorado pelo git, ou mantido localmente — depende da preferencia do time.
 
-```
+\`\`\`
 .aiws/
   tasks/              ← tarefas (ativas, backlog, done) — UMA PASTA POR TASK
     backlog/          ← planejadas, ainda nao iniciadas
@@ -351,7 +351,7 @@ Concentra o trabalho em andamento. Pode ser versionado, ignorado pelo git, ou ma
   runs/               ← historico de execucao — o que foi feito em cada sessao de trabalho
   references/         ← referencias externas, guias, prompts de AI, docs de produto
   templates/          ← templates obrigatorios — copiar daqui ao criar artefatos novos
-```
+\`\`\`
 
 **Regra de governanca:** estas sao as unicas pastas validas em `.aiws/`. Nao criar pastas fora desta estrutura.
 Se uma informacao nao se encaixa em nenhuma pasta, verificar:
@@ -370,7 +370,7 @@ Subpastas dentro de cada uma dessas sao criadas conforme necessidade — nao ant
 Toda task fica em uma **pasta propria** dentro de `tasks/`, independente da complexidade.
 As pastas `backlog/` e `done/` sao criadas quando necessario.
 
-```
+\`\`\`
 tasks/
   backlog/                   ← tasks planejadas, ainda nao iniciadas
     tk-007-nome/
@@ -392,13 +392,13 @@ tasks/
       2-plan.md
       3-spec.md
       4-execute.md
-```
+\`\`\`
 
 A numeracao como prefixo garante ordenacao natural dos arquivos dentro da pasta.
 
 ### Task simples — 1-task.md
 Template em `.aiws/templates/task.md`. Secoes:
-```
+\`\`\`
 Type           — feature | bugfix | spike | refactor | chore
 Objective      — uma frase, o que precisa ser feito
 Context        — por que precisa ser feito, links para references
@@ -407,7 +407,7 @@ Code Surface   — arquivos relevantes para a task
 Constraints    — restricoes que limitam a implementacao
 Validation     — como verificar que esta correto
 Definition of Done — criterios de aceite
-```
+\`\`\`
 
 ### Pipelines sugeridos por tipo
 Sao sugestoes, nao regras. Cada task adapta conforme necessidade.
@@ -427,12 +427,12 @@ Sao sugestoes, nao regras. Cada task adapta conforme necessidade.
 
 ### Code Surface
 Campo dentro da task que define os arquivos mais relevantes:
-```
+\`\`\`
 Code Surface:
   src/api/auth/loginController.ts
   src/middleware/rateLimiter.ts
   tests/auth/login.test.ts
-```
+\`\`\`
 Reduz a necessidade de explorar o repositorio inteiro.
 
 ---
@@ -450,14 +450,14 @@ Memoria tecnica do projeto. Artefatos diferenciados por prefixo no nome do arqui
 | `rev-*` | Review | `review.md` | Sob demanda — usuario quer estudar o que foi implementado |
 
 ### Regra de decisao (usada no task-done)
-```
+\`\`\`
 Foi dificil entender? Exigiu investigacao?     → inv-*
 Explica como o sistema funciona?               → con-*
 Pode ser reutilizado como padrao?              → pat-*
 Houve escolha entre opcoes com trade-off?      → dec-*
 Usuario pediu revisao do que foi implementado? → rev-*
 Nenhuma condicao verdadeira?                   → nao gerar documento
-```
+\`\`\`
 
 ---
 
@@ -466,14 +466,14 @@ Nenhuma condicao verdadeira?                   → nao gerar documento
 Historico de execucao de tarefas. Nome sugerido: `YYYY-MM-DD-nome-da-task.md`
 
 Conteudo tipico:
-```
+\`\`\`
 Task
 Plan
 Files modified
 Tests executed
 Result
 Next steps
-```
+\`\`\`
 
 ---
 
@@ -517,7 +517,7 @@ A pasta `docs/` complementa o Context Kernel com documentacao mais profunda.
 
 ## Estrutura recomendada
 
-```
+\`\`\`
 docs/
   README.md                     ← Indice navegavel — sempre atualizado
   system-overview.md            ← Onboarding tecnico detalhado
@@ -529,7 +529,7 @@ docs/
     README.md
     0001-*.md
     ...
-```
+\`\`\`
 
 ## README.md como indice
 
@@ -558,9 +558,9 @@ O workspace suporta tres modelos de colaboracao com IA. Escolha o modelo conform
 **Papel humano:** revisar em 3 momentos — plano, spec, resultado final. Intervir no codigo apenas para ajustes pequenos.
 
 **Pipeline:**
-```
+\`\`\`
 start-task → analyze-task → [revisar plano] → spec-review → [revisar spec] → write-tests → regression-check → [revisar resultado] → task-done → ship
-```
+\`\`\`
 
 **O que a IA faz:** entende o sistema, planeja, gera spec, implementa, valida.
 **O que voce faz:** define o objetivo, aprova plano e spec, revisa resultado final.
@@ -576,9 +576,9 @@ start-task → analyze-task → [revisar plano] → spec-review → [revisar spe
 **Papel humano:** lidera decisoes, a IA executa e sugere. Dialogo continuo — um nao lidera, constroem juntos.
 
 **Pipeline:**
-```
+\`\`\`
 start-task → task-plan → [discussao e refinamento conjunto] → implementacao iterativa → regression-check → task-done → ship
-```
+\`\`\`
 
 **Quando migrar para AI-driven:** quando o objetivo ficar claro e a spec puder ser escrita. A partir dai, delegar a execucao.
 
@@ -591,9 +591,9 @@ start-task → task-plan → [discussao e refinamento conjunto] → implementaca
 **Papel humano:** define o que fazer, quando fazer e como avaliar. IA e uma ferramenta de apoio.
 
 **Pipeline:**
-```
+\`\`\`
 start-task → [voce define etapas] → IA executa passo a passo → task-done
-```
+\`\`\`
 
 **Casos tipicos:**
 - "Leia esses 3 arquivos e me explique como esse fluxo funciona"
@@ -604,12 +604,12 @@ start-task → [voce define etapas] → IA executa passo a passo → task-done
 
 ## Como escolher o modelo
 
-```
+\`\`\`
 Objetivo claro + task bem definida?     → AI-driven
 Objetivo claro, mas arquitetura aberta? → Pair Programming
 Objetivo ainda sendo formado?           → AI como Assistente
 Spike ou investigacao?                  → AI como Assistente
-```
+\`\`\`
 
 Os modelos nao sao exclusivos — uma task pode comecar como Assistente (levantar opcoes), virar Pair (decidir abordagem) e terminar como AI-driven (implementacao com spec).
 
@@ -619,7 +619,7 @@ Os modelos nao sao exclusivos — uma task pode comecar como Assistente (levanta
 
 ## Ciclo de vida de uma task
 
-```
+\`\`\`
 ANTES
   1. Criar tarefa              → tasks/tk-XXX-nome.md (template: task.md)
   2. AI le o contexto          → .ai/AGENTS.md → SYSTEM.md → MAP → task → SURFACES
@@ -637,7 +637,7 @@ DEPOIS
 
 SOB DEMANDA (usuario pede)
   10. Revisar o que foi feito  → knowledge/rev-*.md (template: review.md)
-```
+\`\`\`
 
 ## Quando cada artefato nasce
 
@@ -668,12 +668,12 @@ Quando crescem demais, deixam de ser mapas e viram documentacao pesada — reduz
 
 Se um arquivo ultrapassar o limite, a solucao e extrair detalhes para `docs/` — nao expandir o kernel.
 
-```
+\`\`\`
 SYSTEM.md             ← resumo da arquitetura (kernel)
 docs/architecture/    ← detalhes extraidos
   auth-architecture.md
   billing-architecture.md
-```
+\`\`\`
 
 ## Quando compactar
 
@@ -757,11 +757,11 @@ AGENTS.md e CODEBASE_MAP desatualizados fazem a AI trabalhar com mapa errado.
 6. **Menos automacao, mais contexto** — IA forte + documentacao clara + workflow simples
 
 ## Quando a AI erra, onde mexer primeiro
-```
+\`\`\`
 1. Melhorar CODEBASE_MAP.md    ← 80% dos problemas sao "AI nao achou o codigo certo"
 2. Melhorar AGENTS.md          ← AI nao seguiu as regras
 3. Melhorar a task              ← contexto, escopo ou Code Surface insuficiente
-```
+\`\`\`
 Antes de criar agentes, pipelines ou automacoes complexas, resolver nessa ordem.
 
 ---
@@ -813,14 +813,14 @@ Criar estrutura especulativa gera documentacao morta, consome tokens e aumenta m
 - Dificil encontrar um doc especifico pelo prefixo
 - Time cresceu e precisa de navegacao mais estruturada
 **Como ficaria:**
-```
+\`\`\`
 knowledge/
   KNOWLEDGE_INDEX.md
   investigations/
   concepts/
   patterns/
   decisions/
-```
+\`\`\`
 
 ## Mapa de Runtime
 **O que e:** Descreve como o sistema roda em producao — containers, portas, networking, volumes, deploy.
@@ -862,13 +862,13 @@ knowledge/
 - Multiplos modulos dependem de contratos compartilhados
 - Backend e frontend evoluem em paralelo com risco de divergencia
 **Como ficaria:**
-```
+\`\`\`
 docs/api-contracts.md    ← faz parte da documentacao
-```
+\`\`\`
 Ou, se precisar que a AI carregue automaticamente:
-```
+\`\`\`
 .ai/CONTRACTS.md         ← parte do kernel
-```
+\`\`\`
 **Diferenca do CONTEXT_SURFACES.md:** CONTRACTS define *o que nao pode mudar* (contrato formal). CONTEXT_SURFACES define *o que pode ser afetado* (impacto de mudanca).
 
 ## Cockpit Layer — Paineis operacionais da IA
@@ -878,11 +878,11 @@ Ou, se precisar que a AI carregue automaticamente:
 - AI precisa saber o que esta em andamento sem listar a pasta de tasks
 - Times maiores onde a visao do "agora" muda com frequencia
 **Como ficaria:**
-```
+\`\`\`
 .ai/cockpit/
   project-map.md    ← modulos e localizacao (complementa CODEBASE_MAP)
   task-board.md     ← tasks ativas no momento
-```
+\`\`\`
 **Nota:** `project-map.md` e `module-map.md` sao cobertos pelo nosso CODEBASE_MAP.md. So o `task-board.md` traria valor adicional real.
 
 ## Contexto Modular — .ai/context/
@@ -892,13 +892,13 @@ Ou, se precisar que a AI carregue automaticamente:
 - Projeto com multiplos times que precisam de contextos distintos (frontend, backend, infra)
 - AI comeca a ignorar regras por excesso de contexto no mesmo arquivo
 **Como ficaria:**
-```
+\`\`\`
 .ai/context/
   architecture.md     ← regras de arquitetura
   coding-rules.md     ← convencoes de codigo
   testing-rules.md    ← regras de testes
   api-rules.md        ← regras de API e contratos
-```
+\`\`\`
 AGENTS.md vira orquestrador leve que aponta para os arquivos de contexto.
 
 ## ~~Task Capsules~~ — Implementado
@@ -912,16 +912,16 @@ Toda task agora usa pasta propria. Ver secao `tasks/` acima para detalhes da est
 - Sistema tem 15+ modulos com responsabilidades distintas
 - AI frequentemente confunde modulos ou navega pelo repo antes de responder
 **Como ficaria:**
-```
+\`\`\`
 .ai/SYSTEM_MAP.md    ← parte do kernel, carregado automaticamente
-```
+\`\`\`
 Conteudo por modulo:
-```
+\`\`\`
 ## [modulo]
 Location: src/path/
 Responsibility: [descricao curta]
 Dependencies: [modulos dos quais depende]
-```
+\`\`\`
 **Diferenca do CODEBASE_MAP:** SYSTEM_MAP e mais enxuto — sem entry points, tests ou critical paths. So o essencial para a AI localizar e entender cada modulo rapidamente.
 
 ## CODE_KNOWLEDGE — Regras de negocio que nao aparecem no codigo
@@ -931,21 +931,21 @@ Dependencies: [modulos dos quais depende]
 - AI frequentemente viola regras de negocio ao gerar codigo
 - Onboarding de novos membros exige explicar "por que" alem do "como"
 **Como ficaria:**
-```
+\`\`\`
 docs/code-knowledge.md    ← documentacao consultada sob demanda
-```
+\`\`\`
 Ou, se precisar que a AI carregue automaticamente em toda sessao:
-```
+\`\`\`
 .ai/CODE_KNOWLEDGE.md     ← parte do kernel
-```
+\`\`\`
 Estrutura por modulo:
-```
+\`\`\`
 ## [Modulo]
 Regra: [descricao]
 Localizacao: src/path/arquivo.ts
 Metodos relevantes: [lista]
 Notas: [contexto adicional, armadilhas]
-```
+\`\`\`
 **Diferenca do CONTRACTS.md:** CONTRACTS define interfaces/assinaturas que nao podem mudar. CODE_KNOWLEDGE registra regras de negocio e comportamentos — e mais amplo e orientado ao dominio.
 
 ## Capability Layer — Funcionalidades do produto para AI
@@ -956,15 +956,15 @@ Notas: [contexto adicional, armadilhas]
 - Produto com 10+ features distintas com regras proprias
 - Time de produto e time tecnico usam vocabulario diferente
 **Como ficaria:**
-```
+\`\`\`
 capabilities/
   billing.md
   auth.md
   reports.md
   budget.md
-```
+\`\`\`
 Estrutura de cada arquivo:
-```
+\`\`\`
 ## Capability: [nome]
 Purpose: [o que essa funcionalidade entrega ao usuario]
 Actors: [quem usa]
@@ -973,7 +973,7 @@ Backend location: src/...
 Frontend location: src/...
 Important rules: [regras criticas]
 Related modules: [modulos envolvidos]
-```
+\`\`\`
 **Diferenca do SYSTEM.md:** SYSTEM.md descreve arquitetura tecnica. Capabilities descrevem funcionalidades do produto — o vocabulario do negocio.
 
 ## Regra geral

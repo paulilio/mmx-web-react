@@ -16,13 +16,13 @@ A referencia normativa e o ADR 0012:
 
 ## Topologia de servicos
 
-```text
+\`\`\`text
 Browser
   -> mmx-web-react (frontend)
   -> HTTP REST
   -> mmx-api (backend dedicado)
   -> PostgreSQL
-```
+\`\`\`
 
 ## Fronteiras de camada
 

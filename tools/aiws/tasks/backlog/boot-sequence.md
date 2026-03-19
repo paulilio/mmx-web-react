@@ -6,9 +6,9 @@ Criar um arquivo `.ai/boot-sequence.md` que define a sequência exata de carrega
 
 ## Estrutura proposta
 
-```
+\`\`\`
 .ai/boot-sequence.md
-```
+\`\`\`
 
 Sequência:
 1. Carregar AGENTS.md (regras operacionais)

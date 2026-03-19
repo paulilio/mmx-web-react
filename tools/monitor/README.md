@@ -57,7 +57,7 @@ Checklist de monitoramento da Phase 1 (agora validado no relatorio):
 
 ## Estrutura De Pastas
 
-```text
+\`\`\`text
 config/                          # Configuracao centralizada (raiz)
 |-- app-config.json
 `-- monitor.config.json
@@ -86,7 +86,7 @@ runtime/
 |-- synthetic-tests/             # Roadmap testes sinteticos
 |-- ai-agents/                   # Roadmap IA
 `-- dashboards/                  # Roadmap visualizacao
-```
+\`\`\`
 
 ---
 
@@ -94,40 +94,40 @@ runtime/
 
 Pre-requisito (se necessario):
 
-```bash
+\`\`\`bash
 pnpm exec playwright install chromium
-```
+\`\`\`
 
 1. Subir a aplicacao:
 
-```bash
+\`\`\`bash
 pnpm dev
-```
+\`\`\`
 
 2. Rodar monitor (outro terminal):
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js
-```
+\`\`\`
 
 Overrides uteis:
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js --startPath /transactions
 node monitor/engine/runner.js --baseUrl http://localhost:3000 --startPath /dashboard
-```
+\`\`\`
 
 Probe de validacao (forca 404):
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js --startPath /monitor-probe-404
-```
+\`\`\`
 
 Probe dedicado da Phase 1 (console + pageerror + http-error com x-request-id):
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js --startPath /monitor-probe-phase1
-```
+\`\`\`
 
 ### Execucao via Docker
 
@@ -135,15 +135,15 @@ Com stack dev em Docker, o servico `monitor` executa em loop automaticamente.
 
 Subir stack:
 
-```bash
+\`\`\`bash
 pnpm docker:dev:up
-```
+\`\`\`
 
 Ver logs do monitor:
 
-```bash
+\`\`\`bash
 pnpm docker:dev:logs:monitor
-```
+\`\`\`
 
 No compose, o monitor usa:
 
@@ -176,9 +176,9 @@ Passos:
 1. Suba o app local com `pnpm dev`.
 2. Execute o monitor com base local:
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js --baseUrl http://localhost:3000 --startPath /dashboard
-```
+\`\`\`
 
 ### Modo Remoto (staging/producao)
 
@@ -193,15 +193,15 @@ Passos:
 1. Confirme a URL alvo (exemplo: staging ou producao).
 2. Execute o monitor apontando para o servidor remoto:
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js --baseUrl https://seu-dominio.com --startPath /dashboard
-```
+\`\`\`
 
 Exemplo com rota especifica:
 
-```bash
+\`\`\`bash
 node monitor/engine/runner.js --baseUrl https://seu-dominio.com --startPath /transactions
-```
+\`\`\`
 
 ### Checklist Para Execucao Remota
 

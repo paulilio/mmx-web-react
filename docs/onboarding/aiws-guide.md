@@ -27,19 +27,19 @@ O v0 nao suporta comandos — usar apenas para geracao de UI e componentes front
 
 # Validacao obrigatoria antes de finalizar qualquer task
 
-```bash
+\`\`\`bash
 pnpm test:unit
 pnpm test:integration
 pnpm lint
 pnpm type-check
 pnpm build
 pnpm validate:env -- --env=development
-```
+\`\`\`
 
 Para release/hardening:
-```bash
+\`\`\`bash
 pnpm validate:env -- --env=production
-```
+\`\`\`
 
 ---
 
@@ -77,11 +77,11 @@ Para um humano novo no projeto:
 4. Este documento — como trabalhar com AI no MMX
 
 Para uma AI nova (qualquer ferramenta):
-```
+\`\`\`
 Leia em ordem:
 1. .ai/AGENTS.md
 2. .ai/SYSTEM.md
 3. .ai/CODEBASE_MAP.md
 4. [task atual, se houver]
 5. .ai/CONTEXT_SURFACES.md
-```
+\`\`\`

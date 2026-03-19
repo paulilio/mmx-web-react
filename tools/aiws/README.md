@@ -27,17 +27,17 @@ Funciona com Claude Code, Cursor ou GitHub Copilot.
 
 Copie a pasta `tools/aiws/` para dentro do seu projeto:
 
-```
+\`\`\`
 seu-projeto/tools/aiws/
-```
+\`\`\`
 
 ### Passo 2 — Executar a instalacao via IA
 
 Abra o repositorio no editor com IA e siga as 3 etapas do arquivo de instalacao:
 
-```
+\`\`\`
 tools/aiws/commands/install.md
-```
+\`\`\`
 
 | Etapa | O que faz |
 |---|---|
@@ -49,9 +49,9 @@ tools/aiws/commands/install.md
 
 Execute os prompts em sequencia:
 
-```
+\`\`\`
 tools/aiws/commands/init-kernel.md
-```
+\`\`\`
 
 | Prompt | Arquivo gerado | Conteudo |
 |---|---|---|
@@ -63,9 +63,9 @@ tools/aiws/commands/init-kernel.md
 
 ### Passo 4 — Gerar os arquivos custom do projeto
 
-```
+\`\`\`
 tools/aiws/commands/init-custom.md
-```
+\`\`\`
 
 | Prompt | Arquivo gerado | Conteudo |
 |---|---|---|
@@ -81,7 +81,7 @@ Leia `tools/aiws/generic-guide-ops.md` para entender como criar tasks, executar 
 
 ## Conteudo deste repositorio
 
-```
+\`\`\`
 references/aiws/
   README.md                        ← este arquivo
   generic-blueprint.md             ← blueprint completo: estrutura, camadas, governanca
@@ -93,7 +93,7 @@ references/aiws/
   model/
     ai-commands/                   ← comandos base prontos para uso (.ai/commands/)
     templates/                     ← templates de task, spec, run, knowledge
-```
+\`\`\`
 
 > `references/aiws-custom/` nao faz parte deste repositorio — e gerado por projeto, conforme necessidade.
 

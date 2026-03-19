@@ -16,34 +16,34 @@ Guia de execucao com Docker para frontend e backend dedicados.
 
 ## Subir ambiente de desenvolvimento
 
-```bash
+\`\`\`bash
 pnpm docker:dev:up
 pnpm docker:dev:ps
 pnpm docker:dev:logs
-```
+\`\`\`
 
 Observacao:
 - comandos Docker usam o caminho canonico `docker/scripts/run-compose.mjs`.
 
 ## Derrubar ambiente
 
-```bash
+\`\`\`bash
 pnpm docker:dev:down
-```
+\`\`\`
 
 ## Subir ambiente de producao (self-hosted)
 
-```bash
+\`\`\`bash
 pnpm docker:prod:up
 pnpm docker:prod:ps
 pnpm docker:prod:logs
-```
+\`\`\`
 
 ## Derrubar producao
 
-```bash
+\`\`\`bash
 pnpm docker:prod:down
-```
+\`\`\`
 
 ## Variaveis relevantes
 
@@ -70,11 +70,11 @@ Saidas de runtime do monitor:
 
 ## Prisma no backend
 
-```bash
+\`\`\`bash
 cd apps/api
 pnpm db:generate
 pnpm db:migrate
-```
+\`\`\`
 
 ## Diferencas: sem Docker x com Docker
 
