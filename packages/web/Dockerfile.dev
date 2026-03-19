@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1
+
+FROM node:22-alpine
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+
+# Instala dependencias (node_modules ficam na imagem, nao sobrescritos pelo volume)
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Gera Prisma client e sobe em modo dev com HMR
+CMD ["sh", "-c", "pnpm prisma:generate && pnpm exec next dev -H 0.0.0.0"]

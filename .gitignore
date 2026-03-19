@@ -2,9 +2,23 @@
 
 # dependencies
 /node_modules
+/packages/*/node_modules
+/tools/*/node_modules
+
+# workspace build artifacts
+/packages/*/dist
+
+# workspace lockfiles (root lockfile is canonical)
+/packages/*/pnpm-lock.yaml
+
+# monorepo/cache tools
+.turbo/
+.nx/
+.pnpm-store/
 
 # next.js
 /.next/
+/packages/web/.next/
 /out/
 
 # production
@@ -16,8 +30,19 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env*
+# lint/test caches
+.eslintcache
+coverage/
+
+# env files (per-package, not tracked — only .env.example is versioned)
+packages/api/.env*
+!packages/api/.env.example
+packages/web/.env*
+!packages/web/.env.example
+
+# docker env files (versionar apenas templates .example)
+tools/docker/env/*.env
+!tools/docker/env/*.env.example
 
 # vercel
 .vercel
@@ -25,3 +50,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# pasta privada temp do dev
+.dev-workspace/*
+.ws-dev/
+
+# runtime outputs (front/api/monitor)
+runtime/**
+!runtime/**/
+!runtime/**/.gitkeep

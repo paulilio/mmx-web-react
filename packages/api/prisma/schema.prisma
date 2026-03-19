@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanType {
+  FREE
+  PREMIUM
+  PRO
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  COMPLETED
+  PENDING
+  CANCELLED
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ContactType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AreaType {
+  INCOME
+  EXPENSE
+  FIXED_EXPENSES
+  DAILY_EXPENSES
+  PERSONAL
+  TAXES_FEES
+}
+
+enum AreaStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id                    String        @id @default(cuid())
+  email                 String        @unique
+  passwordHash          String?
+  firstName             String
+  lastName              String
+  phone                 String?
+  cpfCnpj               String?
+  isEmailConfirmed      Boolean       @default(false)
+  defaultOrganizationId String?
+  planType              PlanType      @default(FREE)
+  profilePhoto          String?
+  preferences           Json?
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  transactions          Transaction[]
+  categories            Category[]
+  contacts              Contact[]
+  budgets               Budget[]
+  budgetAllocations     BudgetAllocation[]
+  areas                 Area[]
+  categoryGroups        CategoryGroup[]
+  ledgerEvents          LedgerEvent[]
+
+  @@index([email])
+}
+
+model LedgerEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType  String
+  entityType String
+  entityId   String
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@index([eventType, createdAt])
+}
+
+model CategoryGroup {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  color       String
+  icon        String
+  status      CategoryStatus @default(ACTIVE)
+  areaId      String?
+  categoryIds Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, areaId])
+}
+
+model Contact {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  email      String?
+  phone      String?
+  identifier String?
+  type       ContactType
+  status     ContactStatus @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
+}
+
+model Transaction {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description     String            @default("")
+  amount          Decimal           @db.Decimal(14, 2)
+  type            TransactionType
+  categoryId      String
+  contactId       String?
+  date            DateTime          @db.Date
+  status          TransactionStatus @default(PENDING)
+  notes           String?
+  recurrence      Json?
+  areaId          String?
+  categoryGroupId String?
+  deletedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, deletedAt, date])
+  @@index([userId, status])
+  @@index([userId, categoryId])
+}
+
+model Category {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  type            CategoryType
+  categoryGroupId String?
+  areaId          String?
+  status          CategoryStatus @default(ACTIVE)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
+  @@index([userId, categoryGroupId])
+}
+
+model Budget {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryGroupId String
+  month           Int
+  year            Int
+  planned         Decimal  @db.Decimal(14, 2)
+  funded          Decimal  @db.Decimal(14, 2)
+  spent           Decimal  @db.Decimal(14, 2) @default(0)
+  rolloverEnabled Boolean  @default(false)
+  rolloverAmount  Decimal? @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, categoryGroupId])
+  @@index([userId, month, year])
+  @@unique([userId, categoryGroupId, year, month])
+}
+
+model BudgetAllocation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetGroupId   String
+  categoryGroupId String?
+  month           String
+  plannedAmount   Decimal  @db.Decimal(14, 2)
+  fundedAmount    Decimal  @db.Decimal(14, 2)
+  spentAmount     Decimal  @db.Decimal(14, 2) @default(0)
+  availableAmount Decimal  @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, budgetGroupId])
+  @@index([userId, month])
+  @@unique([userId, budgetGroupId, month])
+}
+
+model Area {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  type        AreaType
+  color       String
+  icon        String
+  status      AreaStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
+}

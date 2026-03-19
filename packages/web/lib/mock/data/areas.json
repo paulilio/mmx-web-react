@@ -1,0 +1,42 @@
+[
+  {
+    "id": "area-1",
+    "name": "Renda",
+    "icon": "dollar-sign",
+    "color": "#10b981",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "area-2",
+    "name": "Moradia",
+    "icon": "home",
+    "color": "#3b82f6",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "area-3",
+    "name": "Alimentação",
+    "icon": "shopping-cart",
+    "color": "#f59e0b",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "area-4",
+    "name": "Transporte",
+    "icon": "car",
+    "color": "#8b5cf6",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]

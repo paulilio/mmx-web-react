@@ -1,0 +1,99 @@
+name: mmx-dev
+
+services:
+
+  backend:
+    profiles: ["split"]
+    build:
+      context: ../../..
+      dockerfile: packages/api/Dockerfile
+    image: ${MMX_API_IMAGE:-mmx-api:local}
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - ../env/app.env
+    environment:
+      - PORT=4000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-mmx}:${POSTGRES_PASSWORD:-mmx_password}@postgres:5432/${POSTGRES_DB:-mmx}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - ../env/postgres.env
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: ../../..
+      dockerfile: packages/web/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../env/app.env
+    environment:
+      # Sobrescreve DATABASE_URL para apontar para o container postgres
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-mmx}:${POSTGRES_PASSWORD:-mmx_password}@postgres:5432/${POSTGRES_DB:-mmx}?schema=public
+    volumes:
+      # Bind mount do codigo fonte para HMR
+      - ../../..:/app
+      # Preserva node_modules e .next do container (nao sobrescreve com host)
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+        required: false
+
+  monitor:
+    build:
+      context: ../../..
+      dockerfile: tools/monitor/Dockerfile.monitor
+    restart: unless-stopped
+    env_file:
+      - ../env/app.env
+    environment:
+      - MONITOR_BASE_URL=http://host.docker.internal:3000
+      - MONITOR_START_PATH=/dashboard
+      - MONITOR_INTERVAL_SECONDS=300
+      - MONITOR_PHASE1_ENABLED=true
+      - MONITOR_PHASE1_ENFORCE=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../../..:/app
+      - /app/node_modules
+    depends_on:
+      app:
+        condition: service_started
+    command:
+      - sh
+      - -c
+      - |
+        while true; do
+          node monitor/engine/runner.js --baseUrl "$$MONITOR_BASE_URL" --startPath "$$MONITOR_START_PATH"
+          sleep "$$MONITOR_INTERVAL_SECONDS"
+        done
+
+volumes:
+  postgres_dev_data:

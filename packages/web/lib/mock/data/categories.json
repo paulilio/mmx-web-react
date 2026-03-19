@@ -1,0 +1,145 @@
+[
+  {
+    "id": "cat-1",
+    "name": "Salário João",
+    "icon": "user",
+    "color": "#10b981",
+    "categoryGroupId": "group-1",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-2",
+    "name": "Salário Maria",
+    "icon": "user",
+    "color": "#10b981",
+    "categoryGroupId": "group-1",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-3",
+    "name": "13º Salário",
+    "icon": "gift",
+    "color": "#10b981",
+    "categoryGroupId": "group-1",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-4",
+    "name": "Freelance",
+    "icon": "laptop",
+    "color": "#059669",
+    "categoryGroupId": "group-2",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-5",
+    "name": "Vendas Online",
+    "icon": "shopping-bag",
+    "color": "#059669",
+    "categoryGroupId": "group-2",
+    "type": "income",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-6",
+    "name": "Aluguel",
+    "icon": "home",
+    "color": "#3b82f6",
+    "categoryGroupId": "group-3",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-7",
+    "name": "Energia Elétrica",
+    "icon": "zap",
+    "color": "#3b82f6",
+    "categoryGroupId": "group-3",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-8",
+    "name": "Água",
+    "icon": "droplets",
+    "color": "#3b82f6",
+    "categoryGroupId": "group-3",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-9",
+    "name": "Internet",
+    "icon": "wifi",
+    "color": "#3b82f6",
+    "categoryGroupId": "group-3",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-10",
+    "name": "Compras do Mês",
+    "icon": "shopping-cart",
+    "color": "#f59e0b",
+    "categoryGroupId": "group-4",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-11",
+    "name": "Produtos de Limpeza",
+    "icon": "spray-can",
+    "color": "#f59e0b",
+    "categoryGroupId": "group-4",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-12",
+    "name": "Gasolina",
+    "icon": "fuel",
+    "color": "#8b5cf6",
+    "categoryGroupId": "group-5",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "cat-13",
+    "name": "Etanol",
+    "icon": "fuel",
+    "color": "#8b5cf6",
+    "categoryGroupId": "group-5",
+    "type": "expense",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
