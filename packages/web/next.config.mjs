@@ -9,10 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Suprimir logs de request no dev server
-  logging: {
-    level: "error",
-  },
   // Optimize for production
   poweredByHeader: false,
   reactStrictMode: true,
