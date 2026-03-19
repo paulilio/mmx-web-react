@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,38 +16,32 @@ interface AuthGuardProps {
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  const [isChecking, setIsChecking] = useState(true)
-  const hasRedirectedRef = useRef(false)
+  const [isReady, setIsReady] = useState(false)
+  const checkDoneRef = useRef(false)
 
-  const checkAuth = useCallback(() => {
-    // Don't check if still loading
-    if (authLoading) return
+  useEffect(() => {
+    // Skip if already done or still loading
+    if (checkDoneRef.current || authLoading) return
 
-    // Don't redirect twice
-    if (hasRedirectedRef.current) return
+    // Mark as done immediately to prevent re-runs
+    checkDoneRef.current = true
 
     if (!user) {
-      hasRedirectedRef.current = true
       router.replace("/auth")
       return
     }
 
     if (!user.isEmailConfirmed) {
-      hasRedirectedRef.current = true
       router.replace(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
       return
     }
 
     // User is authenticated
-    setIsChecking(false)
-  }, [user, authLoading, router])
-
-  useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
+    setIsReady(true)
+  }, [authLoading]) // Only depend on authLoading
 
   // Show loading state while checking authentication
-  if (authLoading || isChecking) {
+  if (authLoading || !isReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
