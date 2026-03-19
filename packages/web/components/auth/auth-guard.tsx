@@ -5,7 +5,6 @@ import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { useSession } from "@/hooks/use-session"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TrendingUp } from "lucide-react"
@@ -16,44 +15,33 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, isLoading: authLoading } = useAuth()
-  const { isSessionValid } = useSession()
   const router = useRouter()
-  const [isChecking, setIsChecking] = useState(true)
-  const hasCheckedRef = useRef(false)
+  const [isReady, setIsReady] = useState(false)
+  const checkDoneRef = useRef(false)
 
   useEffect(() => {
-    // Skip if still loading auth
-    if (authLoading) return
+    // Skip if already done or still loading
+    if (checkDoneRef.current || authLoading) return
 
-    // Skip if already checked and passed
-    if (hasCheckedRef.current && !isChecking) return
+    // Mark as done immediately to prevent re-runs
+    checkDoneRef.current = true
 
-    const checkAuth = () => {
-      if (!user) {
-        // No user found, redirect to auth
-        router.push("/auth")
-        return
-      }
-
-      if (!user.isEmailConfirmed) {
-        // User exists but email not confirmed
-        router.push(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
-        return
-      }
-
-      // User exists and email confirmed - allow access
-      // Session validity is handled by useSession hook separately
-      hasCheckedRef.current = true
-      setIsChecking(false)
+    if (!user) {
+      router.replace("/auth")
+      return
     }
 
-    // Small delay to ensure auth is fully initialized
-    const timer = setTimeout(checkAuth, 100)
-    return () => clearTimeout(timer)
-  }, [user, authLoading, router])
+    if (!user.isEmailConfirmed) {
+      router.replace(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
+      return
+    }
+
+    // User is authenticated
+    setIsReady(true)
+  }, [authLoading]) // Only depend on authLoading
 
   // Show loading state while checking authentication
-  if (authLoading || isChecking) {
+  if (authLoading || !isReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="w-full max-w-md">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "@/lib/client/api"
 import { USE_API } from "@/lib/shared/config"
@@ -36,10 +36,14 @@ export function useSession(): SessionHook {
   const [isSessionValid, setIsSessionValid] = useState(false)
   const [timeUntilExpiry, setTimeUntilExpiry] = useState<number | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
 
   const sessionDataRef = useRef<SessionData | null>(null)
   const isSessionValidRef = useRef(false)
   const isRefreshingRef = useRef(false)
+  
+  // Skip session management on auth pages
+  const isAuthPage = pathname?.startsWith("/auth")
 
   // Update refs when state changes
   useEffect(() => {
@@ -238,6 +242,9 @@ export function useSession(): SessionHook {
   }, [refreshSession])
 
   useEffect(() => {
+    // Skip session management on auth pages
+    if (isAuthPage) return
+
     // Initial session check
     void checkSession()
 
@@ -282,9 +289,11 @@ export function useSession(): SessionHook {
         document.removeEventListener(event, handleActivity)
       })
     }
-  }, [checkSession, refreshSession])
+  }, [checkSession, refreshSession, isAuthPage])
 
   useEffect(() => {
+    // Skip session management on auth pages
+    if (isAuthPage) return
     if (!sessionData) return
 
     const timer = setInterval(() => {
@@ -307,7 +316,7 @@ export function useSession(): SessionHook {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [sessionData, clearSession, refreshSession, router])
+  }, [sessionData, clearSession, refreshSession, router, isAuthPage])
 
   return {
     isSessionValid,
