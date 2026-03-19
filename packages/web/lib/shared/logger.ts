@@ -88,19 +88,19 @@ export const logger = {
   debug(message: string, options?: LogOptions): void {
     if (!shouldLog("debug")) return
     consoleSink?.debug?.(formatMessage("debug", message, options), options?.data || "")
-    emitRuntimeLog(toRuntimePayload("debug", message, options))
+    if (isDebugEnabled) emitRuntimeLog(toRuntimePayload("debug", message, options))
   },
 
   info(message: string, options?: LogOptions): void {
     if (!shouldLog("info")) return
     consoleSink?.info?.(formatMessage("info", message, options), options?.data || "")
-    emitRuntimeLog(toRuntimePayload("info", message, options))
+    if (isDebugEnabled) emitRuntimeLog(toRuntimePayload("info", message, options))
   },
 
   warn(message: string, options?: LogOptions): void {
     if (!shouldLog("warn")) return
     consoleSink?.warn?.(formatMessage("warn", message, options), options?.data || "")
-    emitRuntimeLog(toRuntimePayload("warn", message, options))
+    if (isDebugEnabled) emitRuntimeLog(toRuntimePayload("warn", message, options))
   },
 
   error(message: string, error?: Error | unknown, options?: LogOptions): void {
