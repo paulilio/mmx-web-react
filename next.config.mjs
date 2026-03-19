@@ -1,8 +1,3 @@
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -15,10 +10,6 @@ const nextConfig = {
   eslint: {
     // Never bypass ESLint during build.
     ignoreDuringBuilds: false,
-  },
-  // Set the root directory for Turbopack
-  turbopack: {
-    root: __dirname,
   },
   // Optimize for production
   poweredByHeader: false,
