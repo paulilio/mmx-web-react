@@ -1,23 +1,30 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { Toaster } from "sonner"
-import { Suspense } from "react"
-import type React from "react"
-import "./globals.css"
-import ClientLayout from "./client-layout"
-import { AuthProvider } from "@/hooks/use-auth"
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-})
+import type { Metadata } from 'next'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import { Analytics } from '@vercel/analytics/next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "MoedaMix - Dashboard Financeiro",
-  description: "Sistema de gestão financeira para contas a pagar e receber",
-  generator: "v0.app",
+  title: 'v0 App',
+  description: 'Created with v0',
+  generator: 'v0.app',
+  icons: {
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icon-dark-32x32.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
+  },
 }
 
 export default function RootLayout({
@@ -26,14 +33,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className={`font-sans ${inter.variable}`}>
-        <Suspense fallback={null}>
-          <AuthProvider>
-            <ClientLayout>{children}</ClientLayout>
-          </AuthProvider>
-        </Suspense>
-        <Toaster position="top-right" />
+    <html lang="en">
+      <body className={`font-sans antialiased ${GeistSans.variable} ${GeistMono.variable}`}>
+        {children}
         <Analytics />
       </body>
     </html>

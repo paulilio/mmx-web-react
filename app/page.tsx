@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation"
+"use client"
 
-export default function HomePage() {
-  redirect("/auth")
+import  from "../packages/web/components/auth/auth-guard.test"
+
+export default function SyntheticV0PageForDeployment() {
+  return < />
 }
