@@ -6,7 +6,7 @@ services:
     profiles: ["split"]
     build:
       context: ../..
-      dockerfile: apps/api/Dockerfile
+      dockerfile: packages/api/Dockerfile
     image: ${MMX_API_IMAGE:-mmx-api:local}
     restart: unless-stopped
     ports:
@@ -42,7 +42,7 @@ services:
   app:
     build:
       context: ../..
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     restart: unless-stopped
@@ -64,7 +64,7 @@ services:
   monitor:
     build:
       context: ../..
-      dockerfile: docker/Dockerfile.monitor
+      dockerfile: tools/monitor/Dockerfile.monitor
     restart: unless-stopped
     env_file:
       - ../env/app.prod.env

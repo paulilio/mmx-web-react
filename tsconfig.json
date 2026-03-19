@@ -30,5 +30,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "scripts", "apps/api", "apps/api/**", "**/dist/**"]
+  "exclude": ["node_modules", "scripts", "packages/api", "packages/api/**", "**/dist/**"]
 }
