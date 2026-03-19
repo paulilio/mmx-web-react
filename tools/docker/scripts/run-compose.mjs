@@ -8,26 +8,26 @@ const composeArgs = process.argv.slice(3)
 const modeConfig = {
   dev: {
     tag: "docker-dev",
-    composeFile: "docker/compose/docker-compose.dev.yml",
-    requiredFiles: ["docker/env/app.env", "docker/env/postgres.env"],
+    composeFile: "tools/docker/compose/docker-compose.dev.yml",
+    requiredFiles: ["tools/docker/env/app.env", "tools/docker/env/postgres.env"],
     examples: {
-      "docker/env/app.env": "cp docker/env/app.env.example docker/env/app.env",
-      "docker/env/postgres.env": "cp docker/env/postgres.env.example docker/env/postgres.env",
+      "tools/docker/env/app.env": "cp tools/docker/env/app.env.example tools/docker/env/app.env",
+      "tools/docker/env/postgres.env": "cp tools/docker/env/postgres.env.example tools/docker/env/postgres.env",
     },
   },
   prod: {
     tag: "docker-prod",
-    composeFile: "docker/compose/docker-compose.prod.yml",
-    requiredFiles: ["docker/env/app.prod.env", "docker/env/postgres.env"],
+    composeFile: "tools/docker/compose/docker-compose.prod.yml",
+    requiredFiles: ["tools/docker/env/app.prod.env", "tools/docker/env/postgres.env"],
     examples: {
-      "docker/env/app.prod.env": "cp docker/env/app.prod.env.example docker/env/app.prod.env",
-      "docker/env/postgres.env": "cp docker/env/postgres.env.example docker/env/postgres.env",
+      "tools/docker/env/app.prod.env": "cp tools/docker/env/app.prod.env.example tools/docker/env/app.prod.env",
+      "tools/docker/env/postgres.env": "cp tools/docker/env/postgres.env.example tools/docker/env/postgres.env",
     },
   },
 }
 
 if (!mode || !(mode in modeConfig)) {
-  console.error("Uso: node docker/scripts/run-compose.mjs <dev|prod> <docker compose args...>")
+  console.error("Uso: node tools/docker/scripts/run-compose.mjs <dev|prod> <docker compose args...>")
   process.exit(1)
 }
 

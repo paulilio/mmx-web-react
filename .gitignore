@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /packages/*/node_modules
+/tools/*/node_modules
 
 # workspace build artifacts
 /packages/*/dist
@@ -17,6 +18,7 @@
 
 # next.js
 /.next/
+/packages/web/.next/
 /out/
 
 # production
@@ -39,8 +41,8 @@ packages/web/.env*
 !packages/web/.env.example
 
 # docker env files (versionar apenas templates .example)
-docker/env/*.env
-!docker/env/*.env.example
+tools/docker/env/*.env
+!tools/docker/env/*.env.example
 
 # vercel
 .vercel

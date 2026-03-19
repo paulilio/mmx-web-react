@@ -5,7 +5,7 @@ services:
   backend:
     profiles: ["split"]
     build:
-      context: ../..
+      context: ../../..
       dockerfile: packages/api/Dockerfile
     image: ${MMX_API_IMAGE:-mmx-api:local}
     restart: unless-stopped
@@ -43,7 +43,7 @@ services:
 
   app:
     build:
-      context: ../..
+      context: ../../..
       dockerfile: packages/web/Dockerfile.dev
     ports:
       - "3000:3000"
@@ -54,7 +54,7 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-mmx}:${POSTGRES_PASSWORD:-mmx_password}@postgres:5432/${POSTGRES_DB:-mmx}?schema=public
     volumes:
       # Bind mount do codigo fonte para HMR
-      - ../..:/app
+      - ../../..:/app
       # Preserva node_modules e .next do container (nao sobrescreve com host)
       - /app/node_modules
       - /app/.next
@@ -67,7 +67,7 @@ services:
 
   monitor:
     build:
-      context: ../..
+      context: ../../..
       dockerfile: tools/monitor/Dockerfile.monitor
     restart: unless-stopped
     env_file:
@@ -81,7 +81,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ../..:/app
+      - ../../..:/app
       - /app/node_modules
     depends_on:
       app:
