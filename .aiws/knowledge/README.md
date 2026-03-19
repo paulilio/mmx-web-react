@@ -14,12 +14,12 @@ Armazena o conhecimento acumulado do projeto: decisões arquiteturais, padrões 
 
 ## Estrutura
 
-```
+\`\`\`
 knowledge/
   product/        — o que é o produto, roadmap e contexto estratégico
   architecture/   — decisões e padrões de código, backend, frontend e infra
   ops/            — decisões e padrões de operação do workspace (aiws, deploy, CI/CD)
-```
+\`\`\`
 
 ---
 

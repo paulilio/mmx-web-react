@@ -32,9 +32,9 @@ Repositorio hospeda frontend (mmx-web-react) e backend dedicado (mmx-api em apps
 - infrastructure: repository implementations, Prisma adapters
 
 ## Data Flow
-```
+\`\`\`
 UI → hooks → lib/client/api.ts → apps/api (controllers → use-cases → domain → repositories) → PostgreSQL
-```
+\`\`\`
 
 ## Tech Stack
 - Frontend: Next.js 14, React 19, TypeScript 5, SWR, React Hook Form, Zod, Tailwind v4

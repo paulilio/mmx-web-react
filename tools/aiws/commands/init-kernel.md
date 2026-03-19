@@ -9,7 +9,7 @@ Os 4 prompts devem ser executados em sequencia — cada um gera um arquivo do ke
 
 ## Prompt 1 — AGENTS.md
 
-```
+\`\`\`
 Analise este repositorio e gere o conteudo do arquivo .ai/AGENTS.md.
 
 O AGENTS.md e o manual operacional da IA — define como trabalhar neste projeto.
@@ -34,13 +34,13 @@ Gere o AGENTS.md com as seguintes secoes:
 10. Comandos disponiveis — referencia ao .ai/commands/ (manter o padrao do template)
 
 Limite: 200 linhas. Ser direto e operacional — sem texto explicativo desnecessario.
-```
+\`\`\`
 
 ---
 
 ## Prompt 2 — SYSTEM.md
 
-```
+\`\`\`
 Analise este repositorio e gere o conteudo do arquivo .ai/SYSTEM.md.
 
 O SYSTEM.md explica o sistema em nivel conceitual para engenheiros e agentes de IA.
@@ -63,13 +63,13 @@ Gere o SYSTEM.md com as seguintes secoes:
 8. Known Limitations — limitacoes conhecidas
 
 Limite: 150-200 linhas. Foco em clareza conceitual — detalhes tecnicos profundos vao em docs/.
-```
+\`\`\`
 
 ---
 
 ## Prompt 3 — CODEBASE_MAP.md
 
-```
+\`\`\`
 Analise este repositorio e gere o conteudo do arquivo .ai/CODEBASE_MAP.md.
 
 O CODEBASE_MAP e o mapa modular do codigo — ajuda a IA a localizar rapidamente onde cada funcionalidade esta.
@@ -101,13 +101,13 @@ Regras:
 - Incluir no final uma secao "Critical Paths" com os 3-5 fluxos end-to-end mais importantes
 
 Limite: 10-15 modulos (~200 linhas). Se houver mais, agrupar por dominio.
-```
+\`\`\`
 
 ---
 
 ## Prompt 4 — CONTEXT_SURFACES.md
 
-```
+\`\`\`
 Analise este repositorio e gere o conteudo do arquivo .ai/CONTEXT_SURFACES.md.
 
 O CONTEXT_SURFACES define superficies de impacto de mudanca — ajuda a prever quais partes do sistema
@@ -133,7 +133,7 @@ Notes: [contexto adicional — por que esta superficie e critica]
 
 Incluir apenas superficies criticas — nao mapear tudo, so o que pode quebrar algo importante.
 Limite: ~150 linhas.
-```
+\`\`\`
 
 ---
 
@@ -141,7 +141,7 @@ Limite: ~150 linhas.
 
 Apos gerar os 4 arquivos, execute:
 
-```
+\`\`\`
 Verifique se o Context Kernel esta completo e consistente:
 1. AGENTS.md tem ordem de leitura definida?
 2. CODEBASE_MAP.md esta organizado por modulos funcionais (nao por pastas)?
@@ -151,4 +151,4 @@ Verifique se o Context Kernel esta completo e consistente:
 6. Ha informacao duplicada entre os arquivos?
 
 Reportar o que esta OK e o que precisa de ajuste.
-```
+\`\`\`

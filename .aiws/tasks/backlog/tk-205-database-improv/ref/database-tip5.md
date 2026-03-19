@@ -8,22 +8,22 @@ O segredo é separar **ledger bruto** de **projeções agregadas**.
 
 Arquitetura típica:
 
-```id="4d77wq"
+\`\`\`id="4d77wq"
 Ledger (fonte da verdade)
 
 transactions
 transaction_lines
-```
+\`\`\`
 
 e
 
-```id="0dnkht"
+\`\`\`id="0dnkht"
 Projeções agregadas
 
 account_balances
 category_spending
 monthly_cashflow
-```
+\`\`\`
 
 Ledger nunca muda.
 Projeções podem ser recalculadas.
@@ -32,10 +32,10 @@ Projeções podem ser recalculadas.
 
 # 2. Ledger permanece imutável
 
-```id="gk92av"
+\`\`\`id="gk92av"
 transactions
 transaction_lines
-```
+\`\`\`
 
 Cada movimento financeiro fica ali.
 
@@ -47,11 +47,11 @@ Saldo real sempre pode ser recalculado.
 
 Se você sempre fizer:
 
-```sql id="fq9xq0"
+\`\`\`sql id="fq9xq0"
 SELECT SUM(amount)
 FROM transaction_lines
 WHERE account_id = ?
-```
+\`\`\`
 
 em milhões de linhas, relatórios ficam lentos.
 
@@ -63,15 +63,15 @@ Criar **tabelas de agregação incremental**.
 
 Exemplo.
 
-```sql id="sx2rfk"
+\`\`\`sql id="sx2rfk"
 account_balances
-```
+\`\`\`
 
-```id="uxx2x7"
+\`\`\`id="uxx2x7"
 account_id
 date
 balance
-```
+\`\`\`
 
 Isso permite calcular saldo muito rápido.
 
@@ -81,22 +81,22 @@ Isso permite calcular saldo muito rápido.
 
 Quando uma transação acontece:
 
-```id="y9dth9"
+\`\`\`id="y9dth9"
 transaction created
-```
+\`\`\`
 
 Atualiza:
 
-```id="qqj9c2"
+\`\`\`id="qqj9c2"
 account_balances
-```
+\`\`\`
 
 Fluxo:
 
-```id="9o5q0l"
+\`\`\`id="9o5q0l"
 ledger insert
 → balance update
-```
+\`\`\`
 
 ---
 
@@ -104,18 +104,18 @@ ledger insert
 
 Outra projeção útil.
 
-```sql id="u4p3in"
+\`\`\`sql id="u4p3in"
 category_spending
-```
+\`\`\`
 
 Campos:
 
-```id="41gr93"
+\`\`\`id="41gr93"
 user_id
 category_id
 month
 amount
-```
+\`\`\`
 
 Assim relatórios ficam instantâneos.
 
@@ -125,14 +125,14 @@ Assim relatórios ficam instantâneos.
 
 Tabela agregada.
 
-```sql id="udr9k9"
+\`\`\`sql id="udr9k9"
 monthly_cashflow
 
 user_id
 month
 income
 expenses
-```
+\`\`\`
 
 Atualizada conforme transações chegam.
 
@@ -140,7 +140,7 @@ Atualizada conforme transações chegam.
 
 # 8. Prisma models sugeridos
 
-```prisma id="h3tiyh"
+\`\`\`prisma id="h3tiyh"
 model AccountBalance {
   id        String   @id @default(uuid())
   accountId String
@@ -149,11 +149,11 @@ model AccountBalance {
 
   account   Account  @relation(fields: [accountId], references: [id])
 }
-```
+\`\`\`
 
 ---
 
-```prisma id="tccqlm"
+\`\`\`prisma id="tccqlm"
 model CategorySpending {
   id         String   @id @default(uuid())
   userId     String
@@ -161,11 +161,11 @@ model CategorySpending {
   month      DateTime
   amount     Decimal
 }
-```
+\`\`\`
 
 ---
 
-```prisma id="mqn6q7"
+\`\`\`prisma id="mqn6q7"
 model MonthlyCashflow {
   id       String   @id @default(uuid())
   userId   String
@@ -173,7 +173,7 @@ model MonthlyCashflow {
   income   Decimal
   expenses Decimal
 }
-```
+\`\`\`
 
 ---
 
@@ -183,13 +183,13 @@ Usuário cria transação.
 
 Fluxo backend:
 
-```id="o64tch"
+\`\`\`id="o64tch"
 1 insert transaction
 2 insert transaction_lines
 3 update account_balances
 4 update category_spending
 5 update monthly_cashflow
-```
+\`\`\`
 
 Tudo na mesma transaction SQL.
 
@@ -199,10 +199,10 @@ Tudo na mesma transaction SQL.
 
 Relatórios passam a ser:
 
-```id="ibd51k"
+\`\`\`id="ibd51k"
 SELECT * FROM category_spending
 WHERE month = ?
-```
+\`\`\`
 
 em vez de processar milhões de linhas.
 
@@ -210,7 +210,7 @@ em vez de processar milhões de linhas.
 
 # 11. Arquitetura de módulos backend
 
-```id="gnmuj4"
+\`\`\`id="gnmuj4"
 modules
 
 transactions
@@ -218,7 +218,7 @@ ledger
 balances
 budget
 reports
-```
+\`\`\`
 
 Cada módulo tem responsabilidade clara.
 
@@ -226,7 +226,7 @@ Cada módulo tem responsabilidade clara.
 
 # 12. Estrutura final de banco recomendada
 
-```id="zws7o8"
+\`\`\`id="zws7o8"
 users
 
 accounts
@@ -248,7 +248,7 @@ category_spending
 monthly_cashflow
 
 ledger_events
-```
+\`\`\`
 
 ---
 
@@ -267,7 +267,7 @@ Porque relatórios usam **tabelas agregadas**.
 
 Arquitetura final:
 
-```id="4y6vwi"
+\`\`\`id="4y6vwi"
 ledger tables
 ↓
 event bus
@@ -275,7 +275,7 @@ event bus
 projection tables
 ↓
 reports
-```
+\`\`\`
 
 ---
 
@@ -285,12 +285,12 @@ Se quiser manter simples no início:
 
 Use apenas:
 
-```id="fcb1dl"
+\`\`\`id="fcb1dl"
 transactions
 transaction_lines
 budgets
 categories
-```
+\`\`\`
 
 E adicione projeções depois.
 

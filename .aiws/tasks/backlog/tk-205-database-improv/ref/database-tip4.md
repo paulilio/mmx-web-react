@@ -3,10 +3,10 @@ Isso resolve auditoria completa e histórico perfeito.
 
 A ideia central:
 
-```id="p7zqv4"
+\`\`\`id="p7zqv4"
 dados nunca são alterados
 apenas novos eventos são registrados
-```
+\`\`\`
 
 ---
 
@@ -14,10 +14,10 @@ apenas novos eventos são registrados
 
 Modelo tradicional:
 
-```id="6r7h8u"
+\`\`\`id="6r7h8u"
 UPDATE transactions
 SET amount = 150
-```
+\`\`\`
 
 Problema:
 
@@ -33,11 +33,11 @@ Em vez de alterar dados, criamos eventos.
 
 Exemplo:
 
-```id="6h8f7e"
+\`\`\`id="6h8f7e"
 transaction_created
 transaction_updated
 transaction_deleted
-```
+\`\`\`
 
 Cada evento vira um registro.
 
@@ -45,7 +45,7 @@ Cada evento vira um registro.
 
 # 3. Tabela de eventos
 
-```sql id="8cxt0a"
+\`\`\`sql id="8cxt0a"
 ledger_events
 
 id
@@ -54,25 +54,25 @@ entity_type
 entity_id
 payload
 created_at
-```
+\`\`\`
 
 Exemplo:
 
-```id="aj0wht"
+\`\`\`id="aj0wht"
 event_type = transaction_created
 entity_type = transaction
 entity_id = tx_123
-```
+\`\`\`
 
 Payload:
 
-```json id="imknj3"
+\`\`\`json id="imknj3"
 {
  "amount": 120,
  "category": "food",
  "account": "checking"
 }
-```
+\`\`\`
 
 ---
 
@@ -82,17 +82,17 @@ Usuário corrige valor.
 
 Evento 1:
 
-```id="2csu9a"
+\`\`\`id="2csu9a"
 transaction_created
 amount = 120
-```
+\`\`\`
 
 Evento 2:
 
-```id="itkqmn"
+\`\`\`id="itkqmn"
 transaction_updated
 amount = 150
-```
+\`\`\`
 
 Nada é apagado.
 
@@ -102,9 +102,9 @@ Nada é apagado.
 
 Estado é derivado do último evento.
 
-```id="0wklj0"
+\`\`\`id="0wklj0"
 select latest event
-```
+\`\`\`
 
 Ou reconstruído via stream.
 
@@ -112,7 +112,7 @@ Ou reconstruído via stream.
 
 # 6. Estrutura Prisma para event ledger
 
-```prisma id="l4s5dr"
+\`\`\`prisma id="l4s5dr"
 model LedgerEvent {
   id         String   @id @default(uuid())
   eventType  String
@@ -121,7 +121,7 @@ model LedgerEvent {
   payload    Json
   createdAt  DateTime @default(now())
 }
-```
+\`\`\`
 
 ---
 
@@ -129,19 +129,19 @@ model LedgerEvent {
 
 A maioria dos SaaS usa **modelo híbrido**.
 
-```id="t5b2om"
+\`\`\`id="t5b2om"
 tables normais
 +
 event log
-```
+\`\`\`
 
 Assim:
 
-```id="9nkj2f"
+\`\`\`id="9nkj2f"
 transactions
 transaction_lines
 ledger_events
-```
+\`\`\`
 
 Eventos servem para:
 
@@ -155,14 +155,14 @@ Eventos servem para:
 
 Payload típico:
 
-```json id="7njjzw"
+\`\`\`json id="7njjzw"
 {
  "transactionId": "tx123",
  "amount": 120,
  "accountId": "acc1",
  "categoryId": "cat_food"
 }
-```
+\`\`\`
 
 ---
 
@@ -181,11 +181,11 @@ Para MMX:
 
 Use desde o início se pretende:
 
-```id="v8osqs"
+\`\`\`id="v8osqs"
 multi-user
 financeiro real
 compliance
-```
+\`\`\`
 
 Caso contrário:
 
@@ -195,7 +195,7 @@ ledger simples já funciona.
 
 # 11. Estrutura final recomendada
 
-```id="b0e5x5"
+\`\`\`id="b0e5x5"
 users
 accounts
 
@@ -211,7 +211,7 @@ budget_allocations
 contacts
 
 ledger_events
-```
+\`\`\`
 
 ---
 
@@ -219,11 +219,11 @@ ledger_events
 
 Usuário cria transação.
 
-```id="vrm2wy"
+\`\`\`id="vrm2wy"
 insert transaction
 insert transaction_line
 insert ledger_event
-```
+\`\`\`
 
 Três registros.
 
@@ -233,14 +233,14 @@ Três registros.
 
 Eventos úteis:
 
-```id="jqk0z3"
+\`\`\`id="jqk0z3"
 transaction_created
 transaction_updated
 transaction_deleted
 budget_updated
 category_created
 account_created
-```
+\`\`\`
 
 ---
 
@@ -248,14 +248,14 @@ account_created
 
 Backend passa a ter um módulo:
 
-```id="3h4crl"
+\`\`\`id="3h4crl"
 modules
 
 ledger
 transactions
 budget
 reports
-```
+\`\`\`
 
 ---
 
@@ -263,15 +263,15 @@ reports
 
 Relatórios podem usar:
 
-```id="a1q1jv"
+\`\`\`id="a1q1jv"
 transactions tables
-```
+\`\`\`
 
 ou
 
-```id="5ydy4x"
+\`\`\`id="5ydy4x"
 event replay
-```
+\`\`\`
 
 dependendo da necessidade.
 

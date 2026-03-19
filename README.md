@@ -23,10 +23,10 @@ A estrategia oficial e backend dedicado, sem camada transitoria como baseline.
 
 ## Inicio rapido
 
-```bash
+\`\`\`bash
 pnpm install
 pnpm dev
-```
+\`\`\`
 
 Aplicacao: http://localhost:3000
 
@@ -34,13 +34,13 @@ Aplicacao: http://localhost:3000
 
 Fluxo principal:
 
-```text
+\`\`\`text
 Browser
   -> mmx-web-react
   -> HTTP REST
   -> mmx-api (NestJS)
   -> PostgreSQL
-```
+\`\`\`
 
 Fronteira de dados do frontend:
 
@@ -53,7 +53,7 @@ Regra:
 
 ## Estrutura principal
 
-```text
+\`\`\`text
 app/
 components/
 hooks/
@@ -64,11 +64,11 @@ docs/
 docker/
 scripts/
 runtime/            # saidas operacionais centralizadas (front/api/monitor)
-```
+\`\`\`
 
 ## Desenvolvimento
 
-```bash
+\`\`\`bash
 corepack enable
 pnpm install
 pnpm dev
@@ -77,7 +77,7 @@ pnpm type-check
 pnpm test:unit
 pnpm test:integration
 pnpm build
-```
+\`\`\`
 
 ## Runtime e logs
 
@@ -88,7 +88,7 @@ pnpm build
 
 Criar .env.local na raiz:
 
-```bash
+\`\`\`bash
 DATABASE_URL=postgresql://mmx:mmx_password@localhost:5432/mmx?schema=public
 NEXT_PUBLIC_API_BASE=http://localhost:4000
 NEXT_PUBLIC_USE_API=true
@@ -96,7 +96,7 @@ MMX_APP_ENV=development
 CORS_ORIGINS_DEV=http://localhost:3000,http://127.0.0.1:3000
 CORS_ORIGINS_STAGING=
 CORS_ORIGINS_PROD=
-```
+\`\`\`
 
 Para ambiente local real (API + banco), mantenha `NEXT_PUBLIC_USE_API=true` e `DATABASE_URL` valida.
 

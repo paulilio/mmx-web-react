@@ -10,7 +10,7 @@ Os 3 prompts sao independentes — executar na ordem ou conforme necessidade.
 
 ## Prompt 1 — custom-workspace-guide.md
 
-```
+\`\`\`
 Leia o Context Kernel completo (.ai/AGENTS.md, SYSTEM.md, CODEBASE_MAP.md, CONTEXT_SURFACES.md).
 
 Gere o arquivo .aiws/references/aiws/aiws-guide.md — guia de uso do workspace
@@ -41,13 +41,13 @@ O arquivo deve cobrir:
    - Como usar o chat dedicado (se configurado)
 
 Formato: markdown limpo, direto, sem introducoes longas.
-```
+\`\`\`
 
 ---
 
 ## Prompt 2 — custom-gpt-prompt.md
 
-```
+\`\`\`
 Leia o Context Kernel completo (.ai/AGENTS.md, SYSTEM.md, CODEBASE_MAP.md).
 
 Gere o arquivo .aiws/references/aiws/gpt-prompt.md — system prompt para um chat
@@ -74,13 +74,13 @@ Com base nas respostas, gerar um system prompt que:
 - Instrui a IA a ser direta e pratica, sem introducoes longas
 
 O prompt deve caber em ~300-500 palavras — conciso o suficiente para ser colado em qualquer chat.
-```
+\`\`\`
 
 ---
 
 ## Prompt 3 — custom-v0-instructions.md
 
-```
+\`\`\`
 Leia .ai/SYSTEM.md e .ai/CODEBASE_MAP.md.
 
 Gere o arquivo .aiws/references/aiws/v0-instructions.md — instrucoes para o v0 (Vercel)
@@ -112,4 +112,4 @@ O arquivo deve cobrir:
 
 Formato: instrucoes diretas em ingles (v0 funciona melhor com instrucoes em ingles).
 Limite: ~200 linhas.
-```
+\`\`\`

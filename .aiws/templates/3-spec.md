@@ -34,11 +34,11 @@ Exemplo: Expor endpoints read-only que retornam metadata do projeto e resumo de 
 [Onde cada parte da logica fica. Qual a regra de dependencia entre camadas.]
 
 Exemplo:
-```
+\`\`\`
 Controller recebe request
 Service executa logica de negocio
 Repository le dados do banco
-```
+\`\`\`
 
 Dependency rule: Controller → Service → Repository
 
@@ -49,7 +49,7 @@ Dependency rule: Controller → Service → Repository
 [Defina entrada e saida de cada endpoint ou operacao.]
 
 Exemplo:
-```
+\`\`\`
 GET /api/resource/{id}
 
 Response:
@@ -59,7 +59,7 @@ Response:
   status
   createdAt
 }
-```
+\`\`\`
 
 ---
 

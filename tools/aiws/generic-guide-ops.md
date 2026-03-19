@@ -7,7 +7,7 @@ Para entender o modelo completo, veja: `.aiws/references/aiws/generic-blueprint.
 
 # Estrutura rapida
 
-```
+\`\`\`
 .ai/                    ← Context Kernel (a AI le isso)
   AGENTS.md             ← regras operacionais
   SYSTEM.md             ← o que o sistema faz
@@ -27,7 +27,7 @@ Para entender o modelo completo, veja: `.aiws/references/aiws/generic-blueprint.
 CLAUDE.md               ← ponte para Claude Code
 .github/copilot-instructions.md ← ponte para Copilot
 .cursorrules            ← ponte para Cursor
-```
+\`\`\`
 
 ---
 
@@ -42,11 +42,11 @@ Toda task fica em uma **pasta propria** dentro de `tasks/`, mesmo se for simples
 3. Preencha Objective, Context e Type (feature, bugfix, spike, refactor, chore)
 4. O Plan pode ser preenchido por voce ou pela AI (via `task-plan`)
 
-```
+\`\`\`
 tasks/
   tk-005-nome/
     1-simple-task.md
-```
+\`\`\`
 
 ### Task complexa (Capsule)
 
@@ -56,7 +56,7 @@ Para tasks com multiplos modulos, fases distintas ou trabalho de varios dias:
 2. Copie os templates de `templates/task-capsule/` para a pasta
 3. Numere os arquivos na ordem de uso: `1-task.md`, `2-plan.md`, `3-spec.md`, `4-execute.md`, `5-phase-1.md`, ...
 
-```
+\`\`\`
 tasks/
   tk-006-nome/
     1-task.md
@@ -65,16 +65,16 @@ tasks/
     4-execute.md
     5-phase-1.md
     6-phase-2.md
-```
+\`\`\`
 
 O `3-spec.md` e a especificacao tecnica gerada apos o plano — goal, scope, architecture, data contracts, execution flow, edge cases. A IA implementa a partir da spec. Quanto mais clara, melhor o resultado.
 
 ### Exemplo de prompt:
-```
+\`\`\`
 Crie uma task para implementar o modulo de [nome].
 Use o template .aiws/templates/task.md.
 Type: feature.
-```
+\`\`\`
 
 ---
 
@@ -117,7 +117,7 @@ Ao criar para um novo projeto, adaptar para:
 Salvar em `.ai/commands/[nome]-custom-[projeto].md`
 
 ### Feature AI-driven:
-```
+\`\`\`
 1. "Start task TK-005"
 2. "Analise a task com analyze-task"
 3. (voce revisa e aprova o plano)
@@ -130,10 +130,10 @@ Salvar em `.ai/commands/[nome]-custom-[projeto].md`
 10. (voce revisa o resultado final)
 11. "Finalize a task"
 12. "Ship"
-```
+\`\`\`
 
 ### Feature simples (Pair):
-```
+\`\`\`
 1. "Start task TK-005"
 2. "Crie o plano"
 3. (discute e refina junto)
@@ -142,56 +142,56 @@ Salvar em `.ai/commands/[nome]-custom-[projeto].md`
 6. "Rode regression check"
 7. "Finalize a task"
 8. "Ship"
-```
+\`\`\`
 
 ### Bugfix simples:
-```
+\`\`\`
 1. "Execute task-loop para a TK-006"
 2. "Ship"
-```
+\`\`\`
 
 ### Spike / exploracao (Assistente):
-```
+\`\`\`
 1. "Start task TK-007"
 2. "Me explica como esse fluxo funciona"
 3. "Quais as opcoes de abordagem para esse problema?"
 4. (voce decide a abordagem)
 5. "Finalize a task com as conclusoes"
-```
+\`\`\`
 
 ---
 
 # Como registrar conhecimento
 
 ### Review (para estudar o que foi feito):
-```
+\`\`\`
 Crie um review do que foi feito na TK-XXX.
 Quero entender como funciona e o que estudar.
-```
+\`\`\`
 Salvo em: `knowledge/rev-*.md`
 
 ### Decisao tecnica:
-```
+\`\`\`
 Registre a decisao que tomamos sobre [assunto].
-```
+\`\`\`
 Salvo em: `knowledge/dec-*.md`
 
 ### Investigacao de bug:
-```
+\`\`\`
 Registre a investigacao do bug [descricao].
-```
+\`\`\`
 Salvo em: `knowledge/inv-*.md`
 
 ### Conceito descoberto:
-```
+\`\`\`
 Registre o conceito de [assunto] que aprendemos.
-```
+\`\`\`
 Salvo em: `knowledge/con-*.md`
 
 ### Padrao reutilizavel:
-```
+\`\`\`
 Registre o padrao de [assunto] para reutilizar.
-```
+\`\`\`
 Salvo em: `knowledge/pat-*.md`
 
 ---
@@ -227,28 +227,28 @@ Escolha o modelo conforme a clareza da task. Os modelos podem ser combinados —
 # Dicas praticas
 
 ## Linguagem natural
-```
+\`\`\`
 "Comeca a task TK-010"
 "O que mudou nessa task?"
 "Finaliza e faz o ship"
 "Me explica o que voce fez no auth"
-```
+\`\`\`
 
 ## A AI sabe onde esta tudo
 Voce nao precisa informar caminhos — a AI le o AGENTS.md e sabe onde ficam tasks, templates, knowledge e runs.
 
 ## Se a AI errar
-```
+\`\`\`
 1. Melhorar CODEBASE_MAP.md  ← AI nao achou o codigo certo (80% dos casos)
 2. Melhorar AGENTS.md        ← AI nao seguiu as regras
 3. Melhorar a task           ← contexto ou Code Surface insuficiente
-```
+\`\`\`
 
 ## Manter o kernel atualizado
 Apos features grandes ou mudancas estruturais:
-```
+\`\`\`
 "Rode kernel-check"
-```
+\`\`\`
 
 ## Chat dedicado para duvidas rapidas
 Alem do Claude Code (que le o repo), vale ter um **chat separado para duvidas do dia a dia** — sem precisar abrir o projeto.
@@ -259,12 +259,12 @@ Como configurar:
 3. O chat ja conhece o sistema, o time e as ferramentas
 
 Exemplos de uso:
-```
+\`\`\`
 "O que pode causar N+1 nesse modulo?"
 "Como justificar essa estimativa para o time?"
 "Me ajuda a estruturar esse bug no issue tracker"
 "Qual o risco de mudar essa interface agora?"
-```
+\`\`\`
 
 O arquivo do prompt fica em `references/` — independente, nao afeta o workspace nem o kernel.
 
@@ -297,7 +297,7 @@ Cada argumento e independente — use apenas o que precisar externalizar. Os tre
 
 ## Como usar
 
-```bash
+\`\`\`bash
 # Externalizar tudo para uma pasta sincronizada
 python aiws_install.py --path /repo \
   --kernel C:/OneDrive/aiws-meu-projeto \
@@ -314,13 +314,13 @@ python aiws_install.py --path /repo \
   --kernel C:/OneDrive/kernels/meu-projeto \
   --ops    D:/backup/aiws-ops \
   --bridge C:/OneDrive/bridges/meu-projeto
-```
+\`\`\`
 
 ## Estrutura resultante
 
 Apos a externalizacao, a pasta externa fica assim:
 
-```
+\`\`\`
 C:/OneDrive/aiws-meu-projeto/    ← OneDrive/GDrive sincroniza essa pasta
   .ai/                           ← kernel real
   .aiws/                         ← workspace real
@@ -329,24 +329,24 @@ C:/OneDrive/aiws-meu-projeto/    ← OneDrive/GDrive sincroniza essa pasta
   copilot-instructions.md
   .cursorrules
   .windsurfrules
-```
+\`\`\`
 
 E o projeto fica com symlinks:
 
-```
+\`\`\`
 seu-projeto/
   .ai/          → C:/OneDrive/aiws-meu-projeto/.ai/
   .aiws/        → C:/OneDrive/aiws-meu-projeto/.aiws/
   CLAUDE.md     → C:/OneDrive/aiws-meu-projeto/CLAUDE.md
   AGENTS.md     → C:/OneDrive/aiws-meu-projeto/AGENTS.md
   .github/copilot-instructions.md → C:/OneDrive/aiws-meu-projeto/copilot-instructions.md
-```
+\`\`\`
 
 ## Configuracao do .gitignore
 
 Adicione ao `.gitignore` conforme o que for externalizado:
 
-```gitignore
+\`\`\`gitignore
 # AIWS — arquivos externalizados (symlinks locais, nao commitar)
 
 # Kernel
@@ -364,7 +364,7 @@ AGENTS.md
 .github/copilot-instructions.md
 .cursorrules
 .windsurfrules
-```
+\`\`\`
 
 > Nao e necessario ignorar tudo — apenas o que foi externalizado ou que contem informacoes sensiveis do projeto. O `.aiws/references/aiws/` (modelo AIWS) pode ser commitado normalmente.
 

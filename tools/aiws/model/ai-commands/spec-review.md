@@ -41,7 +41,7 @@ A spec esta pronta para implementar ou precisa de ajustes?
 
 ## Output
 
-```
+\`\`\`
 ## Architecture Review
 
 ### Strengths
@@ -58,6 +58,6 @@ A spec esta pronta para implementar ou precisa de ajustes?
 
 ### Implementation Risk Score
 [1-10] — [justificativa]
-```
+\`\`\`
 
 Se o Risk Score for >= 6, aguardar correcao da spec antes de prosseguir.

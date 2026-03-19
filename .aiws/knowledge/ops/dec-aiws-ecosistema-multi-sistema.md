@@ -21,7 +21,7 @@
 
 ### Estrutura proposta
 
-```
+\`\`\`
 ecosystem/                        <- repositorio ou pasta raiz
   .ai/                            <- Kernel Global (leve)
     SYSTEM.md                     <- o que e cada sistema e como se integram
@@ -39,18 +39,18 @@ ecosystem/                        <- repositorio ou pasta raiz
   sistema-b/
     .ai/
     src/
-```
+\`\`\`
 
 ### Convencao de nomenclatura de tasks
 
 Prefixo no nome da pasta para identificar escopo sem subpastas:
 
-```
+\`\`\`
 .aiws/tasks/
   sistema-a--tk-001-auth-flow/
   sistema-b--tk-015-report-export/
   integration--tk-003-sync-orders/    <- tasks de integracao ficam explicitas
-```
+\`\`\`
 
 ---
 
@@ -74,13 +74,13 @@ Isso cabe num `SYSTEM.md` e `CONTEXT_SURFACES.md` globais pequenos.
 
 ## Regra de leitura de contexto (para o AGENTS.md global)
 
-```
+\`\`\`
 Task interna de um sistema:
   leia -> ecosystem/.ai/ -> sistema-X/.ai/ -> task
 
 Task de integracao entre sistemas:
   leia -> ecosystem/.ai/ -> sistema-A/.ai/ -> sistema-B/.ai/ -> task
-```
+\`\`\`
 
 ---
 
