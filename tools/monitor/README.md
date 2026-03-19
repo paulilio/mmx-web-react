@@ -58,10 +58,8 @@ Checklist de monitoramento da Phase 1 (agora validado no relatorio):
 ## Estrutura De Pastas
 
 \`\`\`text
-config/                          # Configuracao centralizada (raiz)
-|-- app-config.json
-`-- monitor.config.json
-
+tools/monitor/
+|-- monitor.config.json          # Configuracao do monitor
 monitor/
 |-- engine/                      # Runtime de debug
 |   |-- runner.js
@@ -238,7 +236,7 @@ O relatorio tambem inclui:
 
 ## Configuracao
 
-Arquivo: `config/monitor.config.json`
+Arquivo: `tools/monitor/monitor.config.json`
 
 | Campo | Descricao |
 |-------|-----------|

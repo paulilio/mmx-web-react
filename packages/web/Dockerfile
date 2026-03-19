@@ -10,16 +10,16 @@ RUN corepack enable
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
+COPY packages/web/package.json ./packages/web/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile --filter @mmx/web
 
 # ─── Build ────────────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/web/node_modules ./packages/web/node_modules
 COPY . .
-# Gera o Prisma client no momento do build
-RUN pnpm prisma:generate
 RUN pnpm build
 
 # ─── Runtime ──────────────────────────────────────────────────────────────────
@@ -31,19 +31,14 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-# Prisma schema + migrations necessarios para migrate deploy no startup
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-# Script de startup
-COPY --chown=nextjs:nodejs docker/scripts/migrate-and-start.sh ./docker/scripts/migrate-and-start.sh
-RUN chmod +x docker/scripts/migrate-and-start.sh
+COPY --from=builder --chown=nextjs:nodejs /app/packages/web/public ./packages/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/packages/web/.next ./packages/web/.next
+COPY --from=builder --chown=nextjs:nodejs /app/packages/web/node_modules ./packages/web/node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/packages/web/package.json ./packages/web/package.json
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "docker/scripts/migrate-and-start.sh"]
+CMD ["node", "packages/web/node_modules/.bin/next", "start", "packages/web"]

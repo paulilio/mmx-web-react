@@ -9,12 +9,12 @@ WORKDIR /app
 ENV NODE_ENV=development
 
 # Install only API dependencies
-COPY apps/api/package.json ./package.json
+COPY packages/api/package.json ./package.json
 RUN --mount=type=cache,id=pnpm-api,target=/pnpm/store \
     pnpm install --include=dev
 
 # Copy API source
-COPY apps/api ./
+COPY packages/api ./
 
 # Build API
 RUN pnpm build

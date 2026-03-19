@@ -6,8 +6,8 @@ const { collectEvidence } = require("./evidence")
 const { buildReport, writeReport } = require("./report")
 const { writeSystemLog } = require("./system-log")
 
-function loadConfig(projectRoot) {
-  const configPath = path.join(projectRoot, "config", "monitor.config.json")
+function loadConfig(monitorRoot) {
+  const configPath = path.join(monitorRoot, "monitor.config.json")
   const raw = fs.readFileSync(configPath, "utf8")
   return JSON.parse(raw)
 }
@@ -199,7 +199,7 @@ function evaluatePhase1(state, sentryDetected) {
 async function run() {
   const monitorRoot = path.resolve(__dirname, "..")   // monitor/
   const projectRoot = path.resolve(monitorRoot, "..") // project root
-  const baseConfig = loadConfig(projectRoot)
+  const baseConfig = loadConfig(monitorRoot)
   const withEnv = applyEnvOverrides(baseConfig)
   const config = applyCliOverrides(withEnv)
   const state = {
