@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useSession } from "@/hooks/use-session"
@@ -19,38 +19,38 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const { isSessionValid } = useSession()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
+  const hasCheckedRef = useRef(false)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // Wait a moment for auth to initialize
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    // Skip if still loading auth
+    if (authLoading) return
 
-      if (!authLoading) {
-        if (!user) {
-          // No user found, redirect to auth
-          router.push("/auth")
-          return
-        }
+    // Skip if already checked and passed
+    if (hasCheckedRef.current && !isChecking) return
 
-        if (!user.isEmailConfirmed) {
-          // User exists but email not confirmed
-          router.push(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
-          return
-        }
-
-        if (!isSessionValid) {
-          // User exists but session invalid
-          router.push("/auth")
-          return
-        }
-
-        // All checks passed
-        setIsChecking(false)
+    const checkAuth = () => {
+      if (!user) {
+        // No user found, redirect to auth
+        router.push("/auth")
+        return
       }
+
+      if (!user.isEmailConfirmed) {
+        // User exists but email not confirmed
+        router.push(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
+        return
+      }
+
+      // User exists and email confirmed - allow access
+      // Session validity is handled by useSession hook separately
+      hasCheckedRef.current = true
+      setIsChecking(false)
     }
 
-    checkAuth()
-  }, [user, authLoading, isSessionValid, router])
+    // Small delay to ensure auth is fully initialized
+    const timer = setTimeout(checkAuth, 100)
+    return () => clearTimeout(timer)
+  }, [user, authLoading, router])
 
   // Show loading state while checking authentication
   if (authLoading || isChecking) {

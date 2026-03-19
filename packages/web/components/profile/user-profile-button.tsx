@@ -112,13 +112,7 @@ export function UserProfileButton() {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem 
-            onClick={() => {
-              console.log("[v0] Logout clicked")
-              logout()
-            }} 
-            className="text-red-600"
-          >
+          <DropdownMenuItem onClick={logout} className="text-red-600">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>
