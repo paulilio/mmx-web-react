@@ -6,20 +6,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 RUN apk add --no-cache openssl
 
-# ---- deps stage ----
-FROM base AS deps
-WORKDIR /app
-
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/api/package.json ./packages/api/
-COPY packages/web/package.json ./packages/web/
-
-RUN pnpm install --frozen-lockfile --ignore-scripts
-
-# Deploy only api deps into isolated folder (fixes pnpm symlink issues)
-RUN pnpm deploy --filter @mmx/api --prod /deploy/api
-
-# ---- build stage ----
+# ---- builder stage ----
 FROM base AS builder
 WORKDIR /app
 
@@ -27,15 +14,19 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/web/package.json ./packages/web/
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+# Install with scripts enabled so Prisma can generate binaries
+RUN pnpm install --frozen-lockfile
 
 COPY packages/api ./packages/api
 
-# Generate Prisma client
+# Generate Prisma client using installed binary
 RUN pnpm exec prisma generate --schema packages/api/prisma/schema.prisma
 
 # Build
 RUN pnpm --filter @mmx/api build
+
+# Deploy isolated deps for runner (legacy flag required for pnpm v10)
+RUN pnpm deploy --filter @mmx/api --prod --legacy /deploy/api
 
 # ---- runner stage ----
 FROM node:22-alpine AS runner
@@ -45,7 +36,7 @@ WORKDIR /app
 
 COPY --from=builder /app/packages/api/dist ./dist
 COPY --from=builder /app/packages/api/prisma ./prisma
-COPY --from=deps /deploy/api/node_modules ./node_modules
+COPY --from=builder /deploy/api/node_modules ./node_modules
 
 ENV NODE_ENV=production
 EXPOSE 4000
