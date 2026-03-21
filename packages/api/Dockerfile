@@ -40,7 +40,9 @@ WORKDIR /app
 COPY --from=builder /app/packages/api/dist ./dist
 COPY --from=builder /app/packages/api/prisma ./prisma
 COPY --from=builder /deploy/api/node_modules ./node_modules
+COPY packages/api/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["node", "dist/main"]
+CMD ["sh", "./entrypoint.sh"]
