@@ -14,12 +14,15 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/web/package.json ./packages/web/
 
-# Install with scripts enabled so Prisma can generate binaries
+# Copy schema before install so postinstall can find it
+COPY packages/api/prisma ./packages/api/prisma
+
+# Install with scripts enabled so Prisma postinstall generates client
 RUN pnpm install --frozen-lockfile
 
 COPY packages/api ./packages/api
 
-# Generate Prisma client using installed binary
+# Generate Prisma client explicitly
 RUN pnpm exec prisma generate --schema packages/api/prisma/schema.prisma
 
 # Build
