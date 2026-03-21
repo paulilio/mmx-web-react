@@ -6,18 +6,20 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 WORKDIR /app
-ENV NODE_ENV=development
 
-# Install only API dependencies
-COPY packages/api/package.json ./package.json
-RUN pnpm install --include=dev
+# Copy workspace files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/api/package.json ./packages/api/package.json
+
+# Install dependencies
+RUN pnpm install --filter @mmx/api --frozen-lockfile
 
 # Copy API source
-COPY packages/api ./
+COPY packages/api ./packages/api
 
 # Build API
-RUN pnpm build
+RUN pnpm --filter @mmx/api build
 
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["pnpm", "start"]
+CMD ["node", "packages/api/dist/main"]
