@@ -1,2 +1,3 @@
 - Revisar as tasks que estão em done, e que talvez tenha algo que deveria estar em doing ou backlog.
 - deploy prod.
+- Migrar infra de Vercel para Azure Container Apps após Alpha — prática para certificação AZ-204. Frontend (Next.js) + Backend (NestJS) como containers separados, conectados ao Neon. Docker já existe em tools/docker/. Ver: .aiws/knowledge/ops/con-ambiente-alpha.md
