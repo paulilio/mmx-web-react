@@ -10,9 +10,10 @@ WORKDIR /app
 # Copy workspace files
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/api/package.json ./packages/api/package.json
+COPY packages/web/package.json ./packages/web/package.json
 
-# Install dependencies
-RUN pnpm install --filter @mmx/api --frozen-lockfile
+# Install all workspace dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy API source
 COPY packages/api ./packages/api
