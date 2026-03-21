@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY packages/api ./packages/api
 
 # Generate Prisma client
-RUN cd packages/api && npx prisma generate --schema ./prisma/schema.prisma
+RUN pnpm --filter @mmx/api db:generate
 
 # Build API
 RUN pnpm --filter @mmx/api build
