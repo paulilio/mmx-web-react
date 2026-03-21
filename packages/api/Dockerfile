@@ -1,29 +1,52 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine
+FROM node:22-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+RUN apk add --no-cache openssl
 
+# ---- deps stage ----
+FROM base AS deps
 WORKDIR /app
 
-# Copy workspace files
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/api/package.json ./packages/api/package.json
-COPY packages/web/package.json ./packages/web/package.json
+COPY packages/api/package.json ./packages/api/
+COPY packages/web/package.json ./packages/web/
 
-# Install all workspace dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Copy API source
+# Deploy only api deps into isolated folder (fixes pnpm symlink issues)
+RUN pnpm deploy --filter @mmx/api --prod /deploy/api
+
+# ---- build stage ----
+FROM base AS builder
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/api/package.json ./packages/api/
+COPY packages/web/package.json ./packages/web/
+
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
 COPY packages/api ./packages/api
 
 # Generate Prisma client
-RUN cd packages/api && ./node_modules/.bin/prisma generate --schema ./prisma/schema.prisma
+RUN pnpm exec prisma generate --schema packages/api/prisma/schema.prisma
 
-# Build API
+# Build
 RUN pnpm --filter @mmx/api build
+
+# ---- runner stage ----
+FROM node:22-alpine AS runner
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+COPY --from=builder /app/packages/api/dist ./dist
+COPY --from=builder /app/packages/api/prisma ./prisma
+COPY --from=deps /deploy/api/node_modules ./node_modules
 
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["node", "packages/api/dist/main"]
+CMD ["node", "dist/main"]
