@@ -10,8 +10,7 @@ ENV NODE_ENV=development
 
 # Install only API dependencies
 COPY packages/api/package.json ./package.json
-RUN --mount=type=cache,id=s/pnpm-api,target=/pnpm/store \
-    pnpm install --include=dev
+RUN pnpm install --include=dev
 
 # Copy API source
 COPY packages/api ./
