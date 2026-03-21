@@ -8,9 +8,14 @@ Publicar o app na Vercel (free) conectado ao PostgreSQL, com migrações aplicad
 Backend e frontend P0 estão prontos (ver tk-100a). O bloqueador restante para Alpha é a infra: banco PostgreSQL provisionado, variáveis de ambiente configuradas na Vercel e smoke test funcional em ambiente publicado.
 
 ## Plan
-- [ ] Fase A: provisionar PostgreSQL (escolher provider free, criar instância, obter DATABASE_URL)
-- [ ] Fase B: configurar Vercel (Node 22, env vars em preview e production)
-- [ ] Fase C: aplicar migrações Prisma no banco de preview
+- [x] Fase A: provisionar PostgreSQL — Neon (projeto mmx-platform, região us-east-1)
+- [x] Fase B: configurar Vercel — projeto mmx-platform linkado, env vars production
+- [x] Fase B: configurar Railway — backend @mmx/api, Dockerfile multi-stage, entrypoint.sh
+- [x] Fase C: aplicar migrações Prisma no Neon (9 migrações aplicadas)
+- [x] Fase C: resolver conflito de versão Prisma CLI vs client (6.4.1 → 6.19.2)
+- [x] Fase C: resolver Prisma client não encontrado no runner (pnpm deploy --prod não copia .prisma/)
+- [x] Fase C: configurar JWT_ACCESS_SECRET e JWT_REFRESH_SECRET no Railway
+- [x] Fase C: configurar NEXT_PUBLIC_API_BASE no Vercel
 - [ ] Fase D: gates técnicos + validate:env production
 - [ ] Fase D: smoke test P0 em ambiente publicado (login, CRUD, budget, settings)
 
@@ -39,10 +44,11 @@ Backend e frontend P0 estão prontos (ver tk-100a). O bloqueador restante para A
 - [ ] Smoke P0 passando em ambiente externo
 - [ ] URLs de preview e production registradas
 
-## Estado atual (2026-03-12)
-- prisma:generate: ok
-- prisma migrate status: 5 migrações pendentes
-- validate:env development: ok com warnings
-- validate:env production: 9 erros (envs ausentes: DATABASE_URL, MMX_APP_ENV, CORS_ORIGINS_PROD, GOOGLE_*, MICROSOFT_*)
-- Vercel: não configurada
-- Deploy: não executado
+## Estado atual (2026-03-21)
+- Neon: ✅ provisionado, 9 migrações aplicadas
+- Railway: ✅ deploy ok — https://mmxapi-production.up.railway.app
+- Vercel: ✅ linkado — https://mmx-platform.vercel.app (aguardando redeploy com NEXT_PUBLIC_API_BASE)
+- JWT secrets: ✅ configurados no Railway
+- validate:env production: pendente
+- Smoke P0: pendente
+- Investigação Docker/Prisma: .aiws/knowledge/inv-prisma-client-docker-deploy.md

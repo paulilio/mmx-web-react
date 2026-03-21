@@ -9,6 +9,11 @@
 5. .ai/CONTEXT_SURFACES.md ← avaliar impacto depois de saber o que vai mudar
 \`\`\`
 
+## Operacao de Ambiente (Alpha)
+Para qualquer operacao nos servicos de infraestrutura (GitHub, Vercel, Neon, Railway):
+- Leia: `.aiws/knowledge/ops/man-ambiente-alpha.md`
+- Contem: metodos de acesso (CLI, API, MCP), identificadores, tokens, comandos testados e diagnostico.
+
 ## Regras Operacionais
 - Siga convencoes de naming, estrutura e estilo do repositorio.
 - Nao altere components/ui sem solicitacao explicita.
