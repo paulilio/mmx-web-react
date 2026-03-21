@@ -31,6 +31,10 @@ RUN pnpm --filter @mmx/api build
 # Deploy isolated deps for runner (legacy flag required for pnpm v10)
 RUN pnpm deploy --filter @mmx/api --prod --legacy /deploy/api
 
+# Copy generated Prisma client into deploy dir (pnpm deploy --prod does not include generated files)
+RUN cp -r /app/node_modules/.pnpm/@prisma+client@6.19.2_prisma@6.19.2_typescript@5.9.3__typescript@5.9.3/node_modules/.prisma \
+    /deploy/api/node_modules/.pnpm/@prisma+client@6.19.2_prisma@6.19.2_typescript@5.9.3__typescript@5.9.3/node_modules/.prisma
+
 # ---- runner stage ----
 FROM node:22-alpine AS runner
 RUN apk add --no-cache openssl
