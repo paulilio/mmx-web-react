@@ -323,18 +323,43 @@ Read these files in order before any task:
 
 **Principio: uma fonte (.ai/), multiplos ponteiros. Zero duplicacao de conteudo entre ferramentas.**
 
+## Modelo multi-IA
+
+Para humanos e mantenedores do workspace, a interpretacao correta e:
+
+- `.ai/` e o kernel unico de conhecimento, regras e workflows.
+- `.ai/commands/` e a especificacao canonica dos workflows operacionais.
+- Arquivos-ponte como `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursorrules` e equivalentes sao bridges para o kernel, nao fontes de verdade independentes.
+- Wrappers nativos por plataforma entram apenas quando a ferramenta exige integracao formal para comandos, prompts, agentes, skills, hooks ou artefatos equivalentes.
+- O objetivo do modelo multi-IA e manter equivalencia de workflow entre ferramentas, nao identidade de implementacao.
+
+### Regra de manutencao
+
+Ao alterar um workflow:
+
+1. Atualize primeiro o kernel em `.ai/`.
+2. Se o workflow morar em `.ai/commands/`, trate esse arquivo como especificacao canonica.
+3. Revise as bridges apenas se a navegacao ou a ativacao do kernel mudou.
+4. Atualize wrappers nativos somente nas plataformas que exigem integracao formal.
+
+### Regra de duplicacao
+
+Nao replique semantica de workflow em varios lugares sem necessidade.
+Quando houver wrapper nativo, ele deve mapear de volta para o kernel e permanecer o mais fino possivel.
+
 ## Compatibilidade de comandos por ferramenta
 
 | Ferramenta | Suporte a `.ai/commands/` |
 |---|---|
 | Claude Code | Nativo — `/comando` funciona direto |
 | Cursor | Nativo — `/comando` funciona direto |
-| Copilot | Semi-manual — requer AI Command Dispatcher |
+| Copilot | Canonico em `.ai/commands/`, mas nativo so via wrapper formal (ex.: prompt files, agents, skills) |
 | v0 | Nao suporta — foco em UI, usar Project Instructions |
 | Outros | Manual — referenciar arquivo diretamente |
 
-O **AI Command Dispatcher** no `AGENTS.md` resolve a compatibilidade com Copilot e outras ferramentas.
-Quando presente, qualquer AI interpreta `/comando` como instrucao para ler `.ai/commands/{comando}.md` e executar.
+O **AI Command Dispatcher** no `AGENTS.md` funciona como compatibilidade operacional.
+Ele nao transforma `.ai/commands/` em registro nativo universal.
+Quando uma ferramenta exigir integracao formal, use wrappers nativos apontando para o workflow canonico em `.ai/commands/`.
 
 ---
 

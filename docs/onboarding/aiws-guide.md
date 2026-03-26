@@ -15,6 +15,37 @@ Para os principios do modelo, veja: `references/aiws/generic-blueprint.md`
 | Cursor | Le `.cursorrules` (raiz) | Automatico |
 | v0 (Vercel) | Colar `aiws-custom-v0-instructions.md` em Project → Knowledge | Manual |
 
+## Modelo multi-IA no MMX
+
+No MMX, a divisao correta de responsabilidades e:
+
+- `.ai/` e o kernel unico de conhecimento, regras e workflows.
+- `.ai/commands/` e a especificacao canonica dos workflows operacionais.
+- `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursorrules` e equivalentes sao arquivos-bridge. Eles ativam ou apontam para o kernel, mas nao substituem o kernel.
+- Wrappers nativos por ferramenta entram apenas quando a plataforma exige integracao formal. Exemplo: prompt files, custom agents, skills ou outros artefatos registrados pelo Copilot.
+
+Regra pratica:
+
+1. Mude primeiro o kernel.
+2. Depois ajuste a bridge, se necessario.
+3. So entao ajuste wrappers nativos da ferramenta que precisar.
+
+### Quando criar wrapper nativo
+
+Crie wrapper nativo quando a ferramenta nao conseguir usar o workflow apenas lendo a bridge e o kernel.
+
+Exemplos:
+
+- Copilot: criar prompt files, agents ou skills quando precisar de slash commands nativos ou integracao formal.
+- Claude/Cursor: usar artefatos nativos da plataforma apenas se o bridge nao for suficiente.
+- v0 ou chats manuais: usar prompt manual especifico quando nao houver mecanismo automatico.
+
+### Quando alterar `.ai/commands`
+
+Sempre trate `.ai/commands/` como a fonte canonica do workflow.
+Nao trate esse diretorio como garantia de execucao nativa em toda ferramenta.
+Se um comando precisar aparecer de forma nativa em uma plataforma, crie o wrapper correspondente apontando para o workflow canonico.
+
 ### Usando o v0 no MMX
 
 1. Abra o projeto no v0

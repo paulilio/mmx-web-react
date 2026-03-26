@@ -1,0 +1,7 @@
+{
+    "vscode-office.editorTheme": "Auto",
+    "vscode-office.previewCodeHighlight.style": "vs",
+    "vscode-office.pasterImgPath": "${workspaceDir}/.aiws/resources/image/${now}.png",
+    "vscode-office.viewAbsoluteLocal": true,
+    "vscode-office.workspacePathAsImageBasePath": true
+}

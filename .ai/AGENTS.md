@@ -9,6 +9,29 @@
 5. .ai/CONTEXT_SURFACES.md ← avaliar impacto depois de saber o que vai mudar
 \`\`\`
 
+## Kernel Unico e Portabilidade Multi-IA
+Treat `.ai/` as the single kernel of knowledge, rules, and workflows for this repository.
+
+Operational meaning:
+- `.ai/AGENTS.md`, `.ai/SYSTEM.md`, `.ai/CODEBASE_MAP.md`, and `.ai/CONTEXT_SURFACES.md` are the canonical context.
+- `.ai/commands/` is the canonical workflow specification layer.
+- Bridge files such as `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursorrules`, or equivalent tool entrypoints are pointers to the kernel, not independent sources of truth.
+- Do not treat bridge files as the final integration surface for workflows unless the target platform has no native customization mechanism.
+
+Platform integration rule:
+- When a platform supports native wrappers such as prompt files, custom agents, skills, hooks, slash commands, or equivalent artifacts, use those artifacts only as platform-specific wrappers.
+- Platform-specific wrappers must reference or mirror the kernel intent from `.ai/` and must not replace `.ai/` as the source of truth.
+- If a platform does not support native wrappers, use the bridge file or a platform-specific manual prompt as the fallback entrypoint.
+
+Command interpretation rule:
+- Treat `.ai/commands/` as workflow specifications, not as a guarantee of native command registration in every AI tool.
+- If a tool requires formal registration for commands, prompts, or agents, create tool-native wrappers that map to the corresponding workflow in `.ai/commands/`.
+
+Consistency rule:
+- Keep semantic duplication to a minimum.
+- Update the kernel first.
+- Then update bridges or native wrappers only where required by the target tool.
+
 ## Operacao de Ambiente (Alpha)
 Para qualquer operacao nos servicos de infraestrutura (GitHub, Vercel, Neon, Railway):
 - Leia: `.aiws/knowledge/ops/man-ambiente-alpha.md`
@@ -139,3 +162,19 @@ When the user writes a command starting with "/", interpret it as an engineering
 Format: /command-name [arguments]
 Instructions are in: .ai/commands/{command-name}.md
 Steps: 1. Read the file. 2. Follow strictly. 3. Execute steps. 4. Output results.
+
+## Wrapper Governance
+
+Platform-specific wrappers exist for each command in `.ai/commands/`:
+
+| Platform | Wrapper location | Format |
+|---|---|---|
+| Claude Code CLI | `.claude/commands/*.md` | Plain markdown, no frontmatter |
+| GitHub Copilot | `.github/prompts/*.prompt.md` | YAML frontmatter + delegation rule |
+
+Rules:
+- When creating a new command in `.ai/commands/`, create the corresponding wrapper in BOTH `.claude/commands/` and `.github/prompts/`.
+- When editing a command, update the wrapper in both platforms.
+- Wrappers must not duplicate content — they must delegate to `.ai/commands/`.
+- If a wrapper and the canonical command ever diverge, the canonical command wins.
+- Update kernel first, then wrappers.

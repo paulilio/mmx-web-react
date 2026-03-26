@@ -29,6 +29,22 @@ CLAUDE.md               ← ponte para Claude Code
 .cursorrules            ← ponte para Cursor
 \`\`\`
 
+## Modelo multi-IA na pratica
+
+Para uso humano, a regra e:
+
+- `.ai/` e o kernel unico de conhecimento, regras e workflows.
+- `.ai/commands/` e a especificacao canonica dos workflows operacionais.
+- Bridges como `CLAUDE.md`, `.github/copilot-instructions.md` e `.cursorrules` apontam para o kernel e nao substituem o kernel.
+- Wrappers nativos entram apenas quando a ferramenta exige integracao formal para comandos, prompts, agentes, skills, hooks ou artefatos equivalentes.
+
+Fluxo recomendado de manutencao:
+
+1. Atualize primeiro o kernel em `.ai/`.
+2. Se o workflow mudou, ajuste a especificacao em `.ai/commands/`.
+3. Revise bridges apenas se a ativacao do kernel mudou.
+4. Atualize wrappers nativos somente nas plataformas que exigem integracao formal.
+
 ---
 
 # Como criar uma task
@@ -80,7 +96,13 @@ Type: feature.
 
 # Como executar comandos
 
-Os comandos ficam em `.ai/commands/`. Basta pedir para a AI executar.
+Os comandos ficam em `.ai/commands/` e devem ser tratados como a especificacao canonica do workflow.
+
+Como usar por ferramenta:
+
+- Claude Code e Cursor podem consumir esses workflows de forma mais direta, dependendo do suporte nativo da ferramenta.
+- Copilot deve usar wrappers nativos, como prompt files em `.github/prompts/`, quando voce quiser slash commands ou integracao formal.
+- Se nao houver wrapper nativo, use o bridge e cite explicitamente o comando canonico.
 
 | Comando | Quando usar | Como pedir |
 |---|---|---|
