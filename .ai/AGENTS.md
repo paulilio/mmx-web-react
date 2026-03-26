@@ -167,9 +167,9 @@ Comandos disponiveis:
 ## Rules Especificas por Linguagem (.ai/rules/)
 - `.ai/rules/typescript.md` — regras TypeScript/TSX especificas do MMX (complementam AGENTS.md)
 
-## References (.ai/references/)
-Arquivos de referência técnica compartilhados via aiws-castler. Ler quando o contexto for relevante:
-- `.ai/references/neon-postgres.md` — guia Neon Serverless Postgres (drivers, branching, auth, CLI, APIs)
+## Skills (.ai/skills/)
+Referências técnicas canônicas compartilhadas via aiws-castler. Ler quando o contexto for relevante:
+- `.ai/skills/neon-postgres.md` — guia Neon Serverless Postgres (drivers, branching, auth, CLI, APIs)
 
 ## AI Command Dispatcher
 When the user writes a command starting with "/", interpret it as an engineering workflow command.
