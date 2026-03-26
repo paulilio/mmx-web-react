@@ -35,5 +35,9 @@ Available commands:
 - `/spec-review` — architectural review before implementation
 - `/performance-check-custom-mmx` — MMX performance audit
 - `/security-check-custom-mmx` — MMX security baseline verification
+- `/learn` — extract reusable patterns from session into .aiws/knowledge/ (includes kernel-check + update-docs)
+- `/checkpoint` — create/verify/list named checkpoints during long tasks
+- `/agentic-engineering` — decompose work into units, route models, eval-first execution
+- `/update-docs` — verify and update READMEs, docs/, guides, CODEBASE_MAP and AI bridges
 
 Governance rule: when a new command is created in `.ai/commands/`, create the corresponding wrapper in `.claude/commands/` and `.github/prompts/`. Kernel first, then wrappers.

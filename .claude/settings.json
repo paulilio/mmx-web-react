@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input=require('fs').readFileSync(0,'utf8');try{const d=JSON.parse(input);const cmd=(d.tool_input&&d.tool_input.command)||'';if(/--no-verify/.test(cmd)){process.stdout.write(JSON.stringify({decision:'block',reason:'--no-verify is not allowed. Fix the pre-commit/commit-msg/pre-push hook failure instead of bypassing it.'}));process.exit(0);}process.stdout.write(input);}catch(e){process.stdout.write(input);}\""
+          }
+        ],
+        "description": "Block --no-verify to protect pre-commit, commit-msg, and pre-push hooks from being bypassed"
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input=require('fs').readFileSync(0,'utf8');try{const d=JSON.parse(input);const path=(d.tool_input&&(d.tool_input.file_path||d.tool_input.path))||'';const configs=['.eslintrc','.eslintrc.js','.eslintrc.json','.eslintrc.cjs','.prettierrc','.prettierrc.js','.prettierrc.json','biome.json','biome.config.ts','.stylelintrc'];const isConfig=configs.some(c=>path.endsWith(c)||path.includes('/'+c));if(isConfig){process.stdout.write(JSON.stringify({decision:'block',reason:'Modifying linter/formatter config is not allowed. Fix the code to comply with the existing rules instead of weakening the config.'}));process.exit(0);}process.stdout.write(input);}catch(e){process.stdout.write(input);}\""
+          }
+        ],
+        "description": "Block modifications to linter/formatter config files — fix the code, not the config"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input=require('fs').readFileSync(0,'utf8');try{const d=JSON.parse(input);const path=(d.tool_input&&(d.tool_input.file_path||d.tool_input.path))||'';if(/\\.(ts|tsx|js|jsx)$/.test(path)){const{spawnSync}=require('child_process');const r=spawnSync('pnpm',['exec','prettier','--write',path],{encoding:'utf8',cwd:process.env.PWD||process.cwd()});if(r.stderr&&r.stderr.trim())process.stderr.write('[auto-format] '+r.stderr);}process.stdout.write(input);}catch(e){process.stdout.write(input);}\"",
+            "async": true,
+            "timeout": 15
+          }
+        ],
+        "description": "Auto-format .ts/.tsx/.js/.jsx files with Prettier after edits"
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input=require('fs').readFileSync(0,'utf8');try{const d=JSON.parse(input);const path=(d.tool_input&&(d.tool_input.file_path||d.tool_input.path))||'';if(/\\.tsx?$/.test(path)){const fs=require('fs');const content=fs.existsSync(path)?fs.readFileSync(path,'utf8'):'';const matches=content.match(/console\\.log/g);if(matches&&matches.length>0){process.stderr.write('[console.log] WARNING: '+matches.length+' console.log statement(s) found in '+path+'. Remove before shipping.\\n');}}process.stdout.write(input);}catch(e){process.stdout.write(input);}\"",
+            "async": true,
+            "timeout": 5
+          }
+        ],
+        "description": "Warn about console.log statements in .ts/.tsx files after edits"
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input=require('fs').readFileSync(0,'utf8');try{const d=JSON.parse(input);const summary=d.summary||d.transcript_path||'(no summary)';const fs=require('fs');const path=require('path');const dir=path.join(process.env.HOME||process.env.USERPROFILE||'.','claude-sessions');if(!fs.existsSync(dir))fs.mkdirSync(dir,{recursive:true});const file=path.join(dir,'pre-compact-'+Date.now()+'.txt');fs.writeFileSync(file,'Compacted at: '+new Date().toISOString()+'\\nSummary: '+summary+'\\n');process.stderr.write('[pre-compact] State saved to '+file+'\\n');}catch(e){}process.stdout.write(input);\"",
+            "async": true,
+            "timeout": 5
+          }
+        ],
+        "description": "Log a marker before context compaction so session state can be recovered"
+      }
+    ]
+  }
+}

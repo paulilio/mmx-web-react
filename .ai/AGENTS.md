@@ -53,6 +53,7 @@ Para qualquer operacao nos servicos de infraestrutura (GitHub, Vercel, Neon, Rai
   - constants: SCREAMING_SNAKE_CASE
 - Hooks must start with `use` and must not render JSX.
 - Keep changes minimal and composable.
+- When working with `.ts` or `.tsx` files, also read `.ai/rules/typescript.md` for language-specific rules.
 
 ## Architecture Rules
 - Frontend data boundary: packages/web/lib/client/api.ts.
@@ -151,11 +152,22 @@ Comandos disponiveis:
 - `task-loop` — loop unico para tasks simples (bugfix, chore). Executa o ciclo completo automaticamente
 - `start-task` — ler contexto e entender a task
 - `task-plan` — criar/refinar plano de execucao
+- `analyze-task` — analise profunda (6 passos) para tasks complexas
 - `write-tests` — escrever testes
 - `regression-check` — validacao completa (lint, test, type-check, build)
 - `task-done` — finalizar task, registrar run, mover para done/, kernel-check se aplicavel
 - `ship` — commit, push, PR, gerar descricoes para PR e Jira
 - `kernel-check` — verificar se o kernel precisa de atualizacao apos mudancas estruturais
+- `spec-review` — revisao arquitetural de spec antes de implementar (10 criterios, risk score)
+- `performance-check-custom-mmx` — auditoria de performance focada nos padroes MMX
+- `security-check-custom-mmx` — verificacao da security baseline MMX
+- `learn` — extrair padroes reutilizaveis da sessao como artefatos de conhecimento (inclui kernel-check + update-docs)
+- `checkpoint` — criar/verificar/listar checkpoints nomeados em tasks longas
+- `agentic-engineering` — operar com decomposicao por unidades, roteamento de modelos e eval-first
+- `update-docs` — verificar e atualizar READMEs, docs/, guides, CODEBASE_MAP e bridges de IA
+
+## Rules Especificas por Linguagem (.ai/rules/)
+- `.ai/rules/typescript.md` — regras TypeScript/TSX especificas do MMX (complementam AGENTS.md)
 
 ## AI Command Dispatcher
 When the user writes a command starting with "/", interpret it as an engineering workflow command.
