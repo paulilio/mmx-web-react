@@ -41,7 +41,7 @@ O prefixo no nome do arquivo indica o tipo de conhecimento:
 
 1. Escolha a subpasta correta (`product/`, `architecture/`, `ops/`)
 2. Nome do arquivo: `<prefixo>-<nome-descritivo>.md`
-3. Use o template em `.aiws/templates/` correspondente ao tipo
+3. Use o template em `.ai/templates/` correspondente ao tipo
 
 ---
 

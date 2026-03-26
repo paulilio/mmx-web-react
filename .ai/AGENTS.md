@@ -133,16 +133,14 @@ Estrutura:
 - `knowledge/` — memoria tecnica do projeto (investigacoes, conceitos, padroes, decisoes, reviews)
 - `runs/` — historico de execucao de tasks
 - `references/` — referencias de produto e mercado
-- `templates/` — templates obrigatorios (ver abaixo)
-
-Templates (usar sempre ao criar artefatos):
-- Task: `.aiws/templates/task.md` → salvar em `tasks/`
-- Investigation: `.aiws/templates/investigation.md` → salvar em `knowledge/inv-*.md`
-- Concept: `.aiws/templates/concept.md` → salvar em `knowledge/con-*.md`
-- Pattern: `.aiws/templates/pattern.md` → salvar em `knowledge/pat-*.md`
-- Decision: `.aiws/templates/decision.md` → salvar em `knowledge/dec-*.md`
-- Review: `.aiws/templates/review.md` → salvar em `knowledge/rev-*.md` (sob demanda do usuario)
-- Run: `.aiws/templates/run.md` → salvar em `runs/`
+Templates (usar sempre ao criar artefatos — ficam em `.ai/templates/`):
+- Task: `.ai/templates/task.md` → salvar em `.aiws/tasks/`
+- Investigation: `.ai/templates/investigation.md` → salvar em `.aiws/knowledge/inv-*.md`
+- Concept: `.ai/templates/concept.md` → salvar em `.aiws/knowledge/con-*.md`
+- Pattern: `.ai/templates/pattern.md` → salvar em `.aiws/knowledge/pat-*.md`
+- Decision: `.ai/templates/decision.md` → salvar em `.aiws/knowledge/dec-*.md`
+- Review: `.ai/templates/review.md` → salvar em `.aiws/knowledge/rev-*.md` (sob demanda do usuario)
+- Run: `.ai/templates/run.md` → salvar em `.aiws/runs/`
 
 ## Comandos (.ai/commands/)
 Biblioteca de comandos reutilizaveis. Usar como etapas no Plan da task.
