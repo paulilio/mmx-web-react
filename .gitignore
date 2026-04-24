@@ -62,3 +62,10 @@ runtime/**
 packages/*/runtime/**
 !packages/*/runtime/**/
 !packages/*/runtime/**/.gitkeep
+
+# AI workspace — kernel, knowledge e wrappers vivem no repo aiws-castle
+# (montados aqui via symlinks/diretórios espelhados a partir de aiws-castle/ops/mmx/)
+.ai
+.aiws
+.claude/skills/
+.github/prompts/
