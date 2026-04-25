@@ -76,7 +76,36 @@ function validateByEnvironment(env) {
     warnings.push("CORS_ORIGINS_DEV is empty; localhost defaults will be used")
   }
 
+  validateOpenFinance(env, errors, warnings)
+
   return { errors, warnings }
+}
+
+function validateOpenFinance(env, errors, warnings) {
+  const isProdLike = env === "production"
+
+  if (process.env.MMX_ENCRYPTION_KEY) {
+    const decoded = Buffer.from(process.env.MMX_ENCRYPTION_KEY, "base64")
+    if (decoded.length !== 32) {
+      errors.push("MMX_ENCRYPTION_KEY must decode to 32 bytes (base64)")
+    }
+  } else if (isProdLike) {
+    errors.push("MMX_ENCRYPTION_KEY is required in production")
+  } else {
+    warnings.push("MMX_ENCRYPTION_KEY is empty; encrypted-at-rest features will fail")
+  }
+
+  const belvoEnv = process.env.BELVO_ENV
+  if (belvoEnv && !["sandbox", "production"].includes(belvoEnv)) {
+    errors.push(`BELVO_ENV must be 'sandbox' or 'production' (got '${belvoEnv}')`)
+  }
+
+  if (process.env.BELVO_SECRET_ID || process.env.BELVO_SECRET_PASSWORD) {
+    assertRequired("BELVO_SECRET_ID", process.env.BELVO_SECRET_ID, errors)
+    assertRequired("BELVO_SECRET_PASSWORD", process.env.BELVO_SECRET_PASSWORD, errors)
+  } else if (isProdLike) {
+    warnings.push("BELVO_SECRET_ID/BELVO_SECRET_PASSWORD empty; Open Finance features will be disabled")
+  }
 }
 
 function main() {

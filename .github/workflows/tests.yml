@@ -71,8 +71,8 @@ jobs:
       - name: Run E2E against production
         working-directory: packages/web
         env:
-          E2E_BASE_URL: https://mmx-platform.vercel.app
-          E2E_API_BASE: https://ca-mmx-api-alpha.happymushroom-aaae7c9b.eastus.azurecontainerapps.io
+          E2E_BASE_URL: https://app.moedamix.com.br
+          E2E_API_BASE: https://api.moedamix.com.br
         run: pnpm exec playwright test
       - name: Upload Playwright report
         if: failure()
@@ -91,6 +91,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run smoke tests
         env:
-          API_URL: https://ca-mmx-api-alpha.happymushroom-aaae7c9b.eastus.azurecontainerapps.io
-          WEB_URL: https://mmx-platform.vercel.app
+          API_URL: https://api.moedamix.com.br
+          WEB_URL: https://app.moedamix.com.br
         run: bash scripts/smoke/smoke.sh

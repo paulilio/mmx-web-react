@@ -88,6 +88,12 @@ param apiBaseUrl string = ''
 @description('Cookie Domain attribute (ex: .moedamix.com.br) — cookies cross-subdomain. Vazio = host-only.')
 param cookieDomain string = ''
 
+@description('Custom hostname (ex: api.moedamix.com.br). Vazio = usar só FQDN azurecontainerapps.io.')
+param customHostname string = ''
+
+@description('Resource ID do managed certificate para o customHostname (gerado pelo `az containerapp hostname bind`).')
+param customCertificateId string = ''
+
 @description('SMTP host (smtp.gmail.com / smtp.improvmx.com / etc)')
 param smtpHost string = ''
 
@@ -162,6 +168,13 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: targetPort
         transport: 'auto'
         allowInsecure: false
+        customDomains: empty(customHostname) || empty(customCertificateId) ? [] : [
+          {
+            name: customHostname
+            certificateId: customCertificateId
+            bindingType: 'SniEnabled'
+          }
+        ]
       }
       registries: [
         {

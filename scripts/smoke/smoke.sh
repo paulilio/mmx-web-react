@@ -6,8 +6,8 @@
 
 set -uo pipefail
 
-API_URL="${API_URL:-https://ca-mmx-api-alpha.happymushroom-aaae7c9b.eastus.azurecontainerapps.io}"
-WEB_URL="${WEB_URL:-https://mmx-platform.vercel.app}"
+API_URL="${API_URL:-https://api.moedamix.com.br}"
+WEB_URL="${WEB_URL:-https://app.moedamix.com.br}"
 
 PASSED=0
 FAILED=0

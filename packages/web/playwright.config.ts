@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "playwright/test"
 
-const baseURL = process.env.E2E_BASE_URL ?? "https://mmx-platform.vercel.app"
+const baseURL = process.env.E2E_BASE_URL ?? "https://app.moedamix.com.br"
 
 export default defineConfig({
   testDir: "./e2e",

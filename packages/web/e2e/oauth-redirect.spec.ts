@@ -1,6 +1,6 @@
 import { test, expect } from "playwright/test"
 
-const apiBase = process.env.E2E_API_BASE ?? "https://ca-mmx-api-alpha.happymushroom-aaae7c9b.eastus.azurecontainerapps.io"
+const apiBase = process.env.E2E_API_BASE ?? "https://api.moedamix.com.br"
 
 test.describe("OAuth start — backend redirects para providers", () => {
   test("Click no botão Google dispara request para /auth/oauth/google", async ({ page, context }) => {
