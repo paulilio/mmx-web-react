@@ -83,6 +83,14 @@ model User {
   profilePhoto          String?
   preferences           Json?
   lastLogin             DateTime?
+  
+  // 2FA (TOTP) - Optional two-factor authentication
+  totpEnabled           Boolean       @default(false)
+  totpSecret            String?       // Encrypted TOTP secret
+  totpBackupCodes       String[]      @default([]) // Array of backup codes
+  totpBackupCodesUsed   String[]      @default([]) // Used backup codes (single-use)
+  totpEnabledAt         DateTime?     // When 2FA was enabled
+  
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   transactions          Transaction[]

@@ -34,9 +34,15 @@ import { RevokeAllExceptUseCase } from "./application/use-cases/revoke-all-excep
 import { TokenBlacklistService } from "@/infrastructure/redis/token-blacklist.service"
 import { AuditLogService } from "@/infrastructure/redis/audit-log.service"
 import { RedisModule } from "@/infrastructure/redis/redis.module"
+import { TwoFactorModule } from "@/infrastructure/2fa/2fa.module"
+import { GetTwoFactorSetupUseCase } from "./application/use-cases/get-2fa-setup.use-case"
+import { EnableTwoFactorUseCase } from "./application/use-cases/enable-2fa.use-case"
+import { DisableTwoFactorUseCase } from "./application/use-cases/disable-2fa.use-case"
+import { VerifyTwoFactorLoginUseCase } from "./application/use-cases/verify-2fa-login.use-case"
+import { TwoFactorController } from "./2fa.controller"
 
 @Module({
-  imports: [RedisModule],
+  imports: [RedisModule, TwoFactorModule],
   controllers: [
     AuthController,
     MeController,
@@ -44,6 +50,7 @@ import { RedisModule } from "@/infrastructure/redis/redis.module"
     GoogleOAuthController,
     MicrosoftOAuthController,
     SessionsController,
+    TwoFactorController,
   ],
   providers: [
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
@@ -68,6 +75,10 @@ import { RedisModule } from "@/infrastructure/redis/redis.module"
     RevokeAllExceptUseCase,
     AuditLogService,
     TokenBlacklistService,
+    GetTwoFactorSetupUseCase,
+    EnableTwoFactorUseCase,
+    DisableTwoFactorUseCase,
+    VerifyTwoFactorLoginUseCase,
   ],
 })
 export class AuthModule {}

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { MainLayout } from "@/components/layout/main-layout"
 import { cn } from "@/lib/utils"
-import { Settings, Lock } from "lucide-react"
+import { Settings, Lock, Shield } from "lucide-react"
 
 const settingsNav = [
   {
@@ -17,6 +17,11 @@ const settingsNav = [
     title: "Segurança",
     href: "/settings/security",
     icon: Lock,
+  },
+  {
+    title: "Autenticação 2FA",
+    href: "/settings/two-factor",
+    icon: Shield,
   },
 ]
 
