@@ -25,6 +25,12 @@ import { MeController } from "./me.controller"
 import { EmailRecoveryController } from "./email-recovery.controller"
 import { GoogleOAuthController } from "./oauth/google-oauth.controller"
 import { MicrosoftOAuthController } from "./oauth/microsoft-oauth.controller"
+import { SessionsController } from "./sessions.controller"
+import { SESSION_REPOSITORY } from "./application/ports/session-repository.port"
+import { PrismaSessionRepository } from "./infrastructure/repositories/prisma-session.repository"
+import { ListSessionsUseCase } from "./application/use-cases/list-sessions.use-case"
+import { RevokeSessionUseCase } from "./application/use-cases/revoke-session.use-case"
+import { RevokeAllExceptUseCase } from "./application/use-cases/revoke-all-except.use-case"
 
 @Module({
   controllers: [
@@ -33,10 +39,12 @@ import { MicrosoftOAuthController } from "./oauth/microsoft-oauth.controller"
     EmailRecoveryController,
     GoogleOAuthController,
     MicrosoftOAuthController,
+    SessionsController,
   ],
   providers: [
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
     { provide: REFRESH_SESSION_REPOSITORY, useClass: PrismaRefreshSessionRepository },
+    { provide: SESSION_REPOSITORY, useClass: PrismaSessionRepository },
     { provide: ONE_TIME_TOKEN_REPOSITORY, useClass: PrismaOneTimeTokenRepository },
     { provide: OAUTH_ACCOUNT_REPOSITORY, useClass: PrismaOAuthAccountRepository },
     { provide: EMAIL_SERVICE, useClass: SmtpEmailService },
@@ -51,6 +59,9 @@ import { MicrosoftOAuthController } from "./oauth/microsoft-oauth.controller"
     ForgotPasswordUseCase,
     ResetPasswordUseCase,
     HandleOAuthCallbackUseCase,
+    ListSessionsUseCase,
+    RevokeSessionUseCase,
+    RevokeAllExceptUseCase,
   ],
 })
 export class AuthModule {}

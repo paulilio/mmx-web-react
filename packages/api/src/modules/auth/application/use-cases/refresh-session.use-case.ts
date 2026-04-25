@@ -4,7 +4,7 @@ import {
   issueAccessToken,
   issueRefreshToken,
 } from "@/core/lib/server/security/jwt"
-import { sha256Hex } from "@/core/lib/server/security/token-hash"
+import { hashTokenWithSecret } from "@/core/lib/server/security/token-hash"
 import {
   REFRESH_SESSION_REPOSITORY,
   type IRefreshSessionRepository,
@@ -35,7 +35,12 @@ export class RefreshSessionUseCase {
       throw Object.assign(new Error("Refresh token inválido"), { status: 401, code: "INVALID_REFRESH_TOKEN" })
     }
 
-    const currentHash = sha256Hex(currentRefreshToken)
+    const tokenHashSecret = process.env.TOKEN_HASH_SECRET
+    if (!tokenHashSecret) {
+      throw new Error("TOKEN_HASH_SECRET not configured")
+    }
+
+    const currentHash = hashTokenWithSecret(currentRefreshToken, tokenHashSecret)
     const session = await this.sessionRepo.findActiveByTokenHash(currentHash)
 
     if (!session || session.userId !== payload.sub) {
@@ -46,7 +51,7 @@ export class RefreshSessionUseCase {
 
     await this.sessionRepo.revokeByTokenHash(currentHash)
 
-    const accessResult = issueAccessToken({ id: payload.sub, email: payload.email })
+    const accessRhashTokenWithSecret(nextRefreshResult.token, tokenHashSecretyload.sub, email: payload.email })
     const nextRefreshResult = issueRefreshToken({ id: payload.sub, email: payload.email })
 
     await this.sessionRepo.create({
