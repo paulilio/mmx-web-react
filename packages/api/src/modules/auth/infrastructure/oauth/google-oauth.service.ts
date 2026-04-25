@@ -7,6 +7,7 @@ export interface GoogleOAuthConfig {
 export interface GoogleOAuthProfile {
   email: string
   emailVerified: boolean
+  providerAccountId: string
   givenName?: string
   familyName?: string
   fullName?: string
@@ -25,6 +26,7 @@ interface GoogleTokenResponse {
 }
 
 interface GoogleUserInfoResponse {
+  sub?: string
   email?: string
   email_verified?: boolean
   given_name?: string
@@ -74,13 +76,14 @@ export async function exchangeGoogleCodeForProfile(
 
   const userInfo = (await userInfoResponse.json()) as GoogleUserInfoResponse
 
-  if (!userInfoResponse.ok || !userInfo.email) {
+  if (!userInfoResponse.ok || !userInfo.email || !userInfo.sub) {
     throw new Error("Falha ao obter perfil do Google")
   }
 
   return {
     email: userInfo.email,
     emailVerified: Boolean(userInfo.email_verified),
+    providerAccountId: userInfo.sub,
     givenName: userInfo.given_name,
     familyName: userInfo.family_name,
     fullName: userInfo.name,

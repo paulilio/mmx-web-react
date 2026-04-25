@@ -8,12 +8,25 @@ import {
   type RegisterAuthInput,
 } from "../../domain/auth-rules"
 import { hashPassword } from "@/core/lib/server/security/password-hash"
+import { RequestEmailVerificationUseCase } from "./request-email-verification.use-case"
+
+export interface RegisterOutput {
+  user: AuthUserView
+  requiresEmailVerification: true
+}
+
+export interface RegisterContext {
+  ipAddress?: string | null
+}
 
 @Injectable()
 export class RegisterUseCase {
-  constructor(@Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository) {}
+  constructor(
+    @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository,
+    private readonly requestEmailVerification: RequestEmailVerificationUseCase,
+  ) {}
 
-  async execute(input: RegisterAuthInput): Promise<AuthUserView> {
+  async execute(input: RegisterAuthInput, context: RegisterContext = {}): Promise<RegisterOutput> {
     validateRegisterInput(input)
 
     const email = normalizeEmail(input.email)
@@ -31,6 +44,8 @@ export class RegisterUseCase {
       planType: "FREE",
     })
 
-    return toAuthUserView(user)
+    await this.requestEmailVerification.execute({ userId: user.id, ipAddress: context.ipAddress ?? null })
+
+    return { user: toAuthUserView(user), requiresEmailVerification: true }
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Res } from "@nestjs/common"
+import { Controller, Get, Query, Req, Res, UseGuards } from "@nestjs/common"
 import type { Request, Response } from "express"
 import { randomUUID } from "crypto"
 import {
@@ -7,7 +7,19 @@ import {
 } from "../infrastructure/oauth/microsoft-oauth.service"
 import { HandleOAuthCallbackUseCase } from "../application/use-cases/handle-oauth-callback.use-case"
 import { setAuthCookies } from "../../../common/utils/cookies"
+import { extractRequestContext } from "../../../common/utils/request-context"
 import { authConfig } from "../../../config/auth.config"
+import { createRateLimitGuard } from "../../../common/guards/rate-limit.guard"
+import { rateLimitConfig } from "../../../config/rate-limit.config"
+
+const OAuthStartRateLimit = createRateLimitGuard({
+  namespace: "auth:oauth-start:microsoft",
+  ...rateLimitConfig.auth.oauthStart,
+})
+const OAuthCallbackRateLimit = createRateLimitGuard({
+  namespace: "auth:oauth-callback:microsoft",
+  ...rateLimitConfig.auth.oauthCallback,
+})
 
 function resolveMicrosoftConfig(host: string) {
   const { clientId, clientSecret, tenantId } = authConfig.oauth.microsoft
@@ -16,26 +28,41 @@ function resolveMicrosoftConfig(host: string) {
   return { clientId, clientSecret, redirectUri, tenantId }
 }
 
+function frontendRedirect(path: string, query: Record<string, string>): string {
+  const base = authConfig.frontendUrl.replace(/\/$/, "")
+  const params = new URLSearchParams(query).toString()
+  return `${base}${path}${params ? `?${params}` : ""}`
+}
+
 @Controller("auth/oauth/microsoft")
 export class MicrosoftOAuthController {
   constructor(private readonly oauthCallback: HandleOAuthCallbackUseCase) {}
 
   @Get()
+  @UseGuards(OAuthStartRateLimit)
   start(@Req() req: Request, @Res() res: Response) {
     const host = `${req.protocol}://${req.get("host")}`
     const config = resolveMicrosoftConfig(host)
     if (!config) {
-      res.status(503).json({ data: null, error: { code: "MICROSOFT_OAUTH_NOT_CONFIGURED", message: "Microsoft OAuth não configurado" } })
+      res.redirect(frontendRedirect("/auth/oauth-callback", { provider: "microsoft", status: "error", code: "MICROSOFT_OAUTH_NOT_CONFIGURED" }))
       return
     }
 
     const state = randomUUID()
     const authorizationUrl = buildMicrosoftAuthorizationUrl(config, state)
-    res.cookie("mmx_oauth_state_microsoft", state, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 10 * 60 * 1000 })
+    const cookieSameSite = (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax"
+    res.cookie("mmx_oauth_state_microsoft", state, {
+      httpOnly: true,
+      sameSite: cookieSameSite,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 10 * 60 * 1000,
+    })
     res.redirect(authorizationUrl)
   }
 
   @Get("callback")
+  @UseGuards(OAuthCallbackRateLimit)
   async callback(
     @Query("code") code: string,
     @Query("state") state: string,
@@ -45,28 +72,42 @@ export class MicrosoftOAuthController {
     const host = `${req.protocol}://${req.get("host")}`
     const config = resolveMicrosoftConfig(host)
     if (!config) {
-      res.status(503).json({ data: null, error: { code: "MICROSOFT_OAUTH_NOT_CONFIGURED", message: "Microsoft OAuth não configurado" } })
+      res.redirect(frontendRedirect("/auth/oauth-callback", { provider: "microsoft", status: "error", code: "MICROSOFT_OAUTH_NOT_CONFIGURED" }))
       return
     }
     if (!code) {
-      res.status(400).json({ data: null, error: { code: "OAUTH_CODE_MISSING", message: "Código de autorização ausente" } })
+      res.redirect(frontendRedirect("/auth/oauth-callback", { provider: "microsoft", status: "error", code: "OAUTH_CODE_MISSING" }))
       return
     }
     const expectedState = req.cookies?.["mmx_oauth_state_microsoft"]
     if (!state || !expectedState || state !== expectedState) {
-      res.status(401).json({ data: null, error: { code: "OAUTH_STATE_INVALID", message: "Estado OAuth inválido" } })
+      res.redirect(frontendRedirect("/auth/oauth-callback", { provider: "microsoft", status: "error", code: "OAUTH_STATE_INVALID" }))
       return
     }
 
     try {
       const profile = await exchangeMicrosoftCodeForProfile({ code, config })
-      const result = await this.oauthCallback.execute({ ...profile, provider: "microsoft" })
-      res.clearCookie("mmx_oauth_state_microsoft", { path: "/" })
+      const ctx = extractRequestContext(req)
+      const result = await this.oauthCallback.execute(
+        { ...profile, provider: "microsoft" },
+        { userAgent: ctx.userAgent, ipAddress: ctx.ipAddress },
+      )
+      const sameSite = (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax"
+      res.clearCookie("mmx_oauth_state_microsoft", { path: "/", sameSite, secure: process.env.NODE_ENV === "production" })
       setAuthCookies(res, result.accessToken, result.refreshToken)
-      res.json({ data: { accessToken: result.accessToken, refreshToken: result.refreshToken, expiresIn: result.expiresIn, isNewUser: result.isNewUser, user: result.user }, error: null })
+      res.redirect(frontendRedirect("/auth/oauth-callback", {
+        provider: "microsoft",
+        status: "success",
+        isNewUser: result.isNewUser ? "1" : "0",
+      }))
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro no callback OAuth Microsoft"
-      res.status(400).json({ data: null, error: { code: "MICROSOFT_OAUTH_CALLBACK_ERROR", message } })
+      res.redirect(frontendRedirect("/auth/oauth-callback", {
+        provider: "microsoft",
+        status: "error",
+        code: "MICROSOFT_OAUTH_CALLBACK_ERROR",
+        message: message.slice(0, 200),
+      }))
     }
   }
 }

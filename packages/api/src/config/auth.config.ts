@@ -20,7 +20,20 @@ export const authConfig = {
   },
   cookie: {
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
     httpOnly: true,
+  },
+  email: {
+    smtpHost: process.env.SMTP_HOST ?? "",
+    smtpPort: parseInt(process.env.SMTP_PORT ?? "587", 10),
+    smtpUser: process.env.SMTP_USER ?? "",
+    smtpPass: process.env.SMTP_PASS ?? "",
+    fromAddress: process.env.EMAIL_FROM_ADDRESS ?? "no-reply@moedamix.com",
+    fromName: process.env.EMAIL_FROM_NAME ?? "MoedaMix",
+  },
+  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
+  tokens: {
+    emailVerifyTtlSeconds: 24 * 60 * 60,
+    passwordResetTtlSeconds: 60 * 60,
   },
 }

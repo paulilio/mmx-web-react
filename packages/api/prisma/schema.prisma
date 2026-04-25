@@ -59,6 +59,16 @@ enum AreaStatus {
   INACTIVE
 }
 
+enum OneTimeTokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+enum OAuthProvider {
+  GOOGLE
+  MICROSOFT
+}
+
 model User {
   id                    String        @id @default(cuid())
   email                 String        @unique
@@ -83,8 +93,53 @@ model User {
   areas                 Area[]
   categoryGroups        CategoryGroup[]
   ledgerEvents          LedgerEvent[]
+  refreshSessions       RefreshSession[]
+  oneTimeTokens         OneTimeToken[]
+  oauthAccounts         OAuthAccount[]
 
   @@index([email])
+}
+
+model RefreshSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  userAgent  String?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model OneTimeToken {
+  id          String              @id @default(cuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String              @unique
+  purpose     OneTimeTokenPurpose
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  ipAddress   String?
+  createdAt   DateTime            @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+model OAuthAccount {
+  id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          OAuthProvider
+  providerAccountId String
+  createdAt         DateTime      @default(now())
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model LedgerEvent {

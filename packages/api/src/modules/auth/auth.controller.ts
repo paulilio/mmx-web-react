@@ -14,6 +14,7 @@ import { LoginUseCase } from "./application/use-cases/login.use-case"
 import { RefreshSessionUseCase } from "./application/use-cases/refresh-session.use-case"
 import { LogoutUseCase } from "./application/use-cases/logout.use-case"
 import { setAuthCookies, clearAuthCookies, resolveRefreshTokenFromCookie } from "../../common/utils/cookies"
+import { extractRequestContext } from "../../common/utils/request-context"
 import { createRateLimitGuard } from "../../common/guards/rate-limit.guard"
 import { rateLimitConfig } from "../../config/rate-limit.config"
 
@@ -34,6 +35,7 @@ export class AuthController {
   @UseGuards(RegisterRateLimit)
   @HttpCode(HttpStatus.CREATED)
   async register(
+    @Req() req: Request,
     @Body() body: {
       email?: string
       password?: string
@@ -48,27 +50,36 @@ export class AuthController {
         status: 400, code: "INVALID_INPUT",
       })
     }
-    return this.registerUseCase.execute({
-      email: body.email,
-      password: body.password,
-      firstName: body.firstName,
-      lastName: body.lastName,
-      phone: body.phone,
-      cpfCnpj: body.cpfCnpj,
-    })
+    const ctx = extractRequestContext(req)
+    return this.registerUseCase.execute(
+      {
+        email: body.email,
+        password: body.password,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        phone: body.phone,
+        cpfCnpj: body.cpfCnpj,
+      },
+      { ipAddress: ctx.ipAddress },
+    )
   }
 
   @Post("login")
   @UseGuards(LoginRateLimit)
   @HttpCode(HttpStatus.OK)
   async login(
+    @Req() req: Request,
     @Body() body: { email?: string; password?: string },
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!body.email || !body.password) {
       throw Object.assign(new Error("Campos obrigatórios: email, password"), { status: 400, code: "INVALID_INPUT" })
     }
-    const result = await this.loginUseCase.execute({ email: body.email, password: body.password })
+    const ctx = extractRequestContext(req)
+    const result = await this.loginUseCase.execute(
+      { email: body.email, password: body.password },
+      { userAgent: ctx.userAgent, ipAddress: ctx.ipAddress },
+    )
     setAuthCookies(res, result.accessToken, result.refreshToken)
     return {
       accessToken: result.accessToken,
@@ -80,13 +91,13 @@ export class AuthController {
 
   @Post("logout")
   @HttpCode(HttpStatus.OK)
-  logout(
+  async logout(
     @Req() req: Request & { cookies?: Record<string, string> },
     @Res({ passthrough: true }) res: Response,
     @Body() body: { refreshToken?: string },
   ) {
     const token = body.refreshToken ?? resolveRefreshTokenFromCookie(req)
-    this.logoutUseCase.execute(token ?? null)
+    await this.logoutUseCase.execute(token ?? null)
     clearAuthCookies(res)
     return { success: true }
   }
@@ -94,7 +105,7 @@ export class AuthController {
   @Post("refresh")
   @UseGuards(RefreshRateLimit)
   @HttpCode(HttpStatus.OK)
-  refresh(
+  async refresh(
     @Req() req: Request & { cookies?: Record<string, string> },
     @Res({ passthrough: true }) res: Response,
     @Body() body: { refreshToken?: string },
@@ -103,7 +114,11 @@ export class AuthController {
     if (!token) {
       throw Object.assign(new Error("Campo obrigatório: refreshToken"), { status: 400, code: "INVALID_INPUT" })
     }
-    const result = this.refreshSessionUseCase.execute(token)
+    const ctx = extractRequestContext(req)
+    const result = await this.refreshSessionUseCase.execute(token, {
+      userAgent: ctx.userAgent,
+      ipAddress: ctx.ipAddress,
+    })
     setAuthCookies(res, result.accessToken, result.refreshToken)
     return {
       accessToken: result.accessToken,

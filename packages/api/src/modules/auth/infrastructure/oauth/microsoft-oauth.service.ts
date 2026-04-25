@@ -7,6 +7,7 @@ export interface MicrosoftOAuthConfig {
 
 export interface MicrosoftOAuthProfile {
   email: string
+  providerAccountId: string
   givenName?: string
   familyName?: string
   fullName?: string
@@ -24,6 +25,7 @@ interface MicrosoftTokenResponse {
 }
 
 interface MicrosoftUserResponse {
+  id?: string
   mail?: string
   userPrincipalName?: string
   givenName?: string
@@ -90,12 +92,13 @@ export async function exchangeMicrosoftCodeForProfile(
   const profilePayload = (await profileResponse.json()) as MicrosoftUserResponse
   const email = profilePayload.mail || profilePayload.userPrincipalName
 
-  if (!profileResponse.ok || !email) {
+  if (!profileResponse.ok || !email || !profilePayload.id) {
     throw new Error("Falha ao obter perfil da Microsoft")
   }
 
   return {
     email,
+    providerAccountId: profilePayload.id,
     givenName: profilePayload.givenName,
     familyName: profilePayload.surname,
     fullName: profilePayload.displayName,

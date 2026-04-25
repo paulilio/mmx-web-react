@@ -1,13 +1,14 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, Inject } from "@nestjs/common"
 import {
   verifyRefreshToken,
   issueAccessToken,
   issueRefreshToken,
 } from "@/core/lib/server/security/jwt"
+import { sha256Hex } from "@/core/lib/server/security/token-hash"
 import {
-  isRefreshSessionValid,
-  rotateRefreshSession,
-} from "@/core/lib/server/security/refresh-session-store"
+  REFRESH_SESSION_REPOSITORY,
+  type IRefreshSessionRepository,
+} from "../ports/refresh-session-repository.port"
 
 export interface RefreshSessionOutput {
   accessToken: string
@@ -15,9 +16,18 @@ export interface RefreshSessionOutput {
   expiresIn: number
 }
 
+export interface RefreshContext {
+  userAgent?: string | null
+  ipAddress?: string | null
+}
+
 @Injectable()
 export class RefreshSessionUseCase {
-  execute(currentRefreshToken: string): RefreshSessionOutput {
+  constructor(
+    @Inject(REFRESH_SESSION_REPOSITORY) private readonly sessionRepo: IRefreshSessionRepository,
+  ) {}
+
+  async execute(currentRefreshToken: string, context: RefreshContext = {}): Promise<RefreshSessionOutput> {
     let payload
     try {
       payload = verifyRefreshToken(currentRefreshToken)
@@ -25,13 +35,27 @@ export class RefreshSessionUseCase {
       throw Object.assign(new Error("Refresh token inválido"), { status: 401, code: "INVALID_REFRESH_TOKEN" })
     }
 
-    if (!isRefreshSessionValid(currentRefreshToken, payload.sub)) {
+    const currentHash = sha256Hex(currentRefreshToken)
+    const session = await this.sessionRepo.findActiveByTokenHash(currentHash)
+
+    if (!session || session.userId !== payload.sub) {
+      // Replay/uso inválido — revoga TODAS as sessões do usuário como contramedida.
+      await this.sessionRepo.revokeAllForUser(payload.sub)
       throw Object.assign(new Error("Refresh token inválido"), { status: 401, code: "INVALID_REFRESH_TOKEN" })
     }
 
+    await this.sessionRepo.revokeByTokenHash(currentHash)
+
     const accessResult = issueAccessToken({ id: payload.sub, email: payload.email })
     const nextRefreshResult = issueRefreshToken({ id: payload.sub, email: payload.email })
-    rotateRefreshSession(currentRefreshToken, nextRefreshResult.token, payload.sub, nextRefreshResult.expiresInSeconds)
+
+    await this.sessionRepo.create({
+      userId: payload.sub,
+      tokenHash: sha256Hex(nextRefreshResult.token),
+      expiresAt: new Date(Date.now() + nextRefreshResult.expiresInSeconds * 1000),
+      userAgent: context.userAgent ?? null,
+      ipAddress: context.ipAddress ?? null,
+    })
 
     return {
       accessToken: accessResult.token,

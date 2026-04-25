@@ -3,16 +3,15 @@ import {
   REFRESH_SESSION_REPOSITORY,
   type IRefreshSessionRepository,
 } from "../ports/refresh-session-repository.port"
-import { sha256Hex } from "@/core/lib/server/security/token-hash"
 
 @Injectable()
-export class LogoutUseCase {
+export class LogoutAllUseCase {
   constructor(
     @Inject(REFRESH_SESSION_REPOSITORY) private readonly sessionRepo: IRefreshSessionRepository,
   ) {}
 
-  async execute(refreshToken: string | null): Promise<void> {
-    if (!refreshToken) return
-    await this.sessionRepo.revokeByTokenHash(sha256Hex(refreshToken))
+  async execute(userId: string): Promise<{ revokedCount: number }> {
+    const revokedCount = await this.sessionRepo.revokeAllForUser(userId)
+    return { revokedCount }
   }
 }
