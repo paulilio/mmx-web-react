@@ -56,6 +56,29 @@ param jwtAccessSecret string
 @secure()
 param jwtRefreshSecret string
 
+@description('Google OAuth client ID (vazio desabilita Google login)')
+param googleClientId string = ''
+
+@description('Google OAuth client secret')
+@secure()
+param googleClientSecret string = ''
+
+@description('Google OAuth redirect URI (vazio = backend deriva do host)')
+param googleRedirectUri string = ''
+
+@description('Microsoft OAuth client ID (vazio desabilita Microsoft login)')
+param microsoftClientId string = ''
+
+@description('Microsoft OAuth client secret')
+@secure()
+param microsoftClientSecret string = ''
+
+@description('Microsoft OAuth redirect URI (vazio = backend deriva do host)')
+param microsoftRedirectUri string = ''
+
+@description('Microsoft OAuth tenant (common = personal + work)')
+param microsoftTenantId string = 'common'
+
 // Derived names — kebab-case
 var lawName = 'law-${project}-${environment}'
 var caeName = 'cae-${project}-${environment}'
@@ -125,6 +148,8 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         { name: 'direct-url', value: directUrl }
         { name: 'jwt-access-secret', value: jwtAccessSecret }
         { name: 'jwt-refresh-secret', value: jwtRefreshSecret }
+        { name: 'google-client-secret', value: empty(googleClientSecret) ? 'placeholder' : googleClientSecret }
+        { name: 'microsoft-client-secret', value: empty(microsoftClientSecret) ? 'placeholder' : microsoftClientSecret }
       ]
     }
     template: {
@@ -144,6 +169,13 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'DIRECT_URL', secretRef: 'direct-url' }
             { name: 'JWT_ACCESS_SECRET', secretRef: 'jwt-access-secret' }
             { name: 'JWT_REFRESH_SECRET', secretRef: 'jwt-refresh-secret' }
+            { name: 'GOOGLE_CLIENT_ID', value: googleClientId }
+            { name: 'GOOGLE_CLIENT_SECRET', secretRef: 'google-client-secret' }
+            { name: 'GOOGLE_REDIRECT_URI', value: googleRedirectUri }
+            { name: 'MICROSOFT_CLIENT_ID', value: microsoftClientId }
+            { name: 'MICROSOFT_CLIENT_SECRET', secretRef: 'microsoft-client-secret' }
+            { name: 'MICROSOFT_REDIRECT_URI', value: microsoftRedirectUri }
+            { name: 'MICROSOFT_TENANT_ID', value: microsoftTenantId }
           ]
           probes: [
             {
