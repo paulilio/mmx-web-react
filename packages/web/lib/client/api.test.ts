@@ -196,6 +196,40 @@ describe("lib/client/api API mode compatibility", () => {
     expect(result[0]?.name).toBe("Area Legacy")
   })
 
+  it("should unwrap paginated response into the inner array", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: {
+              data: [
+                { id: "tx_1", amount: 100 },
+                { id: "tx_2", amount: 200 },
+              ],
+              total: 2,
+              page: 1,
+              pageSize: 20,
+            },
+            error: null,
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    )
+
+    const { getJSON } = await loadApiModuleApiMode()
+    const result = await getJSON<Array<{ id: string; amount: number }>>("/transactions")
+
+    expect(Array.isArray(result)).toBe(true)
+    expect(result).toHaveLength(2)
+    expect(result[0]?.id).toBe("tx_1")
+    expect(result[1]?.amount).toBe(200)
+  })
+
   it("should unwrap successful envelope payload", async () => {
     vi.stubGlobal(
       "fetch",

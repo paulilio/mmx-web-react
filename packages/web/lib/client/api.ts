@@ -26,6 +26,17 @@ function isApiEnvelope<T>(value: unknown): value is ApiEnvelope<T> {
   return "data" in maybeEnvelope && "error" in maybeEnvelope
 }
 
+function isPaginatedResponse(value: unknown): value is { data: unknown[]; total: number; page: number; pageSize: number } {
+  if (!value || typeof value !== "object") return false
+  const maybe = value as Record<string, unknown>
+  return (
+    Array.isArray(maybe.data) &&
+    typeof maybe.total === "number" &&
+    typeof maybe.page === "number" &&
+    typeof maybe.pageSize === "number"
+  )
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorText = await response.text()
@@ -38,6 +49,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
     if (payload.error) {
       const message = payload.error.message || "Erro na resposta da API"
       throw new ApiError(response.status, message)
+    }
+
+    if (isPaginatedResponse(payload.data)) {
+      return payload.data.data as T
     }
 
     return payload.data as T
