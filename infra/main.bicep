@@ -85,6 +85,9 @@ param frontendUrl string = 'https://mmx-platform.vercel.app'
 @description('API public base URL (used for verify-email links pointing back to API)')
 param apiBaseUrl string = ''
 
+@description('Cookie Domain attribute (ex: .moedamix.com.br) — cookies cross-subdomain. Vazio = host-only.')
+param cookieDomain string = ''
+
 @description('SMTP host (smtp.gmail.com / smtp.improvmx.com / etc)')
 param smtpHost string = ''
 
@@ -204,6 +207,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'MICROSOFT_TENANT_ID', value: microsoftTenantId }
             { name: 'FRONTEND_URL', value: frontendUrl }
             { name: 'API_BASE_URL', value: apiBaseUrl }
+            { name: 'COOKIE_DOMAIN', value: cookieDomain }
             { name: 'SMTP_HOST', value: smtpHost }
             { name: 'SMTP_PORT', value: string(smtpPort) }
             { name: 'SMTP_USER', value: smtpUser }

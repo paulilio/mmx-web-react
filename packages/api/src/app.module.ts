@@ -13,6 +13,7 @@ import { BudgetModule } from "./modules/budget/budget.module"
 import { BudgetAllocationsModule } from "./modules/budget-allocations/budget-allocations.module"
 import { ReportsModule } from "./modules/reports/reports.module"
 import { SettingsModule } from "./modules/settings/settings.module"
+import { OpenFinanceModule } from "./modules/open-finance/open-finance.module"
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { SettingsModule } from "./modules/settings/settings.module"
     BudgetAllocationsModule,
     ReportsModule,
     SettingsModule,
+    OpenFinanceModule,
   ],
 })
 export class AppModule implements NestModule {

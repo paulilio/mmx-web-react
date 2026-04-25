@@ -70,21 +70,21 @@ enum OAuthProvider {
 }
 
 model User {
-  id                    String        @id @default(cuid())
-  email                 String        @unique
+  id                    String             @id @default(cuid())
+  email                 String             @unique
   passwordHash          String?
   firstName             String
   lastName              String
   phone                 String?
   cpfCnpj               String?
-  isEmailConfirmed      Boolean       @default(false)
+  isEmailConfirmed      Boolean            @default(false)
   defaultOrganizationId String?
-  planType              PlanType      @default(FREE)
+  planType              PlanType           @default(FREE)
   profilePhoto          String?
   preferences           Json?
   lastLogin             DateTime?
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
   transactions          Transaction[]
   categories            Category[]
   contacts              Contact[]
@@ -96,35 +96,36 @@ model User {
   refreshSessions       RefreshSession[]
   oneTimeTokens         OneTimeToken[]
   oauthAccounts         OAuthAccount[]
+  bankConnections       BankConnection[]
 
   @@index([email])
 }
 
 model RefreshSession {
-  id         String    @id @default(cuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash  String    @unique
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  userAgent  String?
-  ipAddress  String?
-  createdAt  DateTime  @default(now())
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model OneTimeToken {
-  id          String              @id @default(cuid())
-  userId      String
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash   String              @unique
-  purpose     OneTimeTokenPurpose
-  expiresAt   DateTime
-  consumedAt  DateTime?
-  ipAddress   String?
-  createdAt   DateTime            @default(now())
+  id         String              @id @default(cuid())
+  userId     String
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String              @unique
+  purpose    OneTimeTokenPurpose
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ipAddress  String?
+  createdAt  DateTime            @default(now())
 
   @@index([userId, purpose])
   @@index([expiresAt])
@@ -193,23 +194,25 @@ model Contact {
 }
 
 model Transaction {
-  id              String            @id @default(cuid())
-  userId          String
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  description     String            @default("")
-  amount          Decimal           @db.Decimal(14, 2)
-  type            TransactionType
-  categoryId      String
-  contactId       String?
-  date            DateTime          @db.Date
-  status          TransactionStatus @default(PENDING)
-  notes           String?
-  recurrence      Json?
-  areaId          String?
-  categoryGroupId String?
-  deletedAt       DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                      String                @id @default(cuid())
+  userId                  String
+  user                    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description             String                @default("")
+  amount                  Decimal               @db.Decimal(14, 2)
+  type                    TransactionType
+  categoryId              String
+  contactId               String?
+  date                    DateTime              @db.Date
+  status                  TransactionStatus     @default(PENDING)
+  notes                   String?
+  recurrence              Json?
+  areaId                  String?
+  categoryGroupId         String?
+  deletedAt               DateTime?
+  importedFromOpenFinance Boolean               @default(false)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  importedMatches         ImportedTransaction[] @relation("ImportedTransactionMatch")
 
   @@index([userId, date])
   @@index([userId, deletedAt, date])
@@ -244,15 +247,15 @@ model Budget {
   year            Int
   planned         Decimal  @db.Decimal(14, 2)
   funded          Decimal  @db.Decimal(14, 2)
-  spent           Decimal  @db.Decimal(14, 2) @default(0)
+  spent           Decimal  @default(0) @db.Decimal(14, 2)
   rolloverEnabled Boolean  @default(false)
   rolloverAmount  Decimal? @db.Decimal(14, 2)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@unique([userId, categoryGroupId, year, month])
   @@index([userId, categoryGroupId])
   @@index([userId, month, year])
-  @@unique([userId, categoryGroupId, year, month])
 }
 
 model BudgetAllocation {
@@ -264,14 +267,14 @@ model BudgetAllocation {
   month           String
   plannedAmount   Decimal  @db.Decimal(14, 2)
   fundedAmount    Decimal  @db.Decimal(14, 2)
-  spentAmount     Decimal  @db.Decimal(14, 2) @default(0)
+  spentAmount     Decimal  @default(0) @db.Decimal(14, 2)
   availableAmount Decimal  @db.Decimal(14, 2)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@unique([userId, budgetGroupId, month])
   @@index([userId, budgetGroupId])
   @@index([userId, month])
-  @@unique([userId, budgetGroupId, month])
 }
 
 model Area {
@@ -289,4 +292,110 @@ model Area {
 
   @@index([userId, status])
   @@index([userId, type])
+}
+
+// ---- Open Finance ----
+
+enum BankConnectionStatus {
+  SYNCING
+  ACTIVE
+  EXPIRED
+  REVOKED
+  ERROR
+}
+
+enum ImportedTransactionStatus {
+  PENDING
+  IMPORTED
+  DUPLICATE
+  IGNORED
+}
+
+enum ImportedTransactionSource {
+  TRANSACTION
+  BILL
+}
+
+enum SyncJobStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+model BankConnection {
+  id                   String                @id @default(cuid())
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider             String
+  providerLinkId       String
+  institutionCode      String
+  institutionName      String
+  status               BankConnectionStatus  @default(SYNCING)
+  consentExpiresAt     DateTime?
+  lastSyncedAt         DateTime?
+  lastError            String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  importedTransactions ImportedTransaction[]
+  syncJobs             OpenFinanceSyncJob[]
+
+  @@unique([provider, providerLinkId])
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model ImportedTransaction {
+  id                   String                    @id @default(cuid())
+  bankConnectionId     String
+  bankConnection       BankConnection            @relation(fields: [bankConnectionId], references: [id], onDelete: Cascade)
+  externalId           String
+  source               ImportedTransactionSource
+  rawPayload           Json
+  amount               Decimal                   @db.Decimal(14, 2)
+  currency             String                    @default("BRL")
+  occurredAt           DateTime                  @db.Date
+  description          String
+  merchantName         String?
+  categoryHint         String?
+  status               ImportedTransactionStatus @default(PENDING)
+  matchedTransactionId String?
+  matchedTransaction   Transaction?              @relation("ImportedTransactionMatch", fields: [matchedTransactionId], references: [id], onDelete: SetNull)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+
+  @@unique([bankConnectionId, externalId])
+  @@index([bankConnectionId, status])
+  @@index([occurredAt])
+}
+
+model OpenFinanceSyncJob {
+  id               String         @id @default(cuid())
+  bankConnectionId String
+  bankConnection   BankConnection @relation(fields: [bankConnectionId], references: [id], onDelete: Cascade)
+  status           SyncJobStatus  @default(PENDING)
+  attempts         Int            @default(0)
+  scheduledAt      DateTime       @default(now())
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  lastError        String?
+  payload          Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([bankConnectionId])
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  source      String
+  eventType   String?
+  payload     Json
+  processed   Boolean   @default(false)
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([source, processed])
+  @@index([receivedAt])
 }
