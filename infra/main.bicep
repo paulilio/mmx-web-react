@@ -16,9 +16,50 @@ param project string = 'mmx'
 ])
 param environment string = 'alpha'
 
+@description('Runtime value for MMX_APP_ENV env var (must match validate-env.mjs whitelist)')
+@allowed([
+  'development'
+  'staging'
+  'production'
+])
+param appEnv string = 'production'
+
+@description('Comma-separated list of allowed origins in production')
+param corsOriginsProd string = 'https://mmx-platform.vercel.app'
+
+@description('Port the container listens on (must match app and Dockerfile EXPOSE)')
+param targetPort int = 4000
+
+@description('Full image reference in GitHub Container Registry')
+param imageReference string = 'ghcr.io/paulilio/mmx-api:alpha-v1'
+
+@description('GitHub username used to authenticate against ghcr.io')
+param ghcrUsername string = 'paulilio'
+
+@description('GitHub Personal Access Token with read:packages scope (passed at deploy-time)')
+@secure()
+param ghcrPassword string
+
+@description('Neon pooled connection string (runtime)')
+@secure()
+param databaseUrl string
+
+@description('Neon direct connection string (migrations)')
+@secure()
+param directUrl string
+
+@description('JWT access token signing secret')
+@secure()
+param jwtAccessSecret string
+
+@description('JWT refresh token signing secret')
+@secure()
+param jwtRefreshSecret string
+
 // Derived names — kebab-case
 var lawName = 'law-${project}-${environment}'
 var caeName = 'cae-${project}-${environment}'
+var caName = 'ca-${project}-api-${environment}'
 
 // Tags inherited by every resource
 var commonTags = {
@@ -56,6 +97,87 @@ resource cae 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-// Outputs — consumed by Container App deployment in F2
+// Container App — MMX API
+// Scale-to-zero in Alpha keeps free-grant usage low; cold start ~5-10s on first hit.
+resource app 'Microsoft.App/containerApps@2024-03-01' = {
+  name: caName
+  location: location
+  tags: commonTags
+  properties: {
+    managedEnvironmentId: cae.id
+    configuration: {
+      ingress: {
+        external: true
+        targetPort: targetPort
+        transport: 'auto'
+        allowInsecure: false
+      }
+      registries: [
+        {
+          server: 'ghcr.io'
+          username: ghcrUsername
+          passwordSecretRef: 'ghcr-pat'
+        }
+      ]
+      secrets: [
+        { name: 'ghcr-pat', value: ghcrPassword }
+        { name: 'database-url', value: databaseUrl }
+        { name: 'direct-url', value: directUrl }
+        { name: 'jwt-access-secret', value: jwtAccessSecret }
+        { name: 'jwt-refresh-secret', value: jwtRefreshSecret }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: 'mmx-api'
+          image: imageReference
+          resources: {
+            cpu: json('0.25')
+            memory: '0.5Gi'
+          }
+          env: [
+            { name: 'PORT', value: string(targetPort) }
+            { name: 'MMX_APP_ENV', value: appEnv }
+            { name: 'CORS_ORIGINS_PROD', value: corsOriginsProd }
+            { name: 'DATABASE_URL', secretRef: 'database-url' }
+            { name: 'DIRECT_URL', secretRef: 'direct-url' }
+            { name: 'JWT_ACCESS_SECRET', secretRef: 'jwt-access-secret' }
+            { name: 'JWT_REFRESH_SECRET', secretRef: 'jwt-refresh-secret' }
+          ]
+          probes: [
+            {
+              type: 'Startup'
+              httpGet: { path: '/health', port: targetPort }
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              failureThreshold: 20
+            }
+            {
+              type: 'Liveness'
+              httpGet: { path: '/health', port: targetPort }
+              initialDelaySeconds: 30
+              periodSeconds: 30
+            }
+            {
+              type: 'Readiness'
+              httpGet: { path: '/health/ready', port: targetPort }
+              initialDelaySeconds: 10
+              periodSeconds: 15
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: 0
+        maxReplicas: 3
+      }
+    }
+  }
+}
+
+// Outputs — URLs and IDs useful for next phases
 output logAnalyticsWorkspaceId string = law.id
 output containerAppsEnvironmentId string = cae.id
+output containerAppName string = app.name
+output containerAppUrl string = 'https://${app.properties.configuration.ingress.fqdn}'

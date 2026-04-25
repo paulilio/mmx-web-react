@@ -35,6 +35,9 @@ yarn-error.log*
 coverage/
 
 # env files (per-package, not tracked — only .env.example is versioned)
+/.env
+/.env.*
+!/.env.example
 packages/api/.env*
 !packages/api/.env.example
 packages/web/.env*
@@ -73,3 +76,5 @@ packages/*/runtime/**
 
 # Bicep build output (gerado por `az bicep build`; só o .bicep é canônico)
 infra/*.json
+# Bicep parameter files com secrets — nunca commitar
+infra/*secrets*
