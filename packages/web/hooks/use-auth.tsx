@@ -3,24 +3,17 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
-import { toast } from "react-toastify"
-import type { User, RegisterData } from "@/types/auth"
+import type { User } from "@/types/auth"
 import { api } from "@/lib/client/api"
 import { USE_API } from "@/lib/shared/config"
 import { logAuditEvent } from "@/lib/shared/utils"
-import { validateRegistrationForm } from "@/lib/shared/auth-validations"
 import { userDataService } from "@/lib/mock/user-data-service"
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   logoutAllDevices: () => Promise<{ revokedCount: number }>
-  resendConfirmation: () => Promise<void>
-  forgotPassword: (email: string) => Promise<void>
-  resetPasswordWithToken: (token: string, newPassword: string) => Promise<void>
   hydrateFromSession: () => Promise<void>
   switchOrganization: (organizationId: string) => Promise<void>
 }
@@ -34,18 +27,6 @@ type ApiAuthUser = {
   lastName?: string
   isEmailConfirmed?: boolean
   planType?: User["planType"]
-}
-
-type ApiLoginResponse = {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-  user: ApiAuthUser
-}
-
-type ApiRegisterResponse = {
-  user: ApiAuthUser
-  requiresEmailVerification: true
 }
 
 function mapApiUser(data: ApiAuthUser): User {
@@ -119,66 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })()
   }, [hydrateFromSession])
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      if (!USE_API) {
-        throw new Error("Login local desativado neste ambiente. Use o backend de auth.")
-      }
-      const response = await api.post<ApiLoginResponse>("/auth/login", { email, password })
-      const mapped = mapApiUser({ ...response.user, isEmailConfirmed: true })
-      if (typeof window !== "undefined") {
-        localStorage.setItem("auth_user", JSON.stringify(mapped))
-      }
-      userDataService.setContext(mapped, mapped.defaultOrganizationId)
-      logAuditEvent("login_success", mapped.id, { email })
-      setUser(mapped)
-      router.replace("/dashboard")
-    } catch (error) {
-      const status = (error as { status?: number }).status
-      logAuditEvent("login_failure", null, { email, error: (error as Error).message })
-      if (status === 403) {
-        router.replace(`/auth/verify-pending?email=${encodeURIComponent(email)}`)
-        throw new Error("Confirme seu email para acessar.")
-      }
-      if (status === 401) throw new Error("Email ou senha inválidos")
-      if (status === 429) throw new Error("Muitas tentativas. Tente novamente em alguns instantes")
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const register = async (data: RegisterData) => {
-    setIsLoading(true)
-    try {
-      const validation = validateRegistrationForm(data)
-      if (!validation.isValid) {
-        throw new Error(validation.errors[0])
-      }
-      if (!USE_API) {
-        throw new Error("Cadastro local desativado neste ambiente. Use o backend de auth.")
-      }
-      const response = await api.post<ApiRegisterResponse>("/auth/register", {
-        email: data.email,
-        password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        cpfCnpj: data.cpfCnpj,
-      })
-      logAuditEvent("user_created", response.user.id, { email: data.email })
-      toast.success("Conta criada! Confira seu email para confirmar.")
-      router.replace(`/auth/verify-pending?email=${encodeURIComponent(data.email)}`)
-    } catch (error) {
-      const status = (error as { status?: number }).status
-      if (status === 409) throw new Error("Email já está em uso")
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const logout = async () => {
     if (USE_API) {
       try {
@@ -190,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userDataService.cleanupUserData()
     clearLocalSession()
     setUser(null)
+    logAuditEvent("logout", user?.id ?? null, { email: user?.email })
     router.push("/auth")
   }
 
@@ -205,27 +127,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result
   }
 
-  const resendConfirmation = async (email?: string) => {
-    if (!USE_API) throw new Error("Disponível somente com backend ativo")
-    const target = email || user?.email
-    if (target) {
-      // Endpoint público com anti-enumeration — funciona mesmo sem JWT.
-      await api.post<{ success: boolean }>("/auth/email/resend-verification", { email: target })
-    } else {
-      await api.post<{ success: boolean }>("/auth/email/request-verification", {})
-    }
-  }
-
-  const forgotPassword = async (email: string) => {
-    if (!USE_API) throw new Error("Disponível somente com backend ativo")
-    await api.post<{ success: boolean }>("/auth/password/forgot", { email })
-  }
-
-  const resetPasswordWithToken = async (token: string, newPassword: string) => {
-    if (!USE_API) throw new Error("Disponível somente com backend ativo")
-    await api.post<{ success: boolean }>("/auth/password/reset", { token, newPassword })
-  }
-
   const switchOrganization = async (organizationId: string) => {
     if (!user) return
     userDataService.setContext(user, organizationId)
@@ -236,13 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     isLoading,
-    login,
-    register,
     logout,
     logoutAllDevices,
-    resendConfirmation,
-    forgotPassword,
-    resetPasswordWithToken,
     hydrateFromSession,
     switchOrganization,
   }

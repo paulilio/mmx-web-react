@@ -50,13 +50,8 @@ export interface LoginData {
 export interface AuthContextType {
   user: User | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   logoutAllDevices: () => Promise<{ revokedCount: number }>
-  resendConfirmation: (email?: string) => Promise<void>
-  forgotPassword: (email: string) => Promise<void>
-  resetPasswordWithToken: (token: string, newPassword: string) => Promise<void>
   hydrateFromSession: () => Promise<void>
   switchOrganization: (organizationId: string) => Promise<void>
 }

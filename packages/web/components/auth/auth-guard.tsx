@@ -32,13 +32,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return
     }
 
-    if (!user.isEmailConfirmed) {
-      hasRedirectedRef.current = true
-      router.replace(`/auth/verify-pending?email=${encodeURIComponent(user.email)}`)
-      return
-    }
-
-    // User is authenticated
+    // OAuth users come confirmed by default; old confirmed users continue allowed.
     setIsReady(true)
   }, [authLoading, user, isReady, router])
 

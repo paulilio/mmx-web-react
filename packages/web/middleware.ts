@@ -20,14 +20,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes that don't require authentication
-  const publicRoutes = [
-    "/auth",
-    "/auth/forgot-password",
-    "/auth/reset-password",
-    "/auth/verify-pending",
-    "/auth/verify-callback",
-    "/auth/oauth-callback",
-  ]
+  const publicRoutes = ["/auth", "/auth/oauth-callback"]
   const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
   // For mock implementation, we'll check localStorage on client side
