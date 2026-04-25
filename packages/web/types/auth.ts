@@ -2,7 +2,7 @@ export interface User {
   id: string
   email: string
   firstName: string
-  lastName: string
+  lastName?: string
   phone?: string
   cpfCnpj?: string
   isEmailConfirmed: boolean
@@ -34,13 +34,11 @@ export interface SessionData {
 
 export interface RegisterData {
   firstName: string
-  lastName: string
   email: string
-  confirmEmail: string
-  phone: string
-  cpfCnpj: string
   password: string
-  confirmPassword: string
+  lastName?: string
+  phone?: string
+  cpfCnpj?: string
   organizationName?: string
 }
 

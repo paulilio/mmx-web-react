@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { InputMask } from "@/components/ui/input-mask"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -18,8 +17,6 @@ import {
   Mail,
   Lock,
   User,
-  Phone,
-  CreditCard,
   Building2,
   Shield,
   TrendingUp,
@@ -73,7 +70,6 @@ type LocalAuthUser = {
 export default function AuthPage() {
   const isDevMode = process.env.NODE_ENV !== "production"
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const { login, register } = useAuth()
@@ -86,13 +82,8 @@ export default function AuthPage() {
 
   const [registerForm, setRegisterForm] = useState({
     firstName: "",
-    lastName: "",
-    phone: "",
     email: "",
-    confirmEmail: "",
-    cpfCnpj: "",
     password: "",
-    confirmPassword: "",
   })
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -520,44 +511,16 @@ export default function AuthPage() {
 
                   <TabsContent value="register" className="space-y-4">
                     <form onSubmit={handleRegister} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName">Nome</Label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              id="firstName"
-                              placeholder="Nome"
-                              className="pl-10"
-                              value={registerForm.firstName}
-                              onChange={(e) => setRegisterForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName">Sobrenome</Label>
-                          <Input
-                            id="lastName"
-                            placeholder="Sobrenome"
-                            value={registerForm.lastName}
-                            onChange={(e) => setRegisterForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                            required
-                          />
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Telefone</Label>
+                        <Label htmlFor="firstName">Nome</Label>
                         <div className="relative">
-                          <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <InputMask
-                            id="phone"
-                            mask="phone"
-                            placeholder="(11) 99999-9999"
+                          <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="firstName"
+                            placeholder="Como devemos te chamar?"
                             className="pl-10"
-                            value={registerForm.phone}
-                            onChange={(e) => setRegisterForm((prev) => ({ ...prev, phone: e.target.value }))}
+                            value={registerForm.firstName}
+                            onChange={(e) => setRegisterForm((prev) => ({ ...prev, firstName: e.target.value }))}
                             required
                           />
                         </div>
@@ -574,38 +537,6 @@ export default function AuthPage() {
                             className="pl-10"
                             value={registerForm.email}
                             onChange={(e) => setRegisterForm((prev) => ({ ...prev, email: e.target.value }))}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="confirmEmail">Confirmar Email</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            id="confirmEmail"
-                            type="email"
-                            placeholder="Confirme seu email"
-                            className="pl-10"
-                            value={registerForm.confirmEmail}
-                            onChange={(e) => setRegisterForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
-                        <div className="relative">
-                          <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <InputMask
-                            id="cpfCnpj"
-                            mask="cpf-cnpj"
-                            placeholder="000.000.000-00"
-                            className="pl-10"
-                            value={registerForm.cpfCnpj}
-                            onChange={(e) => setRegisterForm((prev) => ({ ...prev, cpfCnpj: e.target.value }))}
                             required
                           />
                         </div>
@@ -630,29 +561,6 @@ export default function AuthPage() {
                             onClick={() => setShowPassword(!showPassword)}
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            id="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirme sua senha"
-                            className="pl-10 pr-10"
-                            value={registerForm.confirmPassword}
-                            onChange={(e) => setRegisterForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                            required
-                          />
-                          <button
-                            type="button"
-                            className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          >
-                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
                       </div>

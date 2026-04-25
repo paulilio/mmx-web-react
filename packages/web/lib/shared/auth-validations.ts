@@ -33,22 +33,6 @@ export function validatePassword(password: string): ValidationResult {
     errors.push("Senha deve ter pelo menos 8 caracteres")
   }
 
-  if (!/[A-Z]/.test(password)) {
-    errors.push("Senha deve conter pelo menos uma letra maiúscula")
-  }
-
-  if (!/[a-z]/.test(password)) {
-    errors.push("Senha deve conter pelo menos uma letra minúscula")
-  }
-
-  if (!/\d/.test(password)) {
-    errors.push("Senha deve conter pelo menos um número")
-  }
-
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push("Senha deve conter pelo menos um caractere especial")
-  }
-
   return {
     isValid: errors.length === 0,
     errors,
@@ -191,52 +175,21 @@ export function formatCpfCnpj(cpfCnpj: string): string {
 
 export function validateRegistrationForm(data: {
   firstName: string
-  lastName: string
-  phone: string
   email: string
-  confirmEmail: string
-  cpfCnpj: string
   password: string
-  confirmPassword: string
 }): ValidationResult {
   const errors: string[] = []
 
-  // Required fields
   if (!data.firstName.trim()) errors.push("Nome é obrigatório")
-  if (!data.lastName.trim()) errors.push("Sobrenome é obrigatório")
 
-  // Email validation
   const emailValidation = validateEmail(data.email)
   if (!emailValidation.isValid) {
     errors.push(...emailValidation.errors)
   }
 
-  // Email confirmation
-  if (data.email !== data.confirmEmail) {
-    errors.push("Emails não coincidem")
-  }
-
-  // Phone validation
-  const phoneValidation = validatePhone(data.phone)
-  if (!phoneValidation.isValid) {
-    errors.push(...phoneValidation.errors)
-  }
-
-  // CPF/CNPJ validation
-  const cpfCnpjValidation = validateCpfCnpj(data.cpfCnpj)
-  if (!cpfCnpjValidation.isValid) {
-    errors.push(...cpfCnpjValidation.errors)
-  }
-
-  // Password validation
   const passwordValidation = validatePassword(data.password)
   if (!passwordValidation.isValid) {
     errors.push(...passwordValidation.errors)
-  }
-
-  // Password confirmation
-  if (data.password !== data.confirmPassword) {
-    errors.push("Senhas não coincidem")
   }
 
   return {

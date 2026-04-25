@@ -302,7 +302,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: generateUserId(),
         email: data.email,
         firstName: data.firstName,
-        lastName: data.lastName,
+        lastName: data.lastName ?? "",
         phone: data.phone,
         cpfCnpj: data.cpfCnpj,
         isEmailConfirmed: false,
@@ -310,7 +310,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         organizations: [
           {
             id: organizationId,
-            name: data.organizationName || `${data.firstName} ${data.lastName}`,
+            name: data.organizationName || (data.lastName ? `${data.firstName} ${data.lastName}` : data.firstName),
             role: "owner",
             permissions: ["*"],
             joinedAt: new Date().toISOString(),

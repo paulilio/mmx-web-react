@@ -2,7 +2,7 @@ export interface RegisterAuthInput {
   email: string
   password: string
   firstName: string
-  lastName: string
+  lastName?: string
   phone?: string
   cpfCnpj?: string
 }
@@ -45,10 +45,6 @@ export function validateRegisterInput(input: RegisterAuthInput): void {
 
   if (!input.firstName?.trim()) {
     throw new Error("Nome e obrigatorio")
-  }
-
-  if (!input.lastName?.trim()) {
-    throw new Error("Sobrenome e obrigatorio")
   }
 }
 

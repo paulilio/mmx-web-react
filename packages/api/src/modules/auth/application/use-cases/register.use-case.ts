@@ -25,7 +25,7 @@ export class RegisterUseCase {
       email,
       passwordHash,
       firstName: input.firstName.trim(),
-      lastName: input.lastName.trim(),
+      lastName: input.lastName?.trim() ?? "",
       phone: input.phone ?? null,
       cpfCnpj: input.cpfCnpj ?? null,
       planType: "FREE",
