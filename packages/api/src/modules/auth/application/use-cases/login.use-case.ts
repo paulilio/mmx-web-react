@@ -12,6 +12,7 @@ import {
 } from "../../domain/auth-rules"
 import { verifyPassword } from "@/core/lib/server/security/password-hash"
 import { issueAccessToken, issueRefreshToken } from "@/core/lib/server/security/jwt"
+import { resolveUserScopes } from "@/core/lib/server/security/permissions"
 import { sha256Hex } from "@/core/lib/server/security/token-hash"
 
 export interface LoginOutput {
@@ -57,7 +58,8 @@ export class LoginUseCase {
 
     await this.userRepo.update(user.id, { lastLogin: new Date() })
 
-    const accessResult = issueAccessToken({ id: user.id, email: user.email })
+    const scopes = resolveUserScopes({ role: "user" })
+    const accessResult = issueAccessToken({ id: user.id, email: user.email, scopes, roles: ["user"] })
     const refreshResult = issueRefreshToken({ id: user.id, email: user.email })
 
     await this.sessionRepo.create({

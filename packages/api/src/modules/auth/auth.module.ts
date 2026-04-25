@@ -31,6 +31,7 @@ import { PrismaSessionRepository } from "./infrastructure/repositories/prisma-se
 import { ListSessionsUseCase } from "./application/use-cases/list-sessions.use-case"
 import { RevokeSessionUseCase } from "./application/use-cases/revoke-session.use-case"
 import { RevokeAllExceptUseCase } from "./application/use-cases/revoke-all-except.use-case"
+import { TokenBlacklistService } from "@/core/lib/server/security/token-blacklist.service"
 
 @Module({
   controllers: [
@@ -62,6 +63,7 @@ import { RevokeAllExceptUseCase } from "./application/use-cases/revoke-all-excep
     ListSessionsUseCase,
     RevokeSessionUseCase,
     RevokeAllExceptUseCase,
+    TokenBlacklistService,
   ],
 })
 export class AuthModule {}

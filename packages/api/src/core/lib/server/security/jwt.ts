@@ -1,9 +1,13 @@
 import jwt from "jsonwebtoken"
 import { authConfig } from "@/config/auth.config"
+import { Scope } from "./permissions"
 
 interface TokenPayload {
   sub: string
   email: string
+  scopes?: Scope[]
+  roles?: string[]
+  jti?: string
 }
 
 interface TokenResult {
@@ -23,11 +27,25 @@ function parseExpiresInSeconds(expiresIn: string): number {
   return 1800
 }
 
-export function issueAccessToken(payload: { id: string; email: string }): TokenResult {
+export function issueAccessToken(payload: {
+  id: string
+  email: string
+  scopes?: Scope[]
+  roles?: string[]
+}): TokenResult {
   const { accessSecret, accessExpiresIn } = authConfig.jwt
-  const token = jwt.sign({ sub: payload.id, email: payload.email }, accessSecret, {
-    expiresIn: accessExpiresIn as jwt.SignOptions["expiresIn"],
-  })
+  const token = jwt.sign(
+    {
+      sub: payload.id,
+      email: payload.email,
+      scopes: payload.scopes || [],
+      roles: payload.roles || [],
+    },
+    accessSecret,
+    {
+      expiresIn: accessExpiresIn as jwt.SignOptions["expiresIn"],
+    },
+  )
   return { token, expiresInSeconds: parseExpiresInSeconds(accessExpiresIn) }
 }
 

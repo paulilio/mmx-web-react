@@ -5,6 +5,7 @@ import {
   issueRefreshToken,
 } from "@/core/lib/server/security/jwt"
 import { hashTokenWithSecret } from "@/core/lib/server/security/token-hash"
+import { resolveUserScopes } from "@/core/lib/server/security/permissions"
 import {
   REFRESH_SESSION_REPOSITORY,
   type IRefreshSessionRepository,
@@ -51,12 +52,13 @@ export class RefreshSessionUseCase {
 
     await this.sessionRepo.revokeByTokenHash(currentHash)
 
-    const accessRhashTokenWithSecret(nextRefreshResult.token, tokenHashSecretyload.sub, email: payload.email })
+    const scopes = resolveUserScopes({ role: "user" })
+    const accessResult = issueAccessToken({ id: payload.sub, email: payload.email, scopes, roles: ["user"] })
     const nextRefreshResult = issueRefreshToken({ id: payload.sub, email: payload.email })
 
     await this.sessionRepo.create({
       userId: payload.sub,
-      tokenHash: sha256Hex(nextRefreshResult.token),
+      tokenHash: hashTokenWithSecret(nextRefreshResult.token, tokenHashSecret),
       expiresAt: new Date(Date.now() + nextRefreshResult.expiresInSeconds * 1000),
       userAgent: context.userAgent ?? null,
       ipAddress: context.ipAddress ?? null,
