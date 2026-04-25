@@ -55,7 +55,8 @@ export class RequestEmailVerificationUseCase {
       ipAddress,
     })
 
-    const verifyUrl = `${authConfig.frontendUrl.replace(/\/$/, "")}/auth/verify-callback?token=${encodeURIComponent(rawToken)}`
+    const apiBase = (authConfig.apiBaseUrl || authConfig.frontendUrl).replace(/\/$/, "")
+    const verifyUrl = `${apiBase}/auth/email/verify?token=${encodeURIComponent(rawToken)}`
     await this.emailService.sendVerificationEmail({
       to: email,
       recipientName: firstName || "usuário(a)",

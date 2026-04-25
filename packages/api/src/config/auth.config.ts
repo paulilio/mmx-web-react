@@ -32,6 +32,7 @@ export const authConfig = {
     fromName: process.env.EMAIL_FROM_NAME ?? "MoedaMix",
   },
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
+  apiBaseUrl: process.env.API_BASE_URL ?? "",
   tokens: {
     emailVerifyTtlSeconds: 24 * 60 * 60,
     passwordResetTtlSeconds: 60 * 60,

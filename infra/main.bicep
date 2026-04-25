@@ -82,6 +82,9 @@ param microsoftTenantId string = 'common'
 @description('Frontend base URL (used for OAuth + magic-link redirects)')
 param frontendUrl string = 'https://mmx-platform.vercel.app'
 
+@description('API public base URL (used for verify-email links pointing back to API)')
+param apiBaseUrl string = ''
+
 @description('SMTP host (smtp.gmail.com / smtp.improvmx.com / etc)')
 param smtpHost string = ''
 
@@ -200,6 +203,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'MICROSOFT_REDIRECT_URI', value: microsoftRedirectUri }
             { name: 'MICROSOFT_TENANT_ID', value: microsoftTenantId }
             { name: 'FRONTEND_URL', value: frontendUrl }
+            { name: 'API_BASE_URL', value: apiBaseUrl }
             { name: 'SMTP_HOST', value: smtpHost }
             { name: 'SMTP_PORT', value: string(smtpPort) }
             { name: 'SMTP_USER', value: smtpUser }
