@@ -43,8 +43,8 @@ export class AuthController {
       cpfCnpj?: string
     },
   ) {
-    if (!body.email || !body.password || !body.firstName || !body.lastName) {
-      throw Object.assign(new Error("Campos obrigatórios: email, password, firstName, lastName"), {
+    if (!body.email || !body.password || !body.firstName) {
+      throw Object.assign(new Error("Campos obrigatórios: email, password, firstName"), {
         status: 400, code: "INVALID_INPUT",
       })
     }
