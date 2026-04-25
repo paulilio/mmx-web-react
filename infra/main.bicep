@@ -79,6 +79,28 @@ param microsoftRedirectUri string = ''
 @description('Microsoft OAuth tenant (common = personal + work)')
 param microsoftTenantId string = 'common'
 
+@description('Frontend base URL (used for OAuth + magic-link redirects)')
+param frontendUrl string = 'https://mmx-platform.vercel.app'
+
+@description('SMTP host (smtp.gmail.com / smtp.improvmx.com / etc)')
+param smtpHost string = ''
+
+@description('SMTP port (587 STARTTLS, 465 SMTPS)')
+param smtpPort int = 587
+
+@description('SMTP user (envelope sender / API key user)')
+param smtpUser string = ''
+
+@description('SMTP password / app password / API key')
+@secure()
+param smtpPass string = ''
+
+@description('Email From address visible to recipients')
+param emailFromAddress string = 'no-reply@moedamix.com'
+
+@description('Email From display name')
+param emailFromName string = 'MoedaMix'
+
 // Derived names — kebab-case
 var lawName = 'law-${project}-${environment}'
 var caeName = 'cae-${project}-${environment}'
@@ -150,6 +172,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         { name: 'jwt-refresh-secret', value: jwtRefreshSecret }
         { name: 'google-client-secret', value: empty(googleClientSecret) ? 'placeholder' : googleClientSecret }
         { name: 'microsoft-client-secret', value: empty(microsoftClientSecret) ? 'placeholder' : microsoftClientSecret }
+        { name: 'smtp-pass', value: empty(smtpPass) ? 'placeholder' : smtpPass }
       ]
     }
     template: {
@@ -176,6 +199,13 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'MICROSOFT_CLIENT_SECRET', secretRef: 'microsoft-client-secret' }
             { name: 'MICROSOFT_REDIRECT_URI', value: microsoftRedirectUri }
             { name: 'MICROSOFT_TENANT_ID', value: microsoftTenantId }
+            { name: 'FRONTEND_URL', value: frontendUrl }
+            { name: 'SMTP_HOST', value: smtpHost }
+            { name: 'SMTP_PORT', value: string(smtpPort) }
+            { name: 'SMTP_USER', value: smtpUser }
+            { name: 'SMTP_PASS', secretRef: 'smtp-pass' }
+            { name: 'EMAIL_FROM_ADDRESS', value: emailFromAddress }
+            { name: 'EMAIL_FROM_NAME', value: emailFromName }
           ]
           probes: [
             {
