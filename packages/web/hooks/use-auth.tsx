@@ -205,9 +205,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result
   }
 
-  const resendConfirmation = async () => {
+  const resendConfirmation = async (email?: string) => {
     if (!USE_API) throw new Error("Disponível somente com backend ativo")
-    await api.post<{ success: boolean }>("/auth/email/request-verification", {})
+    const target = email || user?.email
+    if (target) {
+      // Endpoint público com anti-enumeration — funciona mesmo sem JWT.
+      await api.post<{ success: boolean }>("/auth/email/resend-verification", { email: target })
+    } else {
+      await api.post<{ success: boolean }>("/auth/email/request-verification", {})
+    }
   }
 
   const forgotPassword = async (email: string) => {

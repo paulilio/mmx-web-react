@@ -14,6 +14,7 @@ import type { Request, Response } from "express"
 import { VerifyEmailUseCase } from "./application/use-cases/verify-email.use-case"
 import { ForgotPasswordUseCase } from "./application/use-cases/forgot-password.use-case"
 import { ResetPasswordUseCase } from "./application/use-cases/reset-password.use-case"
+import { RequestEmailVerificationUseCase } from "./application/use-cases/request-email-verification.use-case"
 import { setAuthCookies } from "../../common/utils/cookies"
 import { extractRequestContext } from "../../common/utils/request-context"
 import { authConfig } from "../../config/auth.config"
@@ -23,6 +24,10 @@ import { rateLimitConfig } from "../../config/rate-limit.config"
 const VerifyEmailRateLimit = createRateLimitGuard({
   namespace: "auth:verify-email",
   ...rateLimitConfig.auth.verifyEmail,
+})
+const RequestVerificationPublicRateLimit = createRateLimitGuard({
+  namespace: "auth:request-verification-public",
+  ...rateLimitConfig.auth.requestVerification,
 })
 const ForgotPasswordRateLimit = createRateLimitGuard({
   namespace: "auth:forgot-password",
@@ -39,7 +44,27 @@ export class EmailRecoveryController {
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    private readonly requestEmailVerificationUseCase: RequestEmailVerificationUseCase,
   ) {}
+
+  @Post("email/resend-verification")
+  @UseGuards(RequestVerificationPublicRateLimit)
+  @HttpCode(HttpStatus.OK)
+  async resendVerificationByEmail(
+    @Req() req: Request,
+    @Body() body: { email?: string },
+  ) {
+    if (!body.email) {
+      throw Object.assign(new Error("Campo obrigatório: email"), { status: 400, code: "INVALID_INPUT" })
+    }
+    const ctx = extractRequestContext(req)
+    try {
+      await this.requestEmailVerificationUseCase.executeByEmail(body.email, ctx.ipAddress)
+    } catch {
+      // Silencia falhas de email para preservar anti-enumeration; logado pelo EmailService.
+    }
+    return { success: true }
+  }
 
   @Get("email/verify")
   @UseGuards(VerifyEmailRateLimit)

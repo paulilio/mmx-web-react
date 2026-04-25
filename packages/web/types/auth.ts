@@ -54,7 +54,7 @@ export interface AuthContextType {
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   logoutAllDevices: () => Promise<{ revokedCount: number }>
-  resendConfirmation: () => Promise<void>
+  resendConfirmation: (email?: string) => Promise<void>
   forgotPassword: (email: string) => Promise<void>
   resetPasswordWithToken: (token: string, newPassword: string) => Promise<void>
   hydrateFromSession: () => Promise<void>

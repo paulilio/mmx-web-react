@@ -18,8 +18,8 @@ export default function VerifyPendingPage() {
   const handleResend = async () => {
     setIsLoading(true)
     try {
-      await resendConfirmation()
-      toast.success("Novo email de confirmação enviado.")
+      await resendConfirmation(email || undefined)
+      toast.success("Se o email estiver cadastrado e pendente, o link foi reenviado.")
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível reenviar agora. Tente novamente em instantes.")
     } finally {
