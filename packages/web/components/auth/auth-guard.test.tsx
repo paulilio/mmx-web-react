@@ -1,11 +1,12 @@
 /** @vitest-environment jsdom */
 
-import { act, render, screen } from "@testing-library/react"
+import { act, cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocked = vi.hoisted(() => ({
   pushMock: vi.fn(),
+  replaceMock: vi.fn(),
   authState: {
     user: null as
       | {
@@ -20,23 +21,17 @@ const mocked = vi.hoisted(() => ({
       | null,
     isLoading: false,
   },
-  sessionState: {
-    isSessionValid: false,
-  },
 }))
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mocked.pushMock,
+    replace: mocked.replaceMock,
   }),
 }))
 
 vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => mocked.authState,
-}))
-
-vi.mock("@/hooks/use-session", () => ({
-  useSession: () => mocked.sessionState,
 }))
 
 vi.mock("@/components/ui/card", () => ({
@@ -61,10 +56,10 @@ describe("AuthGuard", () => {
 
     mocked.authState.user = null
     mocked.authState.isLoading = false
-    mocked.sessionState.isSessionValid = false
   })
 
   afterEach(() => {
+    cleanup()
     vi.useRealTimers()
   })
 
@@ -79,10 +74,11 @@ describe("AuthGuard", () => {
       await vi.advanceTimersByTimeAsync(110)
     })
 
-    expect(mocked.pushMock).toHaveBeenCalledWith("/auth")
+    expect(mocked.replaceMock).toHaveBeenCalledWith("/auth")
   })
 
-  it("redireciona para confirmacao quando email nao esta confirmado", async () => {
+  it("permite acesso mesmo se isEmailConfirmed=false (OAuth users já entram confirmados)", async () => {
+    // Em fluxo OAuth-only, não redirecionamos mais por isEmailConfirmed.
     mocked.authState.user = {
       id: "user_1",
       email: "user@test.com",
@@ -92,32 +88,6 @@ describe("AuthGuard", () => {
       createdAt: "2026-01-01T00:00:00.000Z",
       planType: "free",
     }
-    mocked.sessionState.isSessionValid = true
-
-    render(
-      <AuthGuard>
-        <div>conteudo protegido</div>
-      </AuthGuard>,
-    )
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(110)
-    })
-
-    expect(mocked.pushMock).toHaveBeenCalledWith("/auth/confirm?email=user%40test.com")
-  })
-
-  it("mantem navegacao quando usuario e sessao sao validos", async () => {
-    mocked.authState.user = {
-      id: "user_1",
-      email: "user@test.com",
-      firstName: "Ana",
-      lastName: "Silva",
-      isEmailConfirmed: true,
-      createdAt: "2026-01-01T00:00:00.000Z",
-      planType: "free",
-    }
-    mocked.sessionState.isSessionValid = true
 
     render(
       <AuthGuard>
@@ -130,7 +100,33 @@ describe("AuthGuard", () => {
     })
 
     expect(screen.queryByText("conteudo protegido")).not.toBeNull()
+    expect(mocked.replaceMock).not.toHaveBeenCalled()
+    expect(mocked.pushMock).not.toHaveBeenCalled()
+  })
 
+  it("mantem navegacao quando usuario e sessao sao validos", async () => {
+    mocked.authState.user = {
+      id: "user_1",
+      email: "user@test.com",
+      firstName: "Ana",
+      lastName: "Silva",
+      isEmailConfirmed: true,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      planType: "free",
+    }
+
+    render(
+      <AuthGuard>
+        <div>conteudo protegido</div>
+      </AuthGuard>,
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(110)
+    })
+
+    expect(screen.queryByText("conteudo protegido")).not.toBeNull()
+    expect(mocked.replaceMock).not.toHaveBeenCalled()
     expect(mocked.pushMock).not.toHaveBeenCalled()
   })
 })

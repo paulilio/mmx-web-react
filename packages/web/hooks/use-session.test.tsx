@@ -15,6 +15,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mocked.pushMock,
   }),
+  usePathname: () => "/dashboard",
 }))
 
 vi.mock("@/lib/shared/config", () => ({
