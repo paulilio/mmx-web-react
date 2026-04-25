@@ -1,85 +1,75 @@
 "use client"
 
-import { createContext, useContext, useEffect } from "react"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import type { ReactNode } from "react"
 import { toast } from "react-toastify"
-import type { User, SessionData, RegisterData } from "@/types/auth"
+import type { User, RegisterData } from "@/types/auth"
 import { api } from "@/lib/client/api"
 import { USE_API } from "@/lib/shared/config"
-import { generateSessionToken, generateUserId, createDefaultAccount, logAuditEvent } from "@/lib/shared/utils"
+import { logAuditEvent } from "@/lib/shared/utils"
 import { validateRegistrationForm } from "@/lib/shared/auth-validations"
-import { hashMockPassword, isHashedMockPassword, verifyMockPassword } from "@/lib/shared/mock-auth-password"
-import { consumeTimedValue, generateConfirmationCode, generateResetToken } from "@/lib/shared/mock-auth-flow"
 import { userDataService } from "@/lib/mock/user-data-service"
-import { migrationService, UNIFIED_STORAGE_KEYS } from "@/lib/mock/migration-service"
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
-  logout: () => void
-  confirmEmail: (code: string) => Promise<boolean>
-  resendConfirmation: (email?: string) => Promise<void>
+  logout: () => Promise<void>
+  logoutAllDevices: () => Promise<{ revokedCount: number }>
+  resendConfirmation: () => Promise<void>
+  forgotPassword: (email: string) => Promise<void>
+  resetPasswordWithToken: (token: string, newPassword: string) => Promise<void>
+  hydrateFromSession: () => Promise<void>
   switchOrganization: (organizationId: string) => Promise<void>
-  resetPassword: (email: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const IS_DEV_MODE = process.env.NODE_ENV !== "production"
+type ApiAuthUser = {
+  id: string
+  email: string
+  firstName: string
+  lastName?: string
+  isEmailConfirmed?: boolean
+  planType?: User["planType"]
+}
 
 type ApiLoginResponse = {
   accessToken: string
   refreshToken: string
   expiresIn: number
-  user: {
-    id: string
-    email: string
-    firstName: string
-    lastName: string
-    planType?: User["planType"]
-  }
+  user: ApiAuthUser
 }
 
-function parseApiErrorMessage(rawMessage: string): string {
-  try {
-    const parsed = JSON.parse(rawMessage) as {
-      error?: {
-        message?: string
-      }
-    }
-    return parsed.error?.message || rawMessage
-  } catch {
-    return rawMessage
-  }
+type ApiRegisterResponse = {
+  user: ApiAuthUser
+  requiresEmailVerification: true
 }
 
-function mapApiLoginUser(data: ApiLoginResponse["user"]): User {
+function mapApiUser(data: ApiAuthUser): User {
   return {
     id: data.id,
     email: data.email,
     firstName: data.firstName,
-    lastName: data.lastName,
-    isEmailConfirmed: true,
+    lastName: data.lastName ?? "",
+    isEmailConfirmed: Boolean(data.isEmailConfirmed),
     createdAt: new Date().toISOString(),
-    planType: data.planType || "free",
+    planType: data.planType ?? "free",
     preferences: {
       theme: "system",
       language: "pt-BR",
-      notifications: {
-        email: true,
-        push: true,
-        sms: false,
-      },
-      layout: {
-        sidebarCollapsed: false,
-        compactMode: false,
-      },
+      notifications: { email: true, push: true, sms: false },
+      layout: { sidebarCollapsed: false, compactMode: false },
     },
   }
+}
+
+function clearLocalSession() {
+  if (typeof window === "undefined") return
+  localStorage.removeItem("auth_session")
+  localStorage.removeItem("auth_user")
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -87,192 +77,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
+  const hydrateFromSession = useCallback(async () => {
+    if (!USE_API) return
+    try {
+      const apiUser = await api.get<ApiAuthUser>("/auth/me")
+      const mapped = mapApiUser(apiUser)
+      setUser(mapped)
+      if (typeof window !== "undefined") {
+        localStorage.setItem("auth_user", JSON.stringify(mapped))
+      }
+      userDataService.setContext(mapped, mapped.defaultOrganizationId)
+    } catch (error) {
+      const status = (error as { status?: number }).status
+      if (status === 401 || status === 403) {
+        clearLocalSession()
+        setUser(null)
+      } else {
+        throw error
+      }
+    }
+  }, [])
+
   useEffect(() => {
-    const initAuth = async () => {
+    void (async () => {
       try {
-        if (migrationService.needsMigration()) {
-          console.log("[Auth] Running automatic migration on startup...")
-          await migrationService.migrateToUnifiedStructure()
-        }
-
         if (USE_API) {
-          const userData = localStorage.getItem("auth_user")
-          if (!userData) {
-            return
-          }
-
-          const apiUser = JSON.parse(userData) as User
-          setUser(apiUser)
-          userDataService.setContext(apiUser, apiUser.defaultOrganizationId)
-          return
-        }
-
-        const sessionData = localStorage.getItem("auth_session")
-        if (sessionData) {
-          const session: SessionData = JSON.parse(sessionData)
-
-          if (new Date(session.expiresAt) > new Date()) {
-            const userData = localStorage.getItem("auth_user")
-            if (userData) {
-              const user = JSON.parse(userData)
-              setUser(user)
-
-              userDataService.setContext(user, session.organizationId)
-
-              console.log("[Auth] User context set, migration handled automatically")
-            }
-          } else {
-            localStorage.removeItem("auth_session")
-            localStorage.removeItem("auth_user")
+          await hydrateFromSession()
+        } else if (typeof window !== "undefined") {
+          const cached = localStorage.getItem("auth_user")
+          if (cached) {
+            const parsed = JSON.parse(cached) as User
+            setUser(parsed)
+            userDataService.setContext(parsed, parsed.defaultOrganizationId)
           }
         }
       } catch (error) {
-        console.error("Error initializing auth:", error)
+        console.error("[Auth] Failed to initialize:", error)
       } finally {
         setIsLoading(false)
       }
-    }
-
-    initAuth()
-  }, [])
+    })()
+  }, [hydrateFromSession])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
-
     try {
-      console.log("[Auth] Login attempt")
-
-      if (USE_API) {
-        const response = await api.post<ApiLoginResponse>("/auth/login", {
-          email,
-          password,
-        })
-
-        const authenticatedUser = mapApiLoginUser(response.user)
-
-        localStorage.removeItem("auth_session")
-        localStorage.setItem("auth_user", JSON.stringify(authenticatedUser))
-
-        userDataService.setContext(authenticatedUser, authenticatedUser.defaultOrganizationId)
-
-        logAuditEvent("login_success", authenticatedUser.id, { email })
-
-        setUser(authenticatedUser)
-
-        router.replace("/dashboard")
-        return
+      if (!USE_API) {
+        throw new Error("Login local desativado neste ambiente. Use o backend de auth.")
       }
-
-      const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-      const globalUsers = localStorage.getItem("users")
-      const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-      const user = users.find((u: any) => u.email === email)
-
-      if (!user) {
-        throw new Error("Usuário não encontrado")
+      const response = await api.post<ApiLoginResponse>("/auth/login", { email, password })
+      const mapped = mapApiUser({ ...response.user, isEmailConfirmed: true })
+      if (typeof window !== "undefined") {
+        localStorage.setItem("auth_user", JSON.stringify(mapped))
       }
-
-      if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-        throw new Error("Conta bloqueada devido a muitas tentativas de login")
-      }
-
-      const isValidPassword = await verifyMockPassword(user.password, password)
-
-      if (!isValidPassword) {
-        user.failedAttempts = (user.failedAttempts || 0) + 1
-
-        if (user.failedAttempts >= 5) {
-          user.lockedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-          toast.error("Conta bloqueada por 30 minutos devido a muitas tentativas")
-        }
-
-        const updatedUsers = users.map((u: any) => (u.id === user.id ? { ...u, userId: u.id } : { ...u, userId: u.id }))
-        localStorage.setItem("users", JSON.stringify(updatedUsers))
-
-        throw new Error("Senha incorreta")
-      }
-
-      if (!isHashedMockPassword(user.password)) {
-        user.password = await hashMockPassword(password)
-      }
-
-      if (!user.isEmailConfirmed) {
-        router.push(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
-        throw new Error("Email não confirmado. Redirecionando para confirmação...")
-      }
-
-      user.failedAttempts = 0
-      user.lockedUntil = null
-      user.lastLogin = new Date().toISOString()
-
-      const updatedUsers = users.map((u: any) =>
-        u.id === user.id ? { ...user, userId: user.id } : { ...u, userId: u.id },
-      )
-      localStorage.setItem("users", JSON.stringify(updatedUsers))
-
-      const sessionToken = generateSessionToken()
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-
-      const sessionData: SessionData = {
-        token: sessionToken,
-        userId: user.id,
-        organizationId: user.defaultOrganizationId,
-        expiresAt,
-      }
-
-      localStorage.setItem("auth_session", JSON.stringify(sessionData))
-      localStorage.setItem("auth_user", JSON.stringify(user))
-
-      userDataService.setContext(user, user.defaultOrganizationId)
-
-      logAuditEvent("login_success", user.id, { email })
-
-      setUser(user)
-
-      console.log("[Auth] Login successful, redirecting to dashboard")
-
-      try {
-        router.replace("/dashboard")
-
-        setTimeout(() => {
-          if (window.location.pathname === "/auth") {
-            console.log("[Auth] Fallback navigation to dashboard")
-            window.location.href = "/dashboard"
-          }
-        }, 500)
-      } catch (routerError) {
-        console.error("[Auth] Router error:", routerError)
-        window.location.href = "/dashboard"
-      }
+      userDataService.setContext(mapped, mapped.defaultOrganizationId)
+      logAuditEvent("login_success", mapped.id, { email })
+      setUser(mapped)
+      router.replace("/dashboard")
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Erro no login"
-      const parsedMessage = parseApiErrorMessage(message)
-      const errorWithStatus = error as { status?: number }
-
-      if (USE_API) {
-        logAuditEvent("login_failure", null, { email, error: parsedMessage })
-
-        if (errorWithStatus.status === 401) {
-          throw new Error("Email ou senha inválidos")
-        }
-
-        if (errorWithStatus.status === 429) {
-          throw new Error("Muitas tentativas de login. Tente novamente em instantes")
-        }
-
-        if (errorWithStatus.status === 0) {
-          throw new Error("Não foi possível conectar com o servidor")
-        }
-
-        if (typeof errorWithStatus.status === "number" && errorWithStatus.status >= 500) {
-          throw new Error("Serviço de autenticação indisponível. Tente novamente em instantes")
-        }
-
-        throw new Error("Não foi possível realizar login. Verifique seus dados e tente novamente")
+      const status = (error as { status?: number }).status
+      logAuditEvent("login_failure", null, { email, error: (error as Error).message })
+      if (status === 403) {
+        router.replace(`/auth/verify-pending?email=${encodeURIComponent(email)}`)
+        throw new Error("Confirme seu email para acessar.")
       }
-
-      logAuditEvent("login_failure", null, { email, error: parsedMessage })
+      if (status === 401) throw new Error("Email ou senha inválidos")
+      if (status === 429) throw new Error("Muitas tentativas. Tente novamente em alguns instantes")
       throw error
     } finally {
       setIsLoading(false)
@@ -281,340 +151,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (data: RegisterData) => {
     setIsLoading(true)
-
     try {
       const validation = validateRegistrationForm(data)
       if (!validation.isValid) {
         throw new Error(validation.errors[0])
       }
-
-      const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-      const globalUsers = localStorage.getItem("users")
-      const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-      if (users.some((u: any) => u.email === data.email)) {
-        throw new Error("Email já está em uso")
+      if (!USE_API) {
+        throw new Error("Cadastro local desativado neste ambiente. Use o backend de auth.")
       }
-
-      const organizationId = "org_" + Math.random().toString(36).substring(2)
-
-      const newUser: User = {
-        id: generateUserId(),
+      const response = await api.post<ApiRegisterResponse>("/auth/register", {
         email: data.email,
+        password: data.password,
         firstName: data.firstName,
-        lastName: data.lastName ?? "",
+        lastName: data.lastName,
         phone: data.phone,
         cpfCnpj: data.cpfCnpj,
-        isEmailConfirmed: false,
-        defaultOrganizationId: organizationId,
-        organizations: [
-          {
-            id: organizationId,
-            name: data.organizationName || (data.lastName ? `${data.firstName} ${data.lastName}` : data.firstName),
-            role: "owner",
-            permissions: ["*"],
-            joinedAt: new Date().toISOString(),
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        planType: "free",
-        preferences: {
-          theme: "system",
-          language: "pt-BR",
-          notifications: {
-            email: true,
-            push: true,
-            sms: false,
-          },
-          layout: {
-            sidebarCollapsed: false,
-            compactMode: false,
-          },
-        },
-      }
-
-      const userWithPassword = {
-        ...newUser,
-        userId: newUser.id,
-        password: await hashMockPassword(data.password),
-        failedAttempts: 0,
-        lockedUntil: null,
-      }
-
-      users.push(userWithPassword)
-      localStorage.setItem("users", JSON.stringify(users))
-
-      const confirmationCode = generateConfirmationCode()
-      const confirmationCodesData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
-      const globalConfirmationCodes = localStorage.getItem("confirmation_codes")
-      const confirmationCodes = globalConfirmationCodes ? JSON.parse(globalConfirmationCodes) : confirmationCodesData
-
-      const filteredCodes = confirmationCodes.filter((c: { email?: string }) => c.email !== data.email)
-      filteredCodes.push({
-        email: data.email,
-        code: confirmationCode,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        used: false,
-        createdAt: new Date().toISOString(),
-        userId: newUser.id,
       })
-      localStorage.setItem("confirmation_codes", JSON.stringify(filteredCodes))
-
-      userDataService.setContext(newUser, organizationId)
-
-      createDefaultAccount(newUser.id)
-
-      logAuditEvent("user_created", newUser.id, { email: data.email })
-
-      setUser(newUser)
-      localStorage.setItem("auth_user", JSON.stringify(newUser))
-
-      if (IS_DEV_MODE) {
-        toast.success(`Conta criada com sucesso! Codigo de teste: ${confirmationCode}`)
-      } else {
-        toast.success("Conta criada com sucesso! Redirecionando para confirmação...")
-      }
-
-      setTimeout(() => {
-        router.push(`/auth/confirm?email=${encodeURIComponent(data.email)}`)
-      }, 1000)
+      logAuditEvent("user_created", response.user.id, { email: data.email })
+      toast.success("Conta criada! Confira seu email para confirmar.")
+      router.replace(`/auth/verify-pending?email=${encodeURIComponent(data.email)}`)
     } catch (error) {
+      const status = (error as { status?: number }).status
+      if (status === 409) throw new Error("Email já está em uso")
       throw error
     } finally {
       setIsLoading(false)
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
     if (USE_API) {
-      // Keep logout signature sync while still revoking server refresh session/cookies.
-      void api.post<{ success: boolean }>("/auth/logout", {}).catch(() => {
-        // Local cleanup must still happen even when backend logout is unavailable.
-      })
+      try {
+        await api.post<{ success: boolean }>("/auth/logout", {})
+      } catch {
+        // Mesmo se o backend falhar, segue limpando estado local.
+      }
     }
-
     userDataService.cleanupUserData()
-
-    localStorage.removeItem("auth_session")
-    localStorage.removeItem("auth_user")
+    clearLocalSession()
     setUser(null)
     router.push("/auth")
   }
 
+  const logoutAllDevices = async () => {
+    if (!USE_API) {
+      throw new Error("Disponível somente com backend ativo")
+    }
+    const result = await api.post<{ revokedCount: number }>("/auth/logout-all", {})
+    userDataService.cleanupUserData()
+    clearLocalSession()
+    setUser(null)
+    router.push("/auth")
+    return result
+  }
+
+  const resendConfirmation = async () => {
+    if (!USE_API) throw new Error("Disponível somente com backend ativo")
+    await api.post<{ success: boolean }>("/auth/email/request-verification", {})
+  }
+
+  const forgotPassword = async (email: string) => {
+    if (!USE_API) throw new Error("Disponível somente com backend ativo")
+    await api.post<{ success: boolean }>("/auth/password/forgot", { email })
+  }
+
+  const resetPasswordWithToken = async (token: string, newPassword: string) => {
+    if (!USE_API) throw new Error("Disponível somente com backend ativo")
+    await api.post<{ success: boolean }>("/auth/password/reset", { token, newPassword })
+  }
+
   const switchOrganization = async (organizationId: string) => {
     if (!user) return
-
-    if (USE_API) {
-      userDataService.setContext(user, organizationId)
-      logAuditEvent("organization_switched", user.id, { organizationId, source: "api_mode" })
-      toast.success("Organização alterada com sucesso!")
-      window.location.reload()
-      return
-    }
-
-    try {
-      const sessionData = localStorage.getItem("auth_session")
-      if (sessionData) {
-        const session: SessionData = JSON.parse(sessionData)
-        session.organizationId = organizationId
-        localStorage.setItem("auth_session", JSON.stringify(session))
-
-        userDataService.setContext(user, organizationId)
-
-        logAuditEvent("organization_switched", user.id, { organizationId })
-
-        toast.success("Organização alterada com sucesso!")
-
-        window.location.reload()
-      }
-    } catch (error) {
-      toast.error("Erro ao alterar organização")
-    }
-  }
-
-  const resetPassword = async (email: string) => {
-    try {
-      const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-      const globalUsers = localStorage.getItem("users")
-      const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-      const user = users.find((u: any) => u.email === email)
-
-      if (user) {
-        const resetToken = generateResetToken()
-        const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000).toISOString()
-
-        const resetTokensData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
-        const globalResetTokens = localStorage.getItem("reset_tokens")
-        const resetTokens = globalResetTokens ? JSON.parse(globalResetTokens) : resetTokensData
-
-        resetTokens.push({
-          email,
-          token: resetToken,
-          expiresAt: resetTokenExpiry,
-          used: false,
-          createdAt: new Date().toISOString(),
-          userId: user.id,
-        })
-        localStorage.setItem("reset_tokens", JSON.stringify(resetTokens))
-
-        logAuditEvent("password_reset_requested", user.id, { email })
-
-        if (IS_DEV_MODE) {
-          toast.success(`Instrucoes de recuperacao enviadas. Token de teste: ${resetToken}`)
-        } else {
-          toast.success("Instruções de recuperação enviadas para seu email.")
-        }
-      } else {
-        toast.success("Se o email existir em nossa base, você receberá instruções de recuperação.")
-      }
-    } catch (error) {
-      toast.error("Erro ao processar solicitação. Tente novamente.")
-    }
-  }
-
-  const confirmEmail = async (code: string): Promise<boolean> => {
-    try {
-      const confirmationCodesData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
-      const globalConfirmationCodes = localStorage.getItem("confirmation_codes")
-      const confirmationCodes = globalConfirmationCodes ? JSON.parse(globalConfirmationCodes) : confirmationCodesData
-
-      const targetEmail =
-        user?.email || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("email") : null)
-
-      if (!targetEmail) {
-        return false
-      }
-
-      const consumeResult = consumeTimedValue(confirmationCodes, targetEmail, code, "code")
-      if (!consumeResult.valid) {
-        logAuditEvent("email_confirmation_failed", user?.id || null, {
-          email: targetEmail,
-          reason: "invalid_code",
-        })
-        return false
-      }
-
-      localStorage.setItem("confirmation_codes", JSON.stringify(consumeResult.updatedRecords))
-
-      const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-      const globalUsers = localStorage.getItem("users")
-      const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-      const targetUser = users.find((u: { email?: string }) => u.email === targetEmail)
-      if (!targetUser) {
-        return false
-      }
-
-      const updatedUsers = users.map((u: { id: string; userId?: string; isEmailConfirmed?: boolean }) => {
-        if (u.id === targetUser.id) {
-          return { ...u, isEmailConfirmed: true, userId: u.id }
-        }
-        return { ...u, userId: u.id }
-      })
-      localStorage.setItem("users", JSON.stringify(updatedUsers))
-
-      const confirmedUser = updatedUsers.find((u: { id: string }) => u.id === targetUser.id)
-      if (!confirmedUser) {
-        return false
-      }
-
-      const sessionToken = generateSessionToken()
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-
-      const sessionData: SessionData = {
-        token: sessionToken,
-        userId: confirmedUser.id,
-        organizationId: confirmedUser.defaultOrganizationId,
-        expiresAt,
-      }
-
-      localStorage.setItem("auth_session", JSON.stringify(sessionData))
-      localStorage.setItem("auth_user", JSON.stringify(confirmedUser))
-
-      userDataService.setContext(confirmedUser, confirmedUser.defaultOrganizationId)
-
-      setUser(confirmedUser)
-
-      logAuditEvent("email_confirmed", targetUser.id, { email: targetEmail })
-      logAuditEvent("login_success", confirmedUser.id, { email: targetEmail, source: "email_confirmation" })
-
-      return true
-    } catch (error) {
-      console.error("[Auth] Error confirming email:", error)
-      logAuditEvent("email_confirmation_error", user?.id || null, {
-        email: user?.email,
-        error: (error as Error).message,
-      })
-      return false
-    }
-  }
-
-  const resendConfirmation = async (email?: string): Promise<void> => {
-    try {
-      console.log("[Auth] Resending confirmation code")
-
-      let targetEmail = email || user?.email
-      let targetUser = user
-
-      if (!targetEmail) {
-        const urlParams = new URLSearchParams(window.location.search)
-        targetEmail = urlParams.get("email") ?? undefined
-      }
-
-      if (!targetEmail) {
-        throw new Error("Email não encontrado")
-      }
-
-      if (!targetUser) {
-        const usersData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.users, "global") || []
-        const globalUsers = localStorage.getItem("users")
-        const users = globalUsers ? JSON.parse(globalUsers) : usersData
-
-        targetUser = users.find((u: any) => u.email === targetEmail)
-      }
-
-      if (!targetUser) {
-        throw new Error("Usuário não encontrado")
-      }
-
-      const newCode = generateConfirmationCode()
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
-
-      const confirmationCodesData = migrationService.getUserData(UNIFIED_STORAGE_KEYS.authSessions, "global") || []
-      const globalConfirmationCodes = localStorage.getItem("confirmation_codes")
-      const confirmationCodes = globalConfirmationCodes ? JSON.parse(globalConfirmationCodes) : confirmationCodesData
-
-      const filteredCodes = confirmationCodes.filter((c: any) => c.email !== targetEmail)
-
-      filteredCodes.push({
-        email: targetEmail,
-        code: newCode,
-        expiresAt,
-        used: false,
-        createdAt: new Date().toISOString(),
-        userId: targetUser.id,
-      })
-
-      localStorage.setItem("confirmation_codes", JSON.stringify(filteredCodes))
-
-      logAuditEvent("confirmation_code_resent", targetUser.id, {
-        email: targetEmail,
-      })
-
-      if (IS_DEV_MODE) {
-        toast.success(`Novo codigo enviado. Codigo de teste: ${newCode}`)
-      } else {
-        toast.success("Novo codigo enviado com sucesso")
-      }
-    } catch (error) {
-      console.error("[Auth] Error resending confirmation:", error)
-      logAuditEvent("confirmation_resend_error", null, {
-        email: email || user?.email,
-        error: (error as Error).message,
-      })
-      throw error
-    }
+    userDataService.setContext(user, organizationId)
+    logAuditEvent("organization_switched", user.id, { organizationId })
+    if (typeof window !== "undefined") window.location.reload()
   }
 
   const value: AuthContextType = {
@@ -623,10 +233,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
-    confirmEmail,
+    logoutAllDevices,
     resendConfirmation,
+    forgotPassword,
+    resetPasswordWithToken,
+    hydrateFromSession,
     switchOrganization,
-    resetPassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

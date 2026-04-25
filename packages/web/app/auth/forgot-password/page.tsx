@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [error, setError] = useState("")
-  const { resetPassword } = useAuth()
+  const { forgotPassword } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,17 +27,21 @@ export default function ForgotPasswordPage() {
     setError("")
 
     try {
-      // Validate email
       const emailValidation = validateEmail(email)
       if (!emailValidation.isValid) {
-        setError(emailValidation.errors[0] ?? "Email invalido")
+        setError(emailValidation.errors[0] ?? "Email inválido")
         return
       }
 
-      await resetPassword(email)
+      await forgotPassword(email)
       setIsEmailSent(true)
     } catch (error) {
-      setError((error as Error).message || "Erro ao enviar email de recuperação")
+      const status = (error as { status?: number }).status
+      if (status === 429) {
+        setError("Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.")
+      } else {
+        setError((error as Error).message || "Erro ao enviar email de recuperação")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -46,7 +50,6 @@ export default function ForgotPasswordPage() {
   if (isEmailSent) {
     return (
       <div className="min-h-screen bg-auth-background">
-        {/* Header */}
         <header className="bg-auth-nav border-b border-auth-border">
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
@@ -73,9 +76,9 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl font-bold text-card-foreground">Email Enviado!</CardTitle>
+              <CardTitle className="text-2xl font-bold text-card-foreground">Verifique seu email</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Enviamos instruções de recuperação para <strong>{email}</strong>
+                Se <strong>{email}</strong> existir em nossa base, enviamos um link para redefinir a senha.
               </CardDescription>
             </CardHeader>
 
@@ -83,28 +86,13 @@ export default function ForgotPasswordPage() {
               <Alert className="border-blue-200 bg-blue-50">
                 <Mail className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
-                  <strong>Para teste:</strong> Use o token &quot;RESET-123&quot; na próxima tela
-                  <br />
-                  <span className="text-sm text-blue-600">Em produção, este token seria enviado por email</span>
+                  O link expira em 1 hora. Verifique também sua caixa de spam.
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground text-center">
-                  Verifique sua caixa de entrada e pasta de spam. O link expira em 1 hora.
-                </p>
-
-                <Button
-                  onClick={() => router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`)}
-                  className="w-full"
-                >
-                  Continuar com Reset
-                </Button>
-
-                <Button variant="outline" onClick={() => router.push("/auth")} className="w-full">
-                  Voltar ao Login
-                </Button>
-              </div>
+              <Button variant="outline" onClick={() => router.push("/auth")} className="w-full">
+                Voltar ao Login
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -114,7 +102,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-auth-background">
-      {/* Header */}
       <header className="bg-auth-nav border-b border-auth-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -175,7 +162,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Enviando..." : "Enviar Instruções"}
+                {isLoading ? "Enviando..." : "Enviar instruções"}
               </Button>
             </form>
 
@@ -187,7 +174,7 @@ export default function ForgotPasswordPage() {
                   onClick={() => router.push("/auth")}
                   className="text-primary hover:underline font-medium"
                 >
-                  Fazer Login
+                  Fazer login
                 </button>
               </p>
             </div>

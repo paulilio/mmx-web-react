@@ -10,23 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, TrendingUp, Key } from "lucide-react"
 import { validatePassword } from "@/lib/shared/auth-validations"
-import { hashMockPassword } from "@/lib/shared/mock-auth-password"
-import { consumeTimedValue, findLatestActiveValue, type TimedTokenRecord } from "@/lib/shared/mock-auth-flow"
+import { useAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 
-type LocalResetUser = {
-  email: string
-  id: string
-  password: string
-  failedAttempts?: number
-  lockedUntil?: string | null
-}
-
-const CANONICAL_AUDIT_KEY = "mmx_audit_log"
-
 export default function ResetPasswordPage() {
-  const isDevMode = process.env.NODE_ENV !== "production"
-  const [resetToken, setResetToken] = useState("")
+  const [token, setToken] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -35,25 +23,14 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("")
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [isSuccess, setIsSuccess] = useState(false)
-  const [devToken, setDevToken] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const email = searchParams.get("email")
+  const { resetPasswordWithToken } = useAuth()
 
   useEffect(() => {
-    if (!isDevMode || !email) {
-      setDevToken(null)
-      return
-    }
-
-    try {
-      const stored = localStorage.getItem("reset_tokens")
-      const records = stored ? (JSON.parse(stored) as TimedTokenRecord[]) : []
-      setDevToken(findLatestActiveValue(records, email, "token"))
-    } catch {
-      setDevToken(null)
-    }
-  }, [email, isDevMode])
+    const queryToken = searchParams.get("token")
+    if (queryToken) setToken(queryToken)
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,78 +39,32 @@ export default function ResetPasswordPage() {
     setValidationErrors([])
 
     try {
-      if (!isDevMode) {
-        setError("Recuperacao de senha indisponivel neste ambiente")
+      if (!token.trim()) {
+        setError("Token de recuperação ausente. Use o link enviado por email.")
         return
       }
 
-      if (!email) {
-        setError("Email de recuperacao nao informado")
-        return
-      }
-
-      const rawResetTokens = localStorage.getItem("reset_tokens")
-      const resetTokens = rawResetTokens ? (JSON.parse(rawResetTokens) as TimedTokenRecord[]) : []
-      const consumedToken = consumeTimedValue(resetTokens, email, resetToken.trim().toUpperCase(), "token")
-
-      if (!consumedToken.valid) {
-        setError("Token de recuperação inválido ou expirado")
-        return
-      }
-
-      localStorage.setItem("reset_tokens", JSON.stringify(consumedToken.updatedRecords))
-
-      // Validate password
       const passwordValidation = validatePassword(newPassword)
       if (!passwordValidation.isValid) {
         setValidationErrors(passwordValidation.errors)
         return
       }
 
-      // Check password confirmation
       if (newPassword !== confirmPassword) {
         setError("Senhas não coincidem")
         return
       }
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]") as LocalResetUser[]
-      const userIndex = users.findIndex((u) => u.email === email)
-
-      if (userIndex !== -1) {
-        const userToUpdate = users[userIndex]
-        if (!userToUpdate) {
-          setError("Usuário não encontrado para atualização de senha")
-          return
-        }
-
-        userToUpdate.password = await hashMockPassword(newPassword)
-        userToUpdate.failedAttempts = 0
-        userToUpdate.lockedUntil = null
-        localStorage.setItem("users", JSON.stringify(users))
-
-        // Log audit event
-        const auditLogs = JSON.parse(localStorage.getItem(CANONICAL_AUDIT_KEY) || "[]")
-        auditLogs.push({
-          id: "log_" + Math.random().toString(36).substring(2),
-          action: "password_reset_completed",
-          userId: userToUpdate.id,
-          metadata: { email },
-          timestamp: new Date().toISOString(),
-          ip: "mock_ip",
-          userAgent: navigator.userAgent,
-        })
-        localStorage.setItem(CANONICAL_AUDIT_KEY, JSON.stringify(auditLogs))
-      }
+      await resetPasswordWithToken(token.trim(), newPassword)
 
       setIsSuccess(true)
       toast.success("Senha alterada com sucesso!")
-
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        router.push("/auth")
-      }, 3000)
-    } catch {
-      setError("Erro ao alterar senha. Tente novamente.")
+      setTimeout(() => router.push("/auth"), 2500)
+    } catch (err) {
+      const status = (err as { status?: number }).status
+      if (status === 400) setError("Token inválido ou expirado. Solicite um novo email de recuperação.")
+      else if (status === 429) setError("Muitas tentativas. Aguarde alguns minutos.")
+      else setError((err as Error).message || "Erro ao alterar senha. Tente novamente.")
     } finally {
       setIsLoading(false)
     }
@@ -147,7 +78,7 @@ export default function ResetPasswordPage() {
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-card-foreground">Senha Alterada!</CardTitle>
+            <CardTitle className="text-2xl font-bold text-card-foreground">Senha alterada</CardTitle>
             <CardDescription className="text-muted-foreground">
               Sua senha foi alterada com sucesso. Redirecionando para o login...
             </CardDescription>
@@ -159,7 +90,6 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen bg-auth-background">
-      {/* Header */}
       <header className="bg-auth-nav border-b border-auth-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -174,7 +104,7 @@ export default function ResetPasswordPage() {
               onClick={() => router.push("/auth")}
               className="text-auth-nav-muted hover:text-auth-nav-foreground"
             >
-              Voltar ao Login
+              Voltar ao login
             </Button>
           </div>
         </div>
@@ -186,15 +116,9 @@ export default function ResetPasswordPage() {
             <div className="mx-auto w-16 h-16 bg-auth-feature rounded-full flex items-center justify-center">
               <Key className="w-8 h-8 text-auth-feature-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-card-foreground">Nova Senha</CardTitle>
+            <CardTitle className="text-2xl font-bold text-card-foreground">Nova senha</CardTitle>
             <CardDescription className="text-muted-foreground">
-              {email ? (
-                <>
-                  Digite o token de recuperação e sua nova senha para <strong>{email}</strong>
-                </>
-              ) : (
-                "Digite o token de recuperação e sua nova senha"
-              )}
+              Digite sua nova senha para concluir a recuperação.
             </CardDescription>
           </CardHeader>
 
@@ -211,51 +135,35 @@ export default function ResetPasswordPage() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   <ul className="list-disc list-inside space-y-1">
-                    {validationErrors.map((error, index) => (
-                      <li key={index} className="text-sm">
-                        {error}
-                      </li>
+                    {validationErrors.map((err, index) => (
+                      <li key={index} className="text-sm">{err}</li>
                     ))}
                   </ul>
                 </AlertDescription>
               </Alert>
             )}
 
-            {isDevMode && devToken && (
-              <Alert className="border-blue-200 bg-blue-50">
-                <Key className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
-                  <strong>Token de teste:</strong> {devToken}
-                  <br />
-                  <span className="text-sm text-blue-600">Use este token para testar a recuperação de senha</span>
-                </AlertDescription>
-              </Alert>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="resetToken" className="text-sm font-medium">
-                  Token de Recuperação
-                </label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="resetToken"
-                    type="text"
-                    placeholder={isDevMode ? "Digite o token (ex: RESET-123)" : "Digite o token recebido"}
-                    className="pl-10 text-center font-mono tracking-wider"
-                    value={resetToken}
-                    onChange={(e) => setResetToken(e.target.value.toUpperCase())}
-                    maxLength={10}
-                    required
-                  />
+              {!searchParams.get("token") && (
+                <div className="space-y-2">
+                  <label htmlFor="resetToken" className="text-sm font-medium">Token de recuperação</label>
+                  <div className="relative">
+                    <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="resetToken"
+                      type="text"
+                      placeholder="Cole aqui o token recebido"
+                      className="pl-10 font-mono"
+                      value={token}
+                      onChange={(e) => setToken(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-2">
-                <label htmlFor="newPassword" className="text-sm font-medium">
-                  Nova Senha
-                </label>
+                <label htmlFor="newPassword" className="text-sm font-medium">Nova senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -278,9 +186,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirmar Nova Senha
-                </label>
+                <label htmlFor="confirmPassword" className="text-sm font-medium">Confirmar nova senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -303,19 +209,19 @@ export default function ResetPasswordPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Alterando..." : "Alterar Senha"}
+                {isLoading ? "Alterando..." : "Alterar senha"}
               </Button>
             </form>
 
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
-                Não recebeu o token?{" "}
+                Não recebeu o email?{" "}
                 <button
                   type="button"
                   onClick={() => router.push("/auth/forgot-password")}
                   className="text-primary hover:underline font-medium"
                 >
-                  Solicitar Novamente
+                  Solicitar novamente
                 </button>
               </p>
             </div>

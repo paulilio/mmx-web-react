@@ -267,7 +267,12 @@ export default function AuthPage() {
   }
 
   const handleOAuthLogin = (provider: "google" | "microsoft") => {
-    window.location.href = `/api/auth/oauth/${provider}`
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE
+    if (!apiBase) {
+      toast.error("API não configurada para OAuth. Defina NEXT_PUBLIC_API_BASE.")
+      return
+    }
+    window.location.href = `${apiBase.replace(/\/$/, "")}/auth/oauth/${provider}`
   }
 
   return (

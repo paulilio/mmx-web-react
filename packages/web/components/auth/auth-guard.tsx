@@ -34,7 +34,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
     if (!user.isEmailConfirmed) {
       hasRedirectedRef.current = true
-      router.replace(`/auth/confirm?email=${encodeURIComponent(user.email)}`)
+      router.replace(`/auth/verify-pending?email=${encodeURIComponent(user.email)}`)
       return
     }
 

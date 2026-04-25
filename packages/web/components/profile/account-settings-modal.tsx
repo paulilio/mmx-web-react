@@ -28,7 +28,7 @@ type StoredUserRecord = {
 }
 
 export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModalProps) {
-  const { user } = useAuth()
+  const { user, logoutAllDevices } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -58,8 +58,8 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
 
   if (!user) return null
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+  const getInitials = (firstName: string, lastName?: string) => {
+    return `${firstName.charAt(0)}${(lastName ?? "").charAt(0)}`.toUpperCase()
   }
 
   const handleProfileUpdate = async () => {
@@ -367,6 +367,38 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
 
                 <Button onClick={handlePasswordChange} disabled={isLoading}>
                   {isLoading ? "Changing..." : "Change Password"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  Sessões ativas
+                </CardTitle>
+                <CardDescription>
+                  Encerre todas as sessões ativas (este e demais dispositivos). Você precisará fazer login novamente.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    setIsLoading(true)
+                    try {
+                      const result = await logoutAllDevices()
+                      toast.success(`${result.revokedCount} sessões encerradas.`)
+                      onOpenChange(false)
+                    } catch (error) {
+                      toast.error((error as Error).message || "Erro ao encerrar sessões")
+                    } finally {
+                      setIsLoading(false)
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  Sair de todos os dispositivos
                 </Button>
               </CardContent>
             </Card>
