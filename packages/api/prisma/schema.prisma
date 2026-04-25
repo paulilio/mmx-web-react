@@ -101,18 +101,24 @@ model User {
 }
 
 model RefreshSession {
-  id         String    @id @default(cuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash  String    @unique
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  userAgent  String?
-  ipAddress  String?
-  createdAt  DateTime  @default(now())
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash         String    @unique
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  userAgent         String?
+  ipAddress         String?
+  createdAt         DateTime  @default(now())
+
+  // Device tracking (Phase 1.2 hardening)
+  deviceFingerprint String?   @map("device_fingerprint")
+  lastActivityAt    DateTime  @default(now()) @updatedAt @map("last_activity_at")
+  lastIp            String?   @map("last_ip")
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([deviceFingerprint])
 }
 
 model OneTimeToken {
