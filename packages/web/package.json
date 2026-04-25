@@ -11,6 +11,9 @@
     "start": "next start",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install --with-deps chromium",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

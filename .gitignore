@@ -34,6 +34,11 @@ yarn-error.log*
 .eslintcache
 coverage/
 
+# Playwright artifacts
+packages/web/test-results/
+packages/web/playwright-report/
+packages/web/playwright/.cache/
+
 # env files (per-package, not tracked — only .env.example is versioned)
 /.env
 /.env.*
