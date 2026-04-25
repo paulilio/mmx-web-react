@@ -68,4 +68,8 @@ packages/*/runtime/**
 .ai
 .aiws
 .claude/skills/
+.claude/settings.local.json
 .github/prompts/
+
+# Bicep build output (gerado por `az bicep build`; só o .bicep é canônico)
+infra/*.json
