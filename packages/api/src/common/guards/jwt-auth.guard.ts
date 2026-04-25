@@ -3,10 +3,13 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  Inject,
+  Optional,
 } from "@nestjs/common"
 import type { Request } from "express"
 import type { Scope } from "@/core/lib/server/security/permissions"
 import { verifyAccessToken } from "@/core/lib/server/security/jwt"
+import { TokenBlacklistService } from "@/infrastructure/redis/token-blacklist.service"
 
 declare global {
   namespace Express {
@@ -20,12 +23,25 @@ declare global {
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(
+    @Optional()
+    private readonly tokenBlacklist: TokenBlacklistService,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request & { userId?: string; scopes?: Scope[]; roles?: string[] }>()
     const token = extractToken(req)
 
     if (!token) {
       throw new UnauthorizedException({ code: "AUTH_REQUIRED", message: "Autenticacao obrigatoria" })
+    }
+
+    // Check if token is blacklisted
+    if (this.tokenBlacklist) {
+      const isBlacklisted = await this.tokenBlacklist.isBlacklisted(token)
+      if (isBlacklisted) {
+        throw new UnauthorizedException({ code: "TOKEN_REVOKED", message: "Token foi revogado" })
+      }
     }
 
     try {

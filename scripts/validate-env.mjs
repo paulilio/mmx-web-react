@@ -41,6 +41,9 @@ function validateByEnvironment(env) {
   if (isProdLike) {
     assertRequired("DATABASE_URL", process.env.DATABASE_URL, errors)
     assertRequired("MMX_APP_ENV", process.env.MMX_APP_ENV, errors)
+    assertRequired("JWT_ACCESS_SECRET", process.env.JWT_ACCESS_SECRET, errors)
+    assertRequired("JWT_REFRESH_SECRET", process.env.JWT_REFRESH_SECRET, errors)
+    assertRequired("TOKEN_HASH_SECRET", process.env.TOKEN_HASH_SECRET, errors)
   } else {
     if (!process.env.DATABASE_URL) {
       warnings.push("DATABASE_URL is empty; Prisma-backed API routes may fail when accessed")
@@ -48,6 +51,18 @@ function validateByEnvironment(env) {
 
     if (!process.env.MMX_APP_ENV) {
       warnings.push("MMX_APP_ENV is empty; runtime will fallback using NODE_ENV/VERCEL_ENV")
+    }
+
+    if (!process.env.JWT_ACCESS_SECRET) {
+      warnings.push("JWT_ACCESS_SECRET is empty; OAuth will work but manual login will fail")
+    }
+
+    if (!process.env.JWT_REFRESH_SECRET) {
+      warnings.push("JWT_REFRESH_SECRET is empty; token refresh will fail")
+    }
+
+    if (!process.env.TOKEN_HASH_SECRET) {
+      warnings.push("TOKEN_HASH_SECRET is empty; session tracking will fail")
     }
   }
 
