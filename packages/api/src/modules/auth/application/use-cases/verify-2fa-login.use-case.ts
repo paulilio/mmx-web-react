@@ -1,6 +1,8 @@
 import { Injectable, Inject } from "@nestjs/common"
 import { USER_REPOSITORY, type IUserRepository } from "../ports/user-repository.port"
 import { TotpService } from "@/infrastructure/2fa/totp.service"
+import { issueAccessToken, issueRefreshToken } from "@/core/lib/server/security/jwt"
+import { resolveUserScopes } from "@/core/lib/server/security/permissions"
 
 export interface VerifyTwoFactorLoginInput {
   userId: string
@@ -11,11 +13,15 @@ export interface VerifyTwoFactorLoginInput {
 export interface VerifyTwoFactorLoginOutput {
   success: boolean
   userId: string
+  accessToken?: string
+  refreshToken?: string
+  expiresIn?: number
 }
 
 /**
  * Verify 2FA token or backup code during login
  * Accepts either current TOTP code or backup code
+ * Returns new access and refresh tokens after successful verification
  */
 @Injectable()
 export class VerifyTwoFactorLoginUseCase {
@@ -70,9 +76,22 @@ export class VerifyTwoFactorLoginUseCase {
       })
     }
 
+    // Issue new tokens after successful 2FA verification
+    const scopes = resolveUserScopes({ role: "user" })
+    const accessResult = issueAccessToken({
+      id: user.id,
+      email: user.email,
+      scopes,
+      roles: ["user"],
+    })
+    const refreshResult = issueRefreshToken({ id: user.id, email: user.email })
+
     return {
       success: true,
       userId: user.id,
+      accessToken: accessResult.token,
+      refreshToken: refreshResult.token,
+      expiresIn: accessResult.expiresInSeconds,
     }
   }
 }

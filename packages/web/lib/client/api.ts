@@ -2,6 +2,13 @@ import { USE_API, API_BASE } from "../shared/config"
 import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../mock/storage"
 import { apiLogger } from "../shared/logger"
 
+// Auto-refresh state
+let isRefreshing = false
+const refreshQueue: Array<{
+  resolve: (value: any) => void
+  reject: (reason?: any) => void
+}> = []
+
 class ApiError extends Error {
   constructor(
     public status: number,
@@ -10,6 +17,14 @@ class ApiError extends Error {
     super(message)
     this.name = "ApiError"
   }
+}
+
+function resolveApiUrl(endpoint: string): string {
+  if (/^https?:\/\//.test(endpoint)) {
+    return endpoint
+  }
+
+  return `${API_BASE}${endpoint}`
 }
 
 type ApiEnvelope<T> = {
@@ -27,6 +42,14 @@ function isApiEnvelope<T>(value: unknown): value is ApiEnvelope<T> {
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
+  // Return raw response for 401 to allow retry logic in requestApi
+  if (response.status === 401) {
+    const errorText = await response.text()
+    const error = new ApiError(401, errorText || response.statusText)
+    ;(error as any).response = response
+    throw error
+  }
+
   if (!response.ok) {
     const errorText = await response.text()
     throw new ApiError(response.status, errorText || response.statusText)
@@ -44,6 +67,54 @@ async function handleResponse<T>(response: Response): Promise<T> {
   }
 
   return payload as T
+}
+
+/**
+ * Attempt to refresh access token using refresh token from cookies
+ */
+async function attemptTokenRefresh(): Promise<boolean> {
+  try {
+    const resolvedUrl = resolveApiUrl("/auth/refresh")
+    const response = await fetch(resolvedUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // Include refresh token from cookies
+    })
+
+    if (response.ok) {
+      const data = (await response.json()) as {
+        accessToken?: string
+        refreshToken?: string
+        expiresIn?: number
+      }
+
+      // Store new access token if provided
+      if (data.accessToken && typeof window !== "undefined") {
+        localStorage.setItem("auth_token", data.accessToken)
+        if (data.refreshToken) {
+          localStorage.setItem("auth_refresh_token", data.refreshToken)
+        }
+      }
+
+      return true
+    }
+
+    // Refresh failed - likely invalid refresh token
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_session")
+      localStorage.removeItem("auth_user")
+      localStorage.removeItem("auth_token")
+      // Redirect to login if in browser
+      if (typeof window !== "undefined" && window.location) {
+        window.location.href = "/auth/login"
+      }
+    }
+
+    return false
+  } catch (error) {
+    console.error("[API] Token refresh failed:", error)
+    return false
+  }
 }
 
 async function requestApi<T>(
@@ -68,6 +139,41 @@ async function requestApi<T>(
 
     return handleResponse<T>(response)
   } catch (error) {
+    // Handle 401 with auto-refresh
+    if (error instanceof ApiError && error.status === 401) {
+      // Skip refresh for auth endpoints
+      if (endpoint.includes("/auth/login") || endpoint.includes("/auth/register")) {
+        throw error
+      }
+
+      if (!isRefreshing) {
+        isRefreshing = true
+
+        try {
+          const refreshSuccess = await attemptTokenRefresh()
+
+          if (refreshSuccess) {
+            isRefreshing = false
+            // Retry original request
+            return requestApi<T>(endpoint, init)
+          } else {
+            isRefreshing = false
+            throw error
+          }
+        } catch (refreshError) {
+          isRefreshing = false
+          throw refreshError
+        }
+      } else {
+        // Queue request while refreshing
+        return new Promise((resolve, reject) => {
+          refreshQueue.push({ resolve, reject })
+          // Retry after queue is processed (simplified - in production use proper queue)
+          setTimeout(() => requestApi<T>(endpoint, init).then(resolve).catch(reject), 500)
+        })
+      }
+    }
+
     if (error instanceof ApiError) {
       throw error
     }
@@ -183,13 +289,6 @@ function writeMockBudgetAllocations(items: MockBudgetAllocationRecord[]) {
   localStorage.setItem(LEGACY_BUDGET_ALLOCATIONS_KEY, JSON.stringify(items))
 }
 
-function resolveApiUrl(endpoint: string): string {
-  if (/^https?:\/\//.test(endpoint)) {
-    return endpoint
-  }
-
-  return `${API_BASE}${endpoint}`
-}
 
 export async function getJSON<T>(endpoint: string): Promise<T> {
   if (!USE_API) {

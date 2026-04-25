@@ -109,7 +109,7 @@ export function use2FA() {
   }, [user])
 
   /**
-   * Verify 2FA code during login
+   * Verify 2FA code during login and return tokens
    */
   const verifyLoginCode = useCallback(
     async (userId: string, totpToken?: string, backupCode?: string) => {
@@ -117,11 +117,24 @@ export function use2FA() {
       setError(null)
 
       try {
-        const response = await api.post<{ success: boolean }>("/auth/2fa/verify-login", {
+        const response = await api.post<{ 
+          success: boolean
+          accessToken?: string
+          refreshToken?: string
+          expiresIn?: number
+        }>("/auth/2fa/verify-login", {
           userId,
           totpToken,
           backupCode,
         })
+
+        // Store tokens if returned
+        if (response.accessToken && typeof window !== "undefined") {
+          localStorage.setItem("auth_token", response.accessToken)
+          if (response.refreshToken) {
+            localStorage.setItem("auth_refresh_token", response.refreshToken)
+          }
+        }
 
         return response.success
       } catch (err) {

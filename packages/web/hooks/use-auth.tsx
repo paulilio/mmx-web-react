@@ -34,6 +34,7 @@ type ApiAuthUser = {
   lastName?: string
   isEmailConfirmed?: boolean
   planType?: User["planType"]
+  totpEnabled?: boolean // 2FA status
 }
 
 type ApiLoginResponse = {
@@ -127,8 +128,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const response = await api.post<ApiLoginResponse>("/auth/login", { email, password })
       const mapped = mapApiUser({ ...response.user, isEmailConfirmed: true })
+
+      // Check if 2FA is required
+      if (mapped && (response.user as any).totpEnabled) {
+        // Store tokens temporarily
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("2fa_pending_user", JSON.stringify(mapped))
+          sessionStorage.setItem("2fa_pending_tokens", JSON.stringify({
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          }))
+        }
+
+        logAuditEvent("login_2fa_required", mapped.id, { email })
+        // Redirect to 2FA verification
+        router.replace(`/auth/verify-2fa?userId=${mapped.id}`)
+        return
+      }
+
+      // Normal login (no 2FA)
       if (typeof window !== "undefined") {
         localStorage.setItem("auth_user", JSON.stringify(mapped))
+        localStorage.setItem("auth_token", response.accessToken)
+        localStorage.setItem("auth_refresh_token", response.refreshToken)
       }
       userDataService.setContext(mapped, mapped.defaultOrganizationId)
       logAuditEvent("login_success", mapped.id, { email })
