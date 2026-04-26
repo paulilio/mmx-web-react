@@ -7,6 +7,7 @@ const ALLOWED_PREFERENCE_KEYS = new Set([
   "language",
   "notifications",
   "layout",
+  "targets",
 ])
 
 function isRecord(value: unknown): value is Record<string, unknown> {

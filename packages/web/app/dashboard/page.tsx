@@ -10,6 +10,7 @@ import { PendingListCard } from "@/components/dashboard/pending-list-card"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
 import { useTransactions } from "@/hooks/use-transactions"
+import { useAuth } from "@/hooks/use-auth"
 import { DollarSign, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
 import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/shared/constants"
 
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
   const { data: aging, isLoading: agingLoading } = useAgingReport()
   const { transactions, isLoading: transactionsLoading } = useTransactions()
+  const { user } = useAuth()
 
   const { overdue, upcoming } = useMemo(() => {
     const today = new Date()
@@ -53,8 +55,14 @@ export default function DashboardPage() {
     )
   }
 
-  const receivablesTarget = DEFAULT_RECEIVABLES_TARGET
-  const payablesTarget = DEFAULT_PAYABLES_TARGET
+  const receivablesTarget =
+    user?.preferences?.targets?.receivables && user.preferences.targets.receivables > 0
+      ? user.preferences.targets.receivables
+      : DEFAULT_RECEIVABLES_TARGET
+  const payablesTarget =
+    user?.preferences?.targets?.payables && user.preferences.targets.payables > 0
+      ? user.preferences.targets.payables
+      : DEFAULT_PAYABLES_TARGET
 
   const receivablesCurrent = (() => {
     const value = Number(summary?.totalReceivables)

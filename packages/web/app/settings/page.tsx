@@ -28,7 +28,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useAreas } from "@/hooks/use-areas"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useActionButton } from "@/hooks/use-action-button"
+import { useAuth } from "@/hooks/use-auth"
 import { useSettingsMaintenance, type SeedTableKey } from "@/hooks/use-settings-maintenance"
+import { api } from "@/lib/client/api"
 import {
   Settings,
   Link2,
@@ -43,6 +45,7 @@ import {
   AlertCircle,
   Database,
   Sparkles,
+  Target,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -61,6 +64,38 @@ export default function SettingsPage() {
 
   const { areas } = useAreas()
   const { categoryGroups, updateCategoryGroup } = useCategoryGroups()
+  const { user, hydrateFromSession } = useAuth()
+
+  const [receivablesTargetInput, setReceivablesTargetInput] = useState<string>(
+    user?.preferences?.targets?.receivables != null
+      ? String(user.preferences.targets.receivables)
+      : "",
+  )
+  const [payablesTargetInput, setPayablesTargetInput] = useState<string>(
+    user?.preferences?.targets?.payables != null ? String(user.preferences.targets.payables) : "",
+  )
+
+  const saveTargetsButton = useActionButton({
+    actionName: "Metas salvas",
+    onAction: async () => {
+      const receivables = Number(receivablesTargetInput.replace(/\./g, "").replace(",", "."))
+      const payables = Number(payablesTargetInput.replace(/\./g, "").replace(",", "."))
+      if (!Number.isFinite(receivables) || receivables < 0) {
+        toast.error("Meta de recebimentos inválida")
+        return
+      }
+      if (!Number.isFinite(payables) || payables < 0) {
+        toast.error("Meta de despesas inválida")
+        return
+      }
+      await api.patch<{ preferences: unknown }>("/auth/preferences", {
+        targets: { receivables, payables },
+      })
+      await hydrateFromSession()
+    },
+    successMessage: "Metas atualizadas. Volte ao dashboard para ver os donuts atualizados.",
+    errorMessage: "Erro ao salvar metas. Tente novamente.",
+  })
 
   const exportBackupButton = useActionButton({
     actionName: "Backup exportado",
@@ -496,6 +531,56 @@ export default function SettingsPage() {
                   </div>
                 </DialogContent>
               </Dialog>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Metas mensais
+            </CardTitle>
+            <p className="text-sm text-slate-600">
+              Defina suas metas de recebimentos e limite de despesas. Aparecem nos donuts do dashboard.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="target-receivables">Meta de recebimentos (R$)</Label>
+                <Input
+                  id="target-receivables"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step={100}
+                  placeholder="200000"
+                  value={receivablesTargetInput}
+                  onChange={(e) => setReceivablesTargetInput(e.target.value)}
+                />
+                <p className="text-xs text-slate-500">Quanto você pretende receber. Padrão: R$ 200.000.</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="target-payables">Limite de despesas (R$)</Label>
+                <Input
+                  id="target-payables"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step={100}
+                  placeholder="80000"
+                  value={payablesTargetInput}
+                  onChange={(e) => setPayablesTargetInput(e.target.value)}
+                />
+                <p className="text-xs text-slate-500">Limite que você não quer ultrapassar. Padrão: R$ 80.000.</p>
+              </div>
+            </div>
+            <div className="flex justify-end mt-4">
+              <Button {...saveTargetsButton.buttonProps} disabled={saveTargetsButton.isProcessing}>
+                <Save className="h-4 w-4 mr-2" />
+                {saveTargetsButton.getButtonText("Salvar metas")}
+              </Button>
             </div>
           </CardContent>
         </Card>

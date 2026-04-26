@@ -69,6 +69,10 @@ export interface UserPreferences {
     compactMode: boolean
   }
   hasSeenWelcome?: boolean
+  targets?: {
+    receivables?: number
+    payables?: number
+  }
 }
 
 export interface CreditCardInfo {
