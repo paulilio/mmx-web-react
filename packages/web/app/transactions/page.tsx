@@ -983,13 +983,13 @@ export default function TransactionsPage() {
                   Recebimentos
                 </TabsTrigger>
                 <TabsTrigger
-                  value="fixed_expenses"
+                  value="fixed-expenses"
                   className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
                 >
                   Despesas fixas
                 </TabsTrigger>
                 <TabsTrigger
-                  value="daily_expenses"
+                  value="daily-expenses"
                   className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
                 >
                   Despesas variáveis
@@ -1001,7 +1001,7 @@ export default function TransactionsPage() {
                   Pessoais
                 </TabsTrigger>
                 <TabsTrigger
-                  value="taxes_fees"
+                  value="taxes-fees"
                   className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
                 >
                   Encargos/Taxas
