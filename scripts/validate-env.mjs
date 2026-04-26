@@ -106,6 +106,10 @@ function validateOpenFinance(env, errors, warnings) {
   } else if (isProdLike) {
     warnings.push("BELVO_SECRET_ID/BELVO_SECRET_PASSWORD empty; Open Finance features will be disabled")
   }
+
+  if (!process.env.BELVO_WEBHOOK_SECRET && (process.env.BELVO_SECRET_ID || isProdLike)) {
+    warnings.push("BELVO_WEBHOOK_SECRET empty; webhook endpoint will reject all calls")
+  }
 }
 
 function main() {
