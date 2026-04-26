@@ -41,18 +41,19 @@ test.describe("/transactions — criação via modal", () => {
 
   test("cria transação preenchendo o modal completo e ela aparece na tabela", async ({ page }) => {
     await page.goto("/transactions")
-    await expect(page.getByRole("heading", { name: "Transações", level: 1 })).toBeVisible()
-
-    // Espera SWR settle pra evitar elementos sendo recriados durante interação.
-    // SWR revalidate impede networkidle. Esperamos um elemento estável (tab) aparecer.
+    // Sanity: confirma que o auth-guard não redirecionou pra /auth (cookie aceito).
+    await expect(page).toHaveURL(/\/transactions/, { timeout: 15_000 })
+    // Header logado renderiza (timeout maior pra cold-start do Container App).
+    await page
+      .getByRole("heading", { name: "Transações", level: 1 })
+      .waitFor({ state: "visible", timeout: 30_000 })
+    // Espera tabs aparecer (sinal de que SWR carregou áreas).
     await page.getByRole("tab", { name: "Recebimentos" }).waitFor({ state: "visible", timeout: 15_000 })
 
-    // Garante a tab que vamos checar (Despesas variáveis), pra ver a transação criada na lista.
-    // force: true porque rerenders frequentes do tabs do Radix detach o elemento entre
-    // resolução do locator e o evento real (race com SWR data fetching).
+    // Garante a tab Despesas variáveis selecionada (pra ver a transação criada na lista).
+    // force: true porque rerenders do Radix Tabs detach o elemento entre resolução
+    // do locator e o evento real (race com SWR data fetching).
     await page.getByRole("tab", { name: "Despesas variáveis" }).click({ force: true })
-    // SWR revalidate impede networkidle. Esperamos um elemento estável (tab) aparecer.
-    await page.getByRole("tab", { name: "Recebimentos" }).waitFor({ state: "visible", timeout: 15_000 })
 
     // Abre o modal Nova Transação.
     await page.getByRole("button", { name: "Adicionar registro" }).click({ force: true })
@@ -111,8 +112,10 @@ test.describe("/transactions — criação via modal", () => {
 
   test("submit fica bloqueado quando descrição está vazia (validação react-hook-form)", async ({ page }) => {
     await page.goto("/transactions")
-    await expect(page.getByRole("heading", { name: "Transações", level: 1 })).toBeVisible()
-    // SWR revalidate impede networkidle. Esperamos um elemento estável (tab) aparecer.
+    await expect(page).toHaveURL(/\/transactions/, { timeout: 15_000 })
+    await page
+      .getByRole("heading", { name: "Transações", level: 1 })
+      .waitFor({ state: "visible", timeout: 30_000 })
     await page.getByRole("tab", { name: "Recebimentos" }).waitFor({ state: "visible", timeout: 15_000 })
 
     await page.getByRole("button", { name: "Adicionar registro" }).click({ force: true })
