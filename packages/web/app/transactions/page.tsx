@@ -3,8 +3,6 @@
 import { useState, useMemo, useEffect, Fragment } from "react"
 import {
   Plus,
-  TrendingUp,
-  TrendingDown,
   Filter,
   Edit,
   Trash2,
@@ -122,13 +120,13 @@ const CustomBarChart = ({ data }: { data: Array<{ name: string; atual: number; f
       <div className="grid grid-cols-2 gap-8 text-center text-xs w-full">
         {safeData.map((item) => {
           const isReceitas = item.name === "Recebimentos"
-          const labelColor = isReceitas ? "text-green-600" : "text-blue-600"
+          const labelColor = isReceitas ? "text-income" : "text-primary"
 
           return (
             <div key={item.name} className="flex flex-col">
               <div className={`font-semibold text-xs mb-1 ${labelColor}`}>{item.name}</div>
               <div className={`font-semibold text-sm ${labelColor}`}>R$ {item.atual.toFixed(0)}k</div>
-              <div className="text-slate-500 text-xs mt-1">FALTA R$ {item.falta.toFixed(0)}k</div>
+              <div className="text-muted-foreground text-xs mt-1">FALTA R$ {item.falta.toFixed(0)}k</div>
             </div>
           )
         })}
@@ -774,22 +772,22 @@ export default function TransactionsPage() {
         value={transaction.categoryId}
         onValueChange={(value) => handleFieldUpdate(transaction.id, "categoryId", value)}
       >
-        <SelectTrigger className="w-full h-8 text-xs border-0 bg-transparent hover:bg-slate-50">
+        <SelectTrigger className="w-full h-8 text-xs border-0 bg-transparent hover:bg-accent">
           <SelectValue placeholder="Categoria">{currentCategory?.name || "Selecionar categoria"}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <div className="font-bold text-xs text-slate-600 bg-slate-100 px-2 py-1 pointer-events-none">Receitas</div>
+          <div className="font-bold text-xs text-muted-foreground bg-accent px-2 py-1 pointer-events-none">Receitas</div>
           {groupedCategories.income.map((category) => (
             <SelectItem key={category.id} value={category.id} className="pl-4">
               {category.name}
             </SelectItem>
           ))}
-          <div className="font-bold text-xs text-slate-600 bg-slate-100 px-2 py-1 pointer-events-none mt-1">
+          <div className="font-bold text-xs text-muted-foreground bg-accent px-2 py-1 pointer-events-none mt-1">
             Despesas
           </div>
           {Object.entries(groupedCategories.expensesByArea).map(([areaName, areaCategories]) => (
             <div key={areaName}>
-              <div className="font-bold text-xs text-slate-700 px-4 py-1 pointer-events-none">
+              <div className="font-bold text-xs text-foreground px-4 py-1 pointer-events-none">
                 {areaNameMapping[areaName] || areaName}
               </div>
               {areaCategories.map((category) => (
@@ -844,158 +842,67 @@ export default function TransactionsPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-slate-500 mb-1">Dashboard / Transações</div>
-            <h1 className="text-3xl font-bold text-slate-900">Transações</h1>
+            <h1 className="text-xl font-semibold text-foreground">Transações</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Receitas, despesas e transferências</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={() => setIsModalOpen(true)} className="bg-income hover:bg-income/90">
             <Plus className="h-4 w-4 mr-2" />
             Adicionar registro
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-900">Recebimentos</h3>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">
-                    {formatCurrency(dashboardData.consolidatedIncome)}
-                  </div>
-                  <div className="flex items-center mt-1">
-                    <span className="text-sm text-slate-500">vs mês anterior</span>
-                    <div
-                      className={`flex items-center ml-2 ${
-                        dashboardData.incomeChange >= 0 ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {dashboardData.incomeChange >= 0 ? (
-                        <TrendingUp className="h-4 w-4 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 mr-1" />
-                      )}
-                      <span className="text-sm font-medium">
-                        {dashboardData.incomeChange >= 0 ? "+" : ""}
-                        {dashboardData.incomeChange.toFixed(0)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center ml-6">
-                  <div className="relative w-12 h-12">
-                    <svg width="48" height="48" className="transform -rotate-90">
-                      <circle cx="24" cy="24" r="20" fill="none" stroke="#E5E7EB" strokeWidth="2" />
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="20"
-                        fill="none"
-                        stroke="#22c55e"
-                        strokeWidth="2"
-                        strokeDasharray={`${(dashboardData.incomePercentage / 100) * 125.66} 125.66`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs text-green-600">{Math.round(dashboardData.incomePercentage)}%</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1 text-center">
-                    <div>recebimentos</div>
-                    <div>meta {formatCurrency(dashboardData.totalIncome)}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-500 h-3 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${Math.min(100, dashboardData.totalIncome > 0 ? (dashboardData.consolidatedIncome / dashboardData.totalIncome) * 100 : 0)}%`,
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-green-600 font-medium">{formatCurrency(dashboardData.consolidatedIncome)}</span>
-                  <span className="text-slate-500">
-                    Falta {formatCurrency(Math.max(0, dashboardData.totalIncome - dashboardData.consolidatedIncome))} do
-                    previsto
-                  </span>
-                </div>
-              </div>
+        {/* KPI strip estilo ZeroPaper — 4 tiles compactos com totais e progresso */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-lg border bg-income/5 p-3">
+            <div className="text-[11px] uppercase tracking-wide font-medium text-income">Receitas previstas</div>
+            <div className="text-lg font-semibold text-foreground tabular-nums mt-1">
+              {formatCurrency(dashboardData.totalIncome)}
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-900">Despesas</h3>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">
-                    {formatCurrency(dashboardData.consolidatedExpenses)}
-                  </div>
-                  <div className="flex items-center mt-1">
-                    <span className="text-sm text-slate-500">vs mês anterior</span>
-                    <div
-                      className={`flex items-center ml-2 ${
-                        dashboardData.expenseChange >= 0 ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
-                      {dashboardData.expenseChange >= 0 ? (
-                        <TrendingUp className="h-4 w-4 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 mr-1" />
-                      )}
-                      <span className="text-sm font-medium">
-                        {dashboardData.expenseChange >= 0 ? "+" : ""}
-                        {dashboardData.expenseChange.toFixed(0)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center ml-6">
-                  <div className="relative w-12 h-12">
-                    <svg width="48" height="48" className="transform -rotate-90">
-                      <circle cx="24" cy="24" r="20" fill="none" stroke="#E5E7EB" strokeWidth="2" />
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="20"
-                        fill="none"
-                        stroke="#ef4444"
-                        strokeWidth="2"
-                        strokeDasharray={`${(dashboardData.expensePercentage / 100) * 125.66} 125.66`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs text-red-500">{Math.round(dashboardData.expensePercentage)}%</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1 text-center">
-                    <div>despesas</div>
-                    <div>meta {formatCurrency(dashboardData.totalExpenses)}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-red-500 h-3 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${Math.min(100, dashboardData.totalExpenses > 0 ? (dashboardData.consolidatedExpenses / dashboardData.totalExpenses) * 100 : 0)}%`,
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-red-600 font-medium">{formatCurrency(dashboardData.consolidatedExpenses)}</span>
-                  <span className="text-slate-500">
-                    Restam{" "}
-                    {formatCurrency(Math.max(0, dashboardData.totalExpenses - dashboardData.consolidatedExpenses))} do
-                    previsto
-                  </span>
-                </div>
-              </div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">meta do período</div>
+          </div>
+          <div className="rounded-lg border bg-income/10 p-3">
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] uppercase tracking-wide font-medium text-income">Receitas realizadas</div>
+              <span className="text-[11px] tabular-nums text-income font-medium">
+                {Math.round(dashboardData.incomePercentage)}%
+              </span>
+            </div>
+            <div className="text-lg font-semibold text-foreground tabular-nums mt-1">
+              {formatCurrency(dashboardData.consolidatedIncome)}
+            </div>
+            <div className="w-full bg-secondary rounded-full h-1 mt-2">
+              <div
+                className="bg-income h-1 rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.min(100, dashboardData.totalIncome > 0 ? (dashboardData.consolidatedIncome / dashboardData.totalIncome) * 100 : 0)}%`,
+                }}
+              />
+            </div>
+          </div>
+          <div className="rounded-lg border bg-expense/5 p-3">
+            <div className="text-[11px] uppercase tracking-wide font-medium text-expense">Despesas previstas</div>
+            <div className="text-lg font-semibold text-foreground tabular-nums mt-1">
+              {formatCurrency(dashboardData.totalExpenses)}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">limite do período</div>
+          </div>
+          <div className="rounded-lg border bg-expense/10 p-3">
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] uppercase tracking-wide font-medium text-expense">Despesas realizadas</div>
+              <span className="text-[11px] tabular-nums text-expense font-medium">
+                {Math.round(dashboardData.expensePercentage)}%
+              </span>
+            </div>
+            <div className="text-lg font-semibold text-foreground tabular-nums mt-1">
+              {formatCurrency(dashboardData.consolidatedExpenses)}
+            </div>
+            <div className="w-full bg-secondary rounded-full h-1 mt-2">
+              <div
+                className="bg-expense h-1 rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.min(100, dashboardData.totalExpenses > 0 ? (dashboardData.consolidatedExpenses / dashboardData.totalExpenses) * 100 : 0)}%`,
+                }}
+              />
             </div>
           </div>
         </div>
@@ -1006,31 +913,31 @@ export default function TransactionsPage() {
               <TabsList className="grid w-full max-w-2xl grid-cols-5 gap-1">
                 <TabsTrigger
                   value="income"
-                  className="text-xs data-[state=active]:bg-green-50 data-[state=active]:text-green-700 data-[state=active]:border-green-200"
+                  className="text-xs data-[state=active]:bg-income/10 data-[state=active]:text-income data-[state=active]:border-income/30"
                 >
                   Recebimentos
                 </TabsTrigger>
                 <TabsTrigger
                   value="fixed-expenses"
-                  className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
                 >
                   Despesas fixas
                 </TabsTrigger>
                 <TabsTrigger
                   value="daily-expenses"
-                  className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
                 >
                   Despesas variáveis
                 </TabsTrigger>
                 <TabsTrigger
                   value="personal"
-                  className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
                 >
                   Pessoais
                 </TabsTrigger>
                 <TabsTrigger
                   value="taxes-fees"
-                  className="text-xs data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
                 >
                   Encargos/Taxas
                 </TabsTrigger>
@@ -1088,7 +995,7 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          <Card>
+          <Card className="gap-3 py-4">
             <CardContent className="pt-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Transações</h3>
@@ -1122,7 +1029,7 @@ export default function TransactionsPage() {
                             disabled
                             className="rounded opacity-50"
                           />
-                          <span className="text-sm text-gray-500">Data (obrigatório)</span>
+                          <span className="text-sm text-muted-foreground">Data (obrigatório)</span>
                         </label>
                         <label className="flex items-center gap-2">
                           <input
@@ -1169,13 +1076,13 @@ export default function TransactionsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-200">
+                    <tr className="border-b border">
                       <th className="w-8 py-3 px-2" aria-label="Expandir detalhes" />
                       {visibleColumns.id && (
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">
+                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
                             onClick={() => handleSort("id")}
-                            className="flex items-center gap-1 hover:text-slate-900"
+                            className="flex items-center gap-1 hover:text-foreground"
                           >
                             ID
                             {sortField === "id" &&
@@ -1188,10 +1095,10 @@ export default function TransactionsPage() {
                         </th>
                       )}
                       {visibleColumns.date && (
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">
+                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
                             onClick={() => handleSort("date")}
-                            className="flex items-center gap-1 hover:text-slate-900"
+                            className="flex items-center gap-1 hover:text-foreground"
                           >
                             Data
                             {sortField === "date" &&
@@ -1204,10 +1111,10 @@ export default function TransactionsPage() {
                         </th>
                       )}
                       {visibleColumns.description && (
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">
+                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
                             onClick={() => handleSort("description")}
-                            className="flex items-center gap-1 hover:text-slate-900"
+                            className="flex items-center gap-1 hover:text-foreground"
                           >
                             Descrição
                             {sortField === "description" &&
@@ -1220,10 +1127,10 @@ export default function TransactionsPage() {
                         </th>
                       )}
                       {visibleColumns.categoryId && (
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">
+                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
                             onClick={() => handleSort("categoryId")}
-                            className="flex items-center gap-1 hover:text-slate-900"
+                            className="flex items-center gap-1 hover:text-foreground"
                           >
                             Categoria
                             {sortField === "categoryId" &&
@@ -1236,10 +1143,10 @@ export default function TransactionsPage() {
                         </th>
                       )}
                       {visibleColumns.status && (
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">
+                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
                             onClick={() => handleSort("status")}
-                            className="flex items-center gap-1 hover:text-slate-900"
+                            className="flex items-center gap-1 hover:text-foreground"
                           >
                             Status
                             {sortField === "status" &&
@@ -1252,10 +1159,10 @@ export default function TransactionsPage() {
                         </th>
                       )}
                       {visibleColumns.amount && (
-                        <th className="text-right py-3 px-4 font-medium text-slate-600">
+                        <th className="text-right py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
                             onClick={() => handleSort("amount")}
-                            className="flex items-center gap-1 hover:text-slate-900 ml-auto"
+                            className="flex items-center gap-1 hover:text-foreground ml-auto"
                           >
                             Valor
                             {sortField === "amount" &&
@@ -1268,7 +1175,7 @@ export default function TransactionsPage() {
                         </th>
                       )}
                       {visibleColumns.actions && (
-                        <th className="text-center py-3 px-4 font-medium text-slate-600">Ações</th>
+                        <th className="text-center py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">Ações</th>
                       )}
                     </tr>
                   </thead>
@@ -1277,7 +1184,7 @@ export default function TransactionsPage() {
                       <tr>
                         <td
                           colSpan={Object.values(visibleColumns).filter(Boolean).length + 1}
-                          className="text-center py-8 text-slate-500"
+                          className="text-center py-8 text-muted-foreground"
                         >
                           Carregando transações...
                         </td>
@@ -1286,7 +1193,7 @@ export default function TransactionsPage() {
                       <tr>
                         <td
                           colSpan={Object.values(visibleColumns).filter(Boolean).length + 1}
-                          className="text-center py-8 text-slate-500"
+                          className="text-center py-8 text-muted-foreground"
                         >
                           Nenhuma transação encontrada para este período.
                         </td>
@@ -1309,9 +1216,9 @@ export default function TransactionsPage() {
                         return (
                           <Fragment key={transaction.id}>
                           <tr
-                            className={`border-b border-slate-100 hover:bg-slate-50 transition-opacity ${
+                            className={`border-b border hover:bg-accent transition-opacity ${
                               dimRow ? "opacity-60" : ""
-                            } ${isSkipped ? "[&_td]:line-through [&_td]:decoration-orange-400" : ""}`}
+                            } ${isSkipped ? "[&_td]:line-through [&_td]:decoration-warning" : ""}`}
                           >
                             <td className="w-8 py-3 px-2">
                               <button
@@ -1320,7 +1227,7 @@ export default function TransactionsPage() {
                                 aria-expanded={isExpanded}
                                 aria-controls={`tx-detail-${transaction.id}`}
                                 aria-label={isExpanded ? "Colapsar detalhes" : "Expandir detalhes"}
-                                className="flex h-5 w-5 items-center justify-center rounded text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                               >
                                 <ChevronRight
                                   className={`h-4 w-4 transition-transform ${
@@ -1330,11 +1237,11 @@ export default function TransactionsPage() {
                               </button>
                             </td>
                             {visibleColumns.id && (
-                              <td className="py-3 px-4 text-slate-500 text-xs font-mono">{transaction.id}</td>
+                              <td className="py-3 px-4 text-muted-foreground text-xs font-mono">{transaction.id}</td>
                             )}
 
                             {visibleColumns.date && (
-                              <td className="py-3 px-4 text-slate-600">
+                              <td className="py-3 px-4 text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                   {editingTransaction === transaction.id && editingField === "date" ? (
                                     <div className="flex items-center gap-1">
@@ -1358,22 +1265,22 @@ export default function TransactionsPage() {
                                         onClick={saveInlineEdit}
                                         className="h-6 w-6 p-0"
                                       >
-                                        <Check className="h-3 w-3 text-green-600" />
+                                        <Check className="h-3 w-3 text-income" />
                                       </Button>
                                       <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
-                                        <X className="h-3 w-3 text-red-600" />
+                                        <X className="h-3 w-3 text-expense" />
                                       </Button>
                                     </div>
                                   ) : (
                                     <>
                                       <button
                                         onClick={() => startEditing(transaction.id, "date", transaction.date)}
-                                        className="text-left hover:bg-slate-100 px-2 py-1 rounded text-xs"
+                                        className="text-left hover:bg-accent px-2 py-1 rounded text-xs"
                                       >
                                         {formatDateToPtBR(transaction.date)}
                                       </button>
                                       {(transaction.recurrence?.enabled || transaction.recurrence?.generatedFrom) && (
-                                        <Repeat className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                        <Repeat className="h-3 w-3 text-primary flex-shrink-0" />
                                       )}
                                     </>
                                   )}
@@ -1396,16 +1303,16 @@ export default function TransactionsPage() {
                                       autoFocus
                                     />
                                     <Button size="sm" variant="ghost" onClick={saveInlineEdit} className="h-6 w-6 p-0">
-                                      <Check className="h-3 w-3 text-green-600" />
+                                      <Check className="h-3 w-3 text-income" />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
-                                      <X className="h-3 w-3 text-red-600" />
+                                      <X className="h-3 w-3 text-expense" />
                                     </Button>
                                   </div>
                                 ) : (
                                   <button
                                     onClick={() => startEditing(transaction.id, "description", transaction.description || "")}
-                                    className="text-left hover:bg-slate-100 px-2 py-1 rounded font-medium text-slate-900 text-sm"
+                                    className="text-left hover:bg-accent px-2 py-1 rounded font-medium text-foreground text-sm"
                                   >
                                     {transaction.description || "Sem descrição"}
                                   </button>
@@ -1419,23 +1326,23 @@ export default function TransactionsPage() {
                                   <div className="flex items-center gap-2">
                                     {renderCategorySelect(transaction)}
                                     <Button size="sm" variant="ghost" onClick={saveInlineEdit} className="h-6 w-6 p-0">
-                                      <Check className="h-3 w-3 text-green-600" />
+                                      <Check className="h-3 w-3 text-income" />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
-                                      <X className="h-3 w-3 text-red-600" />
+                                      <X className="h-3 w-3 text-expense" />
                                     </Button>
                                   </div>
                                 ) : (
                                   <button
                                     onClick={() => startEditing(transaction.id, "categoryId", transaction.categoryId)}
-                                    className="flex items-center hover:bg-slate-100 px-2 py-1 rounded"
+                                    className="flex items-center hover:bg-accent px-2 py-1 rounded"
                                   >
-                                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                                      <span className="text-xs font-medium text-blue-600">
+                                    <div className="w-8 h-8 bg-primary/15 rounded-full flex items-center justify-center mr-2">
+                                      <span className="text-xs font-medium text-primary">
                                         {category?.name?.charAt(0) || "?"}
                                       </span>
                                     </div>
-                                    <span className="text-slate-600 text-sm">{category?.name || "Categoria"}</span>
+                                    <span className="text-muted-foreground text-sm">{category?.name || "Categoria"}</span>
                                   </button>
                                 )}
                               </td>
@@ -1459,10 +1366,10 @@ export default function TransactionsPage() {
                                       </SelectContent>
                                     </Select>
                                     <Button size="sm" variant="ghost" onClick={saveInlineEdit} className="h-6 w-6 p-0">
-                                      <Check className="h-3 w-3 text-green-600" />
+                                      <Check className="h-3 w-3 text-income" />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
-                                      <X className="h-3 w-3 text-red-600" />
+                                      <X className="h-3 w-3 text-expense" />
                                     </Button>
                                   </div>
                                 ) : (
@@ -1480,10 +1387,10 @@ export default function TransactionsPage() {
                                       disabled={transactionStatus === "cancelled"}
                                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                                         transactionStatus === "completed"
-                                          ? "border-green-600 bg-green-600 text-white hover:bg-green-700 hover:border-green-700"
+                                          ? "border-income bg-income text-white hover:bg-income/90 hover:border-income"
                                           : transactionStatus === "pending"
-                                            ? "border-slate-300 bg-white hover:border-green-500 hover:bg-green-50"
-                                            : "border-slate-200 bg-slate-100 cursor-not-allowed"
+                                            ? "border bg-white hover:border-income hover:bg-income/10"
+                                            : "border bg-accent cursor-not-allowed"
                                       }`}
                                     >
                                       {transactionStatus === "completed" && (
@@ -1495,10 +1402,10 @@ export default function TransactionsPage() {
                                       onClick={() => startEditing(transaction.id, "status", transactionStatus)}
                                       className={`text-xs hover:underline ${
                                         transactionStatus === "completed"
-                                          ? "text-green-700"
+                                          ? "text-income"
                                           : transactionStatus === "pending"
-                                            ? "text-slate-500"
-                                            : "text-red-600 line-through"
+                                            ? "text-muted-foreground"
+                                            : "text-expense line-through"
                                       }`}
                                     >
                                       {transactionStatus === "completed"
@@ -1541,10 +1448,10 @@ export default function TransactionsPage() {
                                       }}
                                       className="h-6 w-6 p-0"
                                     >
-                                      <Check className="h-3 w-3 text-green-600" />
+                                      <Check className="h-3 w-3 text-income" />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
-                                      <X className="h-3 w-3 text-red-600" />
+                                      <X className="h-3 w-3 text-expense" />
                                     </Button>
                                   </div>
                                 ) : (
@@ -1552,9 +1459,9 @@ export default function TransactionsPage() {
                                     onClick={() =>
                                       startEditing(transaction.id, "amount", formatValueForEdit(transaction.amount))
                                     }
-                                    className="text-right hover:bg-slate-100 px-2 py-1 rounded"
+                                    className="text-right hover:bg-accent px-2 py-1 rounded"
                                   >
-                                    <span className={`font-semibold ${isIncome ? "text-green-600" : "text-slate-900"}`}>
+                                    <span className={`font-semibold tabular-nums ${isIncome ? "text-income" : "text-foreground"}`}>
                                       {isIncome ? "+" : ""}
                                       {formatCurrency(transaction.amount)}
                                     </span>
@@ -1606,7 +1513,7 @@ export default function TransactionsPage() {
                             )}
                           </tr>
                           {isExpanded && (
-                            <tr id={`tx-detail-${transaction.id}`} className="border-b border-slate-100">
+                            <tr id={`tx-detail-${transaction.id}`} className="border-b border">
                               <td colSpan={visibleColumnCount} className="p-0">
                                 <TransactionDetailRow
                                   transaction={transaction}
@@ -1624,6 +1531,39 @@ export default function TransactionsPage() {
                       })
                     )}
                   </tbody>
+                  {filteredTransactions.length > 0 && (() => {
+                    const totalIncome = filteredTransactions
+                      .filter((t) => t.type === "income" && t.status !== "cancelled")
+                      .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+                    const totalExpense = filteredTransactions
+                      .filter((t) => t.type === "expense" && t.status !== "cancelled")
+                      .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+                    const net = totalIncome - totalExpense
+                    return (
+                      <tfoot className="bg-accent/40 border-t">
+                        <tr>
+                          <td colSpan={Object.values(visibleColumns).filter(Boolean).length + 1} className="px-4 py-2.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="text-muted-foreground tabular-nums">
+                                {filteredTransactions.length} registro{filteredTransactions.length === 1 ? "" : "s"}
+                              </div>
+                              <div className="flex items-center gap-5 tabular-nums">
+                                <span className="text-muted-foreground">
+                                  Receitas <span className="font-semibold text-income ml-1">{formatCurrency(totalIncome)}</span>
+                                </span>
+                                <span className="text-muted-foreground">
+                                  Despesas <span className="font-semibold text-expense ml-1">{formatCurrency(totalExpense)}</span>
+                                </span>
+                                <span className="text-muted-foreground">
+                                  Saldo <span className={`font-semibold ml-1 ${net >= 0 ? "text-income" : "text-expense"}`}>{net >= 0 ? "+" : ""}{formatCurrency(net)}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    )
+                  })()}
                 </table>
               </div>
             </CardContent>
