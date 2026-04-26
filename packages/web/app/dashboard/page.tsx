@@ -5,6 +5,7 @@ import { MainLayout } from "@/components/layout/main-layout"
 import { SummaryCard } from "@/components/dashboard/summary-card"
 import { CashflowChart } from "@/components/dashboard/cashflow-chart"
 import { Greeting } from "@/components/dashboard/greeting"
+import { MonthCalendar } from "@/components/dashboard/month-calendar"
 import { PendingListCard } from "@/components/dashboard/pending-list-card"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
@@ -209,20 +210,23 @@ export default function DashboardPage() {
           <SummaryCard title="Próximos 30 dias" value={aging?.next30Days || 0} icon={Calendar} />
         </div>
 
-        {/* Listas: lançamentos em atraso + vencimentos próximos */}
+        {/* Calendário do mês + listas (lançamentos em atraso, vencimentos próximos) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PendingListCard
-            title="Lançamentos em atraso"
-            variant="danger"
-            transactions={overdue}
-            emptyLabel="Nenhum lançamento vencido. 👍"
-          />
-          <PendingListCard
-            title="Vencimentos nos próximos 7 dias"
-            variant="warning"
-            transactions={upcoming}
-            emptyLabel="Nenhum vencimento nos próximos 7 dias."
-          />
+          <MonthCalendar transactions={transactions || []} />
+          <div className="space-y-6">
+            <PendingListCard
+              title="Lançamentos em atraso"
+              variant="danger"
+              transactions={overdue}
+              emptyLabel="Nenhum lançamento vencido. 👍"
+            />
+            <PendingListCard
+              title="Vencimentos nos próximos 7 dias"
+              variant="warning"
+              transactions={upcoming}
+              emptyLabel="Nenhum vencimento nos próximos 7 dias."
+            />
+          </div>
         </div>
 
         {/* Cashflow Chart */}
