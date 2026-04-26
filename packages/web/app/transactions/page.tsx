@@ -226,7 +226,7 @@ export default function TransactionsPage() {
     updateTransaction,
     deleteTransaction,
     deleteRecurrence,
-  } = useTransactions({}, handleDataChange)
+  } = useTransactions({ pageSize: 500 }, handleDataChange)
 
   const { categories, isLoading: categoriesLoading } = useCategories()
   const { categoryGroups, isLoading: categoryGroupsLoading } = useCategoryGroups()
@@ -835,7 +835,7 @@ export default function TransactionsPage() {
                     {formatCurrency(dashboardData.consolidatedIncome)}
                   </div>
                   <div className="flex items-center mt-1">
-                    <span className="text-sm text-slate-500">Outubro do ano anterior</span>
+                    <span className="text-sm text-slate-500">vs mês anterior</span>
                     <div
                       className={`flex items-center ml-2 ${
                         dashboardData.incomeChange >= 0 ? "text-green-600" : "text-red-600"
@@ -906,7 +906,7 @@ export default function TransactionsPage() {
                     {formatCurrency(dashboardData.consolidatedExpenses)}
                   </div>
                   <div className="flex items-center mt-1">
-                    <span className="text-sm text-slate-500">Outubro do ano anterior</span>
+                    <span className="text-sm text-slate-500">vs mês anterior</span>
                     <div
                       className={`flex items-center ml-2 ${
                         dashboardData.expenseChange >= 0 ? "text-red-600" : "text-green-600"

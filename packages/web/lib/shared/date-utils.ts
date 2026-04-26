@@ -1,8 +1,11 @@
 export function formatDateToPtBR(date: string | Date): string {
   if (typeof date === "string") {
-    // Handle ISO date string directly without Date object conversion
+    // Handle ISO date string directly without Date object conversion.
+    // Trim time component if present (Prisma DateTime serializa como
+    // "YYYY-MM-DDTHH:mm:ss.sssZ"; queremos só o dia).
     if (date.includes("-")) {
-      const [year, month, day] = date.split("-")
+      const dateOnly = date.split("T")[0] ?? date
+      const [year, month, day] = dateOnly.split("-")
       if (year && month && day) {
         return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`
       }
