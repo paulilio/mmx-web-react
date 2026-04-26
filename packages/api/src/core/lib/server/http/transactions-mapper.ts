@@ -1,5 +1,15 @@
 import type { DomainTransactionType, DomainTransactionStatus } from "@/modules/transactions/domain/transaction-entity"
 
+interface TransactionTemplateLikeRecord {
+  id: string
+  frequency: string
+  interval: number
+  count?: number | null
+  endDate?: Date | null
+  paused: boolean
+  pausedAt?: Date | null
+}
+
 interface TransactionLikeRecord {
   id: string
   userId: string
@@ -18,6 +28,7 @@ interface TransactionLikeRecord {
   seriesIndex?: number | null
   skipped?: boolean
   isException?: boolean
+  template?: TransactionTemplateLikeRecord | null
   createdAt: Date
   updatedAt: Date
 }
@@ -84,6 +95,17 @@ export function mapTransaction(record: TransactionLikeRecord) {
     seriesIndex: record.seriesIndex ?? null,
     skipped: record.skipped ?? false,
     isException: record.isException ?? false,
+    template: record.template
+      ? {
+          id: record.template.id,
+          frequency: record.template.frequency.toLowerCase(),
+          interval: record.template.interval,
+          count: record.template.count ?? null,
+          endDate: record.template.endDate ? record.template.endDate.toISOString().split("T")[0] : null,
+          paused: record.template.paused,
+          pausedAt: record.template.pausedAt?.toISOString() ?? null,
+        }
+      : null,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   }

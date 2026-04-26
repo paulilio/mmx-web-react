@@ -71,6 +71,19 @@ export class PrismaTransactionRepository implements ITransactionRepository {
         orderBy: { date: "desc" },
         skip,
         take,
+        include: {
+          template: {
+            select: {
+              id: true,
+              frequency: true,
+              interval: true,
+              count: true,
+              endDate: true,
+              paused: true,
+              pausedAt: true,
+            },
+          },
+        },
       }),
       this.prisma.transaction.count({ where }),
     ])) as [TransactionRecord[], number]
