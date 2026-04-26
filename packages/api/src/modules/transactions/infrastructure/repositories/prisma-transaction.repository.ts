@@ -79,7 +79,15 @@ export class PrismaTransactionRepository implements ITransactionRepository {
   }
 
   create(data: CreateTransactionRecordInput): Promise<TransactionRecord> {
-    return this.prisma.transaction.create({ data }) as Promise<TransactionRecord>
+    const { recurrence, ...rest } = data
+    const createData: Prisma.TransactionUncheckedCreateInput = { ...rest }
+    if (recurrence !== undefined) {
+      createData.recurrence =
+        recurrence === null
+          ? Prisma.JsonNull
+          : (recurrence as Prisma.InputJsonValue)
+    }
+    return this.prisma.transaction.create({ data: createData }) as Promise<TransactionRecord>
   }
 
   async update(
@@ -93,9 +101,18 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       return null
     }
 
+    const { recurrence, ...rest } = data
+    const updateData: Prisma.TransactionUpdateInput = { ...rest }
+    if (recurrence !== undefined) {
+      updateData.recurrence =
+        recurrence === null
+          ? Prisma.JsonNull
+          : (recurrence as Prisma.InputJsonValue)
+    }
+
     return this.prisma.transaction.update({
       where: { id },
-      data,
+      data: updateData,
     }) as Promise<TransactionRecord>
   }
 

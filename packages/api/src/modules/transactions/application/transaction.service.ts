@@ -29,6 +29,7 @@ function toEntityProps(record: TransactionRecord): TransactionEntityProps {
     contactId: record.contactId,
     areaId: record.areaId,
     categoryGroupId: record.categoryGroupId,
+    recurrence: record.recurrence,
   }
 }
 
@@ -68,6 +69,7 @@ export class TransactionApplicationService {
       contactId: entity.value.contactId,
       areaId: entity.value.areaId,
       categoryGroupId: entity.value.categoryGroupId,
+      recurrence: entity.value.recurrence,
     })
   }
 

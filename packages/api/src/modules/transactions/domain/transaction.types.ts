@@ -34,6 +34,7 @@ export interface CreateTransactionRecordInput {
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  recurrence?: unknown
 }
 
 export interface UpdateTransactionRecordInput {
@@ -47,6 +48,7 @@ export interface UpdateTransactionRecordInput {
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  recurrence?: unknown
 }
 
 export interface TransactionFilters {

@@ -75,6 +75,7 @@ export class TransactionsController {
       contactId?: string | null
       areaId?: string | null
       categoryGroupId?: string | null
+      recurrence?: unknown
       currentBalance?: number
     },
   ) {
@@ -98,6 +99,7 @@ export class TransactionsController {
         contactId: body.contactId,
         areaId: body.areaId,
         categoryGroupId: body.categoryGroupId,
+        recurrence: body.recurrence,
       },
       body.currentBalance,
     )
@@ -120,6 +122,7 @@ export class TransactionsController {
       contactId?: string | null
       areaId?: string | null
       categoryGroupId?: string | null
+      recurrence?: unknown
       currentBalance?: number
     },
   ) {
@@ -137,6 +140,7 @@ export class TransactionsController {
         contactId: body.contactId,
         areaId: body.areaId,
         categoryGroupId: body.categoryGroupId,
+        recurrence: body.recurrence,
       },
       body.currentBalance,
     )

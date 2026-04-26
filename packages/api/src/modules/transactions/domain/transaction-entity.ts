@@ -21,6 +21,7 @@ export interface TransactionEntityProps {
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  recurrence?: unknown
 }
 
 export interface CreateTransactionEntityInput {
@@ -35,6 +36,7 @@ export interface CreateTransactionEntityInput {
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  recurrence?: unknown
 }
 
 export interface UpdateTransactionEntityInput {
@@ -48,6 +50,7 @@ export interface UpdateTransactionEntityInput {
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  recurrence?: unknown
 }
 
 export interface TransactionEntityUpdatePayload {
@@ -61,6 +64,7 @@ export interface TransactionEntityUpdatePayload {
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  recurrence?: unknown
 }
 
 export class TransactionEntity {
@@ -93,6 +97,7 @@ export class TransactionEntity {
       contactId: input.contactId,
       areaId: input.areaId,
       categoryGroupId: input.categoryGroupId,
+      recurrence: input.recurrence,
     })
   }
 
@@ -135,6 +140,7 @@ export class TransactionEntity {
       contactId: input.contactId,
       areaId: input.areaId,
       categoryGroupId: input.categoryGroupId,
+      recurrence: input.recurrence,
     }
   }
 }
