@@ -44,13 +44,15 @@ test.describe("/transactions — criação via modal", () => {
     await expect(page.getByRole("heading", { name: "Transações", level: 1 })).toBeVisible()
 
     // Espera SWR settle pra evitar elementos sendo recriados durante interação.
-    await page.waitForLoadState("networkidle")
+    // SWR revalidate impede networkidle. Esperamos um elemento estável (tab) aparecer.
+    await page.getByRole("tab", { name: "Recebimentos" }).waitFor({ state: "visible", timeout: 15_000 })
 
     // Garante a tab que vamos checar (Despesas variáveis), pra ver a transação criada na lista.
     // force: true porque rerenders frequentes do tabs do Radix detach o elemento entre
     // resolução do locator e o evento real (race com SWR data fetching).
     await page.getByRole("tab", { name: "Despesas variáveis" }).click({ force: true })
-    await page.waitForLoadState("networkidle")
+    // SWR revalidate impede networkidle. Esperamos um elemento estável (tab) aparecer.
+    await page.getByRole("tab", { name: "Recebimentos" }).waitFor({ state: "visible", timeout: 15_000 })
 
     // Abre o modal Nova Transação.
     await page.getByRole("button", { name: "Adicionar registro" }).click({ force: true })
@@ -110,7 +112,8 @@ test.describe("/transactions — criação via modal", () => {
   test("submit fica bloqueado quando descrição está vazia (validação react-hook-form)", async ({ page }) => {
     await page.goto("/transactions")
     await expect(page.getByRole("heading", { name: "Transações", level: 1 })).toBeVisible()
-    await page.waitForLoadState("networkidle")
+    // SWR revalidate impede networkidle. Esperamos um elemento estável (tab) aparecer.
+    await page.getByRole("tab", { name: "Recebimentos" }).waitFor({ state: "visible", timeout: 15_000 })
 
     await page.getByRole("button", { name: "Adicionar registro" }).click({ force: true })
     const modal = page.getByRole("dialog", { name: "Nova Transação" })
