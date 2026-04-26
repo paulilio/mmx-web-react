@@ -51,6 +51,11 @@ export class PrismaImportedTransactionRepository implements ImportedTransactionR
     return { created, skipped }
   }
 
+  async findById(id: string): Promise<ImportedTransactionProps | null> {
+    const row = await this.prisma.importedTransaction.findUnique({ where: { id } })
+    return row ? rowToProps(row) : null
+  }
+
   async findByExternalId(bankConnectionId: string, externalId: string): Promise<ImportedTransactionProps | null> {
     const row = await this.prisma.importedTransaction.findUnique({
       where: { bankConnectionId_externalId: { bankConnectionId, externalId } },

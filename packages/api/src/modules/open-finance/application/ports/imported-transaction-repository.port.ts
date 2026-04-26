@@ -19,6 +19,7 @@ export interface PaginatedImportedTransactions {
 
 export interface ImportedTransactionRepositoryPort {
   upsertMany(entities: ImportedTransactionEntity[]): Promise<{ created: number; skipped: number }>
+  findById(id: string): Promise<ImportedTransactionProps | null>
   findByExternalId(bankConnectionId: string, externalId: string): Promise<ImportedTransactionProps | null>
   listByConnection(
     bankConnectionId: string,
