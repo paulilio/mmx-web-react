@@ -1299,10 +1299,20 @@ export default function TransactionsPage() {
                         const isEditing = editingTransaction === transaction.id
                         const isExpanded = expandedIds.has(transaction.id)
                         const visibleColumnCount = Object.values(visibleColumns).filter(Boolean).length + 1
+                        const isSkipped = transaction.skipped === true
+                        const txDate = new Date(transaction.date)
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0)
+                        const seriesPaused = transaction.template?.paused === true && txDate >= today
+                        const dimRow = isSkipped || seriesPaused
 
                         return (
                           <Fragment key={transaction.id}>
-                          <tr className="border-b border-slate-100 hover:bg-slate-50">
+                          <tr
+                            className={`border-b border-slate-100 hover:bg-slate-50 transition-opacity ${
+                              dimRow ? "opacity-60" : ""
+                            } ${isSkipped ? "[&_td]:line-through [&_td]:decoration-orange-400" : ""}`}
+                          >
                             <td className="w-8 py-3 px-2">
                               <button
                                 type="button"
