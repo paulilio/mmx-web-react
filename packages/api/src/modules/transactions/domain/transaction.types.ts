@@ -15,6 +15,10 @@ export interface TransactionRecord {
   status: import("./transaction-entity").DomainTransactionStatus
   notes?: string | null
   recurrence?: unknown
+  templateId?: string | null
+  seriesIndex?: number | null
+  skipped?: boolean
+  isException?: boolean
   areaId?: string | null
   categoryGroupId?: string | null
   deletedAt?: Date | null

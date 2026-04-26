@@ -14,16 +14,21 @@ import {
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
 import { TransactionApplicationService } from "./application/transaction.service"
+import { RecurringTemplateApplicationService } from "./application/recurring-template.service"
 import {
   mapTransaction,
   parseTransactionStatus,
   parseTransactionType,
 } from "@/core/lib/server/http/transactions-mapper"
+import { mapRecurringTemplate } from "@/core/lib/server/http/recurring-template-mapper"
 
 @Controller("transactions")
 @UseGuards(JwtAuthGuard)
 export class TransactionsController {
-  constructor(private readonly transactionService: TransactionApplicationService) {}
+  constructor(
+    private readonly transactionService: TransactionApplicationService,
+    private readonly recurringService: RecurringTemplateApplicationService,
+  ) {}
   @Get()
   async list(
     @AuthUser() userId: string,
@@ -151,5 +156,24 @@ export class TransactionsController {
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
     const deleted = await this.transactionService.remove(id, userId)
     return mapTransaction(deleted)
+  }
+
+  @Get("recurring/:templateId")
+  async getRecurringSeries(
+    @AuthUser() userId: string,
+    @Param("templateId") templateId: string,
+  ) {
+    const view = await this.recurringService.getSeries(templateId, userId)
+    if (!view) {
+      throw Object.assign(new Error("Série de recorrência não encontrada"), {
+        status: 404,
+        code: "RECURRING_TEMPLATE_NOT_FOUND",
+      })
+    }
+    return {
+      template: mapRecurringTemplate(view.template),
+      executions: view.executions.map(mapTransaction),
+      counts: view.counts,
+    }
   }
 }

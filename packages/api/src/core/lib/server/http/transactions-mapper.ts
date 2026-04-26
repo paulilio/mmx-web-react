@@ -14,6 +14,10 @@ interface TransactionLikeRecord {
   areaId?: string | null
   categoryGroupId?: string | null
   recurrence?: unknown
+  templateId?: string | null
+  seriesIndex?: number | null
+  skipped?: boolean
+  isException?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -76,6 +80,10 @@ export function mapTransaction(record: TransactionLikeRecord) {
     areaId: record.areaId ?? null,
     categoryGroupId: record.categoryGroupId ?? null,
     recurrence: record.recurrence ?? null,
+    templateId: record.templateId ?? null,
+    seriesIndex: record.seriesIndex ?? null,
+    skipped: record.skipped ?? false,
+    isException: record.isException ?? false,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   }
