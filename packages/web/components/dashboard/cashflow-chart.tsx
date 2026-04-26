@@ -1,20 +1,20 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useCashflowData } from "@/hooks/use-dashboard-data"
-import { Loader2 } from "lucide-react"
 
 export function CashflowChart() {
   const { data: cashflowData, isLoading, error } = useCashflowData(30)
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Fluxo de Caixa (30 dias)</CardTitle>
+      <Card className="gap-3 py-4">
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm">Fluxo de Caixa (30 dias)</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-80">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <CardContent className="px-4">
+          <Skeleton className="h-80 w-full rounded" />
         </CardContent>
       </Card>
     )
@@ -22,12 +22,12 @@ export function CashflowChart() {
 
   if (error || !cashflowData || cashflowData.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Fluxo de Caixa (30 dias)</CardTitle>
+      <Card className="gap-3 py-4">
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm">Fluxo de Caixa (30 dias)</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-80">
-          <p className="text-slate-500">
+        <CardContent className="flex items-center justify-center h-80 px-4">
+          <p className="text-muted-foreground">
             {error ? "Erro ao carregar dados do fluxo de caixa" : "Nenhum dado disponível para o período"}
           </p>
         </CardContent>
@@ -73,17 +73,17 @@ export function CashflowChart() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Fluxo de Caixa (30 dias)</CardTitle>
+    <Card className="gap-3 py-4">
+      <CardHeader className="px-4">
+        <CardTitle className="text-sm">Fluxo de Caixa (30 dias)</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <div className="w-full overflow-x-auto">
-          <svg width={chartWidth} height={chartHeight} className="border border-gray-200 rounded">
+          <svg width={chartWidth} height={chartHeight} className="border border-border rounded">
             {/* Grid lines */}
             <defs>
               <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#e2e8f0" strokeWidth="1" />
+                <path d="M 40 0 L 0 0 0 30" fill="none" className="stroke-border" strokeWidth="1" />
               </pattern>
             </defs>
             <rect x={padding.left} y={padding.top} width={innerWidth} height={innerHeight} fill="url(#grid)" />
@@ -94,7 +94,7 @@ export function CashflowChart() {
               y1={padding.top}
               x2={padding.left}
               y2={padding.top + innerHeight}
-              stroke="#64748b"
+              className="stroke-muted-foreground"
               strokeWidth="1"
             />
 
@@ -104,7 +104,7 @@ export function CashflowChart() {
               y1={padding.top + innerHeight}
               x2={padding.left + innerWidth}
               y2={padding.top + innerHeight}
-              stroke="#64748b"
+              className="stroke-muted-foreground"
               strokeWidth="1"
             />
 
@@ -114,10 +114,10 @@ export function CashflowChart() {
               const y = padding.top + innerHeight - ratio * innerHeight
               return (
                 <g key={ratio}>
-                  <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#64748b">
+                  <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="12" className="fill-muted-foreground">
                     {formatCurrency(value)}
                   </text>
-                  <line x1={padding.left - 5} y1={y} x2={padding.left} y2={y} stroke="#64748b" strokeWidth="1" />
+                  <line x1={padding.left - 5} y1={y} x2={padding.left} y2={y} className="stroke-muted-foreground" strokeWidth="1" />
                 </g>
               )
             })}
@@ -130,7 +130,7 @@ export function CashflowChart() {
                   y={padding.top + innerHeight + 20}
                   textAnchor="middle"
                   fontSize="12"
-                  fill="#64748b"
+                  className="fill-muted-foreground"
                 >
                   {formatDate(d.date)}
                 </text>
@@ -139,7 +139,7 @@ export function CashflowChart() {
                   y1={padding.top + innerHeight}
                   x2={padding.left + xScale(i)}
                   y2={padding.top + innerHeight + 5}
-                  stroke="#64748b"
+                  className="stroke-muted-foreground"
                   strokeWidth="1"
                 />
               </g>
@@ -148,45 +148,45 @@ export function CashflowChart() {
             {/* Data lines */}
             <g transform={`translate(${padding.left}, ${padding.top})`}>
               {/* Income line */}
-              <path d={createPath("income")} fill="none" stroke="#2563eb" strokeWidth="3" />
+              <path d={createPath("income")} fill="none" className="stroke-income" strokeWidth="3" />
 
               {/* Expense line */}
-              <path d={createPath("expense")} fill="none" stroke="#dc2626" strokeWidth="3" />
+              <path d={createPath("expense")} fill="none" className="stroke-expense" strokeWidth="3" />
 
               {/* Balance line */}
-              <path d={createPath("balance")} fill="none" stroke="#059669" strokeWidth="3" strokeDasharray="8,4" />
+              <path d={createPath("balance")} fill="none" className="stroke-primary" strokeWidth="3" strokeDasharray="8,4" />
 
               {/* Data points */}
               {cashflowData.map((d, i) => (
                 <g key={i}>
-                  <circle cx={xScale(i)} cy={yScale(d.income)} r="4" fill="#2563eb" />
-                  <circle cx={xScale(i)} cy={yScale(d.expense)} r="4" fill="#dc2626" />
-                  <circle cx={xScale(i)} cy={yScale(d.balance)} r="4" fill="#059669" />
+                  <circle cx={xScale(i)} cy={yScale(d.income)} r="4" className="fill-income" />
+                  <circle cx={xScale(i)} cy={yScale(d.expense)} r="4" className="fill-expense" />
+                  <circle cx={xScale(i)} cy={yScale(d.balance)} r="4" className="fill-primary" />
                 </g>
               ))}
             </g>
 
             {/* Legend */}
             <g transform={`translate(${chartWidth - 150}, 30)`}>
-              <rect x="0" y="0" width="140" height="80" fill="white" stroke="#e2e8f0" strokeWidth="1" rx="4" />
+              <rect x="0" y="0" width="140" height="80" className="fill-card stroke-border" strokeWidth="1" rx="4" />
               <g transform="translate(10, 20)">
-                <line x1="0" y1="0" x2="20" y2="0" stroke="#2563eb" strokeWidth="3" />
-                <circle cx="10" cy="0" r="3" fill="#2563eb" />
-                <text x="25" y="4" fontSize="12" fill="#374151">
+                <line x1="0" y1="0" x2="20" y2="0" className="stroke-income" strokeWidth="3" />
+                <circle cx="10" cy="0" r="3" className="fill-income" />
+                <text x="25" y="4" fontSize="12" className="fill-foreground">
                   Receitas
                 </text>
               </g>
               <g transform="translate(10, 40)">
-                <line x1="0" y1="0" x2="20" y2="0" stroke="#dc2626" strokeWidth="3" />
-                <circle cx="10" cy="0" r="3" fill="#dc2626" />
-                <text x="25" y="4" fontSize="12" fill="#374151">
+                <line x1="0" y1="0" x2="20" y2="0" className="stroke-expense" strokeWidth="3" />
+                <circle cx="10" cy="0" r="3" className="fill-expense" />
+                <text x="25" y="4" fontSize="12" className="fill-foreground">
                   Despesas
                 </text>
               </g>
               <g transform="translate(10, 60)">
-                <line x1="0" y1="0" x2="20" y2="0" stroke="#059669" strokeWidth="3" strokeDasharray="8,4" />
-                <circle cx="10" cy="0" r="3" fill="#059669" />
-                <text x="25" y="4" fontSize="12" fill="#374151">
+                <line x1="0" y1="0" x2="20" y2="0" className="stroke-primary" strokeWidth="3" strokeDasharray="8,4" />
+                <circle cx="10" cy="0" r="3" className="fill-primary" />
+                <text x="25" y="4" fontSize="12" className="fill-foreground">
                   Saldo
                 </text>
               </g>
@@ -195,7 +195,7 @@ export function CashflowChart() {
         </div>
 
         {/* Data summary */}
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-sm text-muted-foreground">
           <p>
             Dados: {cashflowData.length} pontos • Período: {formatDate(periodStart)} a {formatDate(periodEnd)}
           </p>

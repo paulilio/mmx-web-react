@@ -10,47 +10,28 @@ interface SummaryCardProps {
   currency?: boolean
 }
 
+const VARIANT_STYLES: Record<NonNullable<SummaryCardProps["variant"]>, { card: string; icon: string }> = {
+  default: { card: "", icon: "text-primary" },
+  warning: { card: "border-warning/30 bg-warning/5", icon: "text-warning" },
+  danger: { card: "border-expense/30 bg-expense/5", icon: "text-expense" },
+}
+
 export function SummaryCard({ title, value, icon: Icon, variant = "default", currency = true }: SummaryCardProps) {
-  const formatValue = (val: number) => {
-    if (currency) {
-      return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(val)
-    }
-    return val.toString()
-  }
+  const formatValue = (val: number) =>
+    currency
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val)
+      : val.toString()
 
-  const getVariantStyles = () => {
-    switch (variant) {
-      case "warning":
-        return "border-amber-200 bg-amber-50"
-      case "danger":
-        return "border-red-200 bg-red-50"
-      default:
-        return "border-slate-200 bg-white"
-    }
-  }
-
-  const getIconStyles = () => {
-    switch (variant) {
-      case "warning":
-        return "text-amber-600"
-      case "danger":
-        return "text-red-600"
-      default:
-        return "text-blue-600"
-    }
-  }
+  const styles = VARIANT_STYLES[variant]
 
   return (
-    <Card className={cn("transition-all hover:shadow-md", getVariantStyles())}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-slate-600">{title}</CardTitle>
-        <Icon className={cn("h-5 w-5", getIconStyles())} />
+    <Card className={cn("gap-2 py-4", styles.card)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4">
+        <CardTitle className="text-xs font-medium text-muted-foreground">{title}</CardTitle>
+        <Icon className={cn("h-4 w-4", styles.icon)} />
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-slate-900">{formatValue(value)}</div>
+      <CardContent className="px-4">
+        <div className="text-xl font-bold text-foreground tabular-nums">{formatValue(value)}</div>
       </CardContent>
     </Card>
   )

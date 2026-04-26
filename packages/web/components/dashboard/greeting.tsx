@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { useAuth } from "@/hooks/use-auth"
 
 function periodGreeting(hour: number): string {
@@ -21,17 +22,21 @@ function formatPtBrFullDate(date: Date): string {
 export function Greeting() {
   const { user } = useAuth()
 
-  const now = new Date()
-  const greet = periodGreeting(now.getHours())
-  const fullDate = formatPtBrFullDate(now)
+  const { greet, fullDate } = useMemo(() => {
+    const now = new Date()
+    return {
+      greet: periodGreeting(now.getHours()),
+      fullDate: formatPtBrFullDate(now),
+    }
+  }, [])
   const firstName = user?.firstName?.trim() || "visitante"
 
   return (
-    <div className="border-b border-slate-200 pb-4">
-      <h1 className="text-3xl font-bold text-slate-900">
-        {greet}, {firstName}!
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <h1 className="text-base font-semibold text-foreground">
+        {greet}, {firstName}
       </h1>
-      <p className="text-slate-600 mt-1">{fullDate}</p>
+      <span className="text-xs text-muted-foreground">{fullDate}</span>
     </div>
   )
 }

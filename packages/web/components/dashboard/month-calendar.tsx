@@ -64,17 +64,17 @@ export function MonthCalendar({ transactions }: MonthCalendarProps) {
   }, [year, month])
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CalendarDays className="h-5 w-5 text-blue-600" />
+    <Card className="gap-3 py-4">
+      <CardHeader className="px-4">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <CalendarDays className="h-4 w-4 text-primary" />
           {monthLabel}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <div className="grid grid-cols-7 gap-1 text-center text-xs">
           {WEEKDAYS.map((label) => (
-            <div key={label} className="font-medium text-slate-500 py-1">
+            <div key={label} className="font-medium text-muted-foreground py-1">
               {label}
             </div>
           ))}
@@ -91,26 +91,26 @@ export function MonthCalendar({ transactions }: MonthCalendarProps) {
                   "h-12 rounded flex flex-col items-center justify-between py-1 px-0.5",
                   "border border-transparent",
                   isToday
-                    ? "bg-blue-50 border-blue-300 text-blue-900 font-semibold"
-                    : "hover:bg-slate-50",
+                    ? "bg-primary/10 border-primary/40 text-primary font-semibold"
+                    : "hover:bg-accent",
                 )}
               >
                 <span className="text-sm leading-none">{day}</span>
                 <div className="flex items-center gap-0.5 h-3">
-                  {markers?.income && <ArrowUp className="h-3 w-3 text-green-600" strokeWidth={3} />}
-                  {markers?.expense && <ArrowDown className="h-3 w-3 text-red-600" strokeWidth={3} />}
+                  {markers?.income && <ArrowUp className="h-3 w-3 text-income" strokeWidth={3} />}
+                  {markers?.expense && <ArrowDown className="h-3 w-3 text-expense" strokeWidth={3} />}
                 </div>
               </div>
             )
           })}
         </div>
-        <div className="flex items-center gap-4 mt-3 text-xs text-slate-600 border-t border-slate-100 pt-3">
+        <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground border-t pt-3">
           <span className="flex items-center gap-1">
-            <ArrowUp className="h-3 w-3 text-green-600" strokeWidth={3} />
+            <ArrowUp className="h-3 w-3 text-income" strokeWidth={3} />
             Entradas
           </span>
           <span className="flex items-center gap-1">
-            <ArrowDown className="h-3 w-3 text-red-600" strokeWidth={3} />
+            <ArrowDown className="h-3 w-3 text-expense" strokeWidth={3} />
             Saídas
           </span>
         </div>

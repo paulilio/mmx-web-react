@@ -79,27 +79,27 @@ export function MonthlyResult({ transactions, areas }: MonthlyResultProps) {
   const resultPositive = result >= 0
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Receipt className="h-5 w-5 text-blue-600" />
+    <Card className="gap-3 py-4">
+      <CardHeader className="px-4">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <Receipt className="h-4 w-4 text-primary" />
           Resultado de {monthLabel}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="px-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <TrendingUp className="h-4 w-4 text-green-600" />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-income" />
               Receitas
             </div>
-            <p className="text-xl font-semibold text-slate-900 mt-1">{formatCurrency(incomeTotal)}</p>
+            <p className="text-lg font-semibold text-foreground mt-1 tabular-nums">{formatCurrency(incomeTotal)}</p>
             {incomeByArea.length > 0 && (
-              <ul className="mt-2 space-y-0.5 text-xs text-slate-600">
+              <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
                 {incomeByArea.map((item) => (
                   <li key={item.areaId} className="flex items-center justify-between">
                     <span className="truncate">{item.name}</span>
-                    <span className="font-medium text-slate-700 ml-2">{formatCurrency(item.amount)}</span>
+                    <span className="tabular-nums ml-2">{formatCurrency(item.amount)}</span>
                   </li>
                 ))}
               </ul>
@@ -107,17 +107,17 @@ export function MonthlyResult({ transactions, areas }: MonthlyResultProps) {
           </div>
 
           <div>
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <TrendingDown className="h-4 w-4 text-red-600" />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TrendingDown className="h-3.5 w-3.5 text-expense" />
               Despesas
             </div>
-            <p className="text-xl font-semibold text-slate-900 mt-1">{formatCurrency(expenseTotal)}</p>
+            <p className="text-lg font-semibold text-foreground mt-1 tabular-nums">{formatCurrency(expenseTotal)}</p>
             {expenseByArea.length > 0 && (
-              <ul className="mt-2 space-y-0.5 text-xs text-slate-600">
+              <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
                 {expenseByArea.map((item) => (
                   <li key={item.areaId} className="flex items-center justify-between">
                     <span className="truncate">{item.name}</span>
-                    <span className="font-medium text-slate-700 ml-2">{formatCurrency(item.amount)}</span>
+                    <span className="tabular-nums ml-2">{formatCurrency(item.amount)}</span>
                   </li>
                 ))}
               </ul>
@@ -125,12 +125,12 @@ export function MonthlyResult({ transactions, areas }: MonthlyResultProps) {
           </div>
         </div>
 
-        <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-slate-700">Resultado líquido</span>
+        <div className="border-t pt-3 flex items-center justify-between">
+          <span className="text-xs font-medium text-foreground">Resultado líquido</span>
           <span
             className={cn(
-              "text-xl font-bold",
-              resultPositive ? "text-green-700" : "text-red-700",
+              "text-lg font-bold tabular-nums",
+              resultPositive ? "text-income" : "text-expense",
             )}
           >
             {resultPositive ? "+" : ""}

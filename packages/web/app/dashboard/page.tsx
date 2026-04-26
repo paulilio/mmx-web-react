@@ -9,12 +9,80 @@ import { MonthCalendar } from "@/components/dashboard/month-calendar"
 import { MonthlyResult } from "@/components/dashboard/monthly-result"
 import { PendingListCard } from "@/components/dashboard/pending-list-card"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
 import { useTransactions } from "@/hooks/use-transactions"
 import { useAreas } from "@/hooks/use-areas"
 import { useAuth } from "@/hooks/use-auth"
-import { DollarSign, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
+import { DollarSign, Calendar } from "lucide-react"
 import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/shared/constants"
+
+function formatCurrencyShort(value: number | string | null | undefined): string {
+  const numericValue = typeof value === "number" ? value : Number.parseFloat(String(value || 0))
+  const safeValue = isNaN(numericValue) ? 0 : numericValue
+
+  if (safeValue >= 1000) {
+    return `R$ ${(safeValue / 1000).toFixed(1)}k`
+  }
+  return `R$ ${safeValue.toFixed(0)}`
+}
+
+function MetaTrackerSkeleton() {
+  return (
+    <div className="bg-card rounded-lg border p-4 sm:p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {[0, 1].map((i) => (
+          <div key={i} className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-7 w-28" />
+              </div>
+              <Skeleton className="size-12 rounded-full" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <Skeleton className="h-3 w-40" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SummaryCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="size-5" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-7 w-32" />
+      </CardContent>
+    </Card>
+  )
+}
+
+function ListSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <Skeleton className="h-5 w-48" />
+      </CardHeader>
+      <CardContent className="pt-0 space-y-2">
+        {Array.from({ length: rows }).map((_, i) => (
+          <Skeleton key={i} className="h-8 w-full" />
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
@@ -47,17 +115,6 @@ export default function DashboardPage() {
     return { overdue: overdueList, upcoming: upcomingList }
   }, [transactions])
 
-  if (summaryLoading || agingLoading || transactionsLoading) {
-    return (
-      <MainLayout>
-        <WelcomeModal />
-        <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </MainLayout>
-    )
-  }
-
   const receivablesTarget =
     user?.preferences?.targets?.receivables && user.preferences.targets.receivables > 0
       ? user.preferences.targets.receivables
@@ -67,186 +124,173 @@ export default function DashboardPage() {
       ? user.preferences.targets.payables
       : DEFAULT_PAYABLES_TARGET
 
-  const receivablesCurrent = (() => {
-    const value = Number(summary?.totalReceivables)
-    return isNaN(value) ? 0 : value
-  })()
-
-  const payablesCurrent = (() => {
-    const value = Number(summary?.totalPayables)
-    return isNaN(value) ? 0 : value
-  })()
-
-  const receivablesProgress = (() => {
-    const progress = (receivablesCurrent / receivablesTarget) * 100
-    return isNaN(progress) ? 0 : Math.min(progress, 100)
-  })()
-
-  const payablesProgress = (() => {
-    const progress = (payablesCurrent / payablesTarget) * 100
-    return isNaN(progress) ? 0 : Math.min(progress, 100)
-  })()
-
-  const receivablesRemaining = (() => {
-    const remaining = receivablesTarget - receivablesCurrent
-    return isNaN(remaining) ? receivablesTarget : Math.max(remaining, 0)
-  })()
-
-  const payablesRemaining = (() => {
-    const remaining = payablesTarget - payablesCurrent
-    return isNaN(remaining) ? payablesTarget : Math.max(remaining, 0)
-  })()
-
-  const formatCurrency = (value: number | string | null | undefined) => {
-    const numericValue = typeof value === "number" ? value : Number.parseFloat(String(value || 0))
-    const safeValue = isNaN(numericValue) ? 0 : numericValue
-
-    if (safeValue >= 1000) {
-      return `R$ ${(safeValue / 1000).toFixed(1)}k`
-    }
-    return `R$ ${safeValue.toFixed(0)}`
-  }
+  const receivablesCurrent = Number(summary?.totalReceivables) || 0
+  const payablesCurrent = Number(summary?.totalPayables) || 0
+  const receivablesProgress = Math.min(((receivablesCurrent / receivablesTarget) * 100) || 0, 100)
+  const payablesProgress = Math.min(((payablesCurrent / payablesTarget) * 100) || 0, 100)
+  const receivablesRemaining = Math.max(receivablesTarget - receivablesCurrent, 0)
+  const payablesRemaining = Math.max(payablesTarget - payablesCurrent, 0)
 
   return (
     <MainLayout>
       <WelcomeModal />
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-4">
         <Greeting />
 
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recebimentos */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-slate-600">Recebimentos</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">{formatCurrency(receivablesCurrent)}</span>
+        {summaryLoading ? (
+          <MetaTrackerSkeleton />
+        ) : (
+          <div className="bg-card rounded-lg border p-4 sm:p-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Recebimentos */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-medium text-muted-foreground">Recebimentos</h3>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-bold text-foreground tabular-nums">{formatCurrencyShort(receivablesCurrent)}</span>
+                    </div>
+                  </div>
+
+                  {/* Small circular progress */}
+                  <div className="relative w-12 h-12">
+                    <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        className="stroke-border"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        className="stroke-income"
+                        strokeWidth="2"
+                        strokeDasharray={`${receivablesProgress}, 100`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs font-medium text-foreground">{Math.round(receivablesProgress)}%</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Small circular progress */}
-                <div className="relative w-12 h-12">
-                  <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#e5e7eb"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#22c55e"
-                      strokeWidth="2"
-                      strokeDasharray={`${receivablesProgress}, 100`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-medium text-slate-700">{Math.round(receivablesProgress || 0)}%</span>
+                {/* Progress bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Falta {formatCurrencyShort(receivablesRemaining)} para a meta</span>
+                    <span className="text-muted-foreground">meta &gt;{formatCurrencyShort(receivablesTarget)}</span>
                   </div>
-                </div>
-              </div>
-
-              {/* Progress bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Falta {formatCurrency(receivablesRemaining)} para a meta</span>
-                  <span className="text-slate-500">meta &gt;{formatCurrency(receivablesTarget)}</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${receivablesProgress || 0}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Despesas */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-slate-600">Despesas</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">{formatCurrency(payablesCurrent)}</span>
-                  </div>
-                </div>
-
-                {/* Small circular progress */}
-                <div className="relative w-12 h-12">
-                  <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#e5e7eb"
-                      strokeWidth="2"
+                  <div className="w-full bg-secondary rounded-full h-2">
+                    <div
+                      className="bg-income h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${receivablesProgress}%` }}
                     />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#ef4444"
-                      strokeWidth="2"
-                      strokeDasharray={`${payablesProgress}, 100`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-medium text-slate-700">{Math.round(payablesProgress || 0)}%</span>
                   </div>
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Restam {formatCurrency(payablesRemaining)} do limite</span>
-                  <span className="text-slate-500">meta &lt;{formatCurrency(payablesTarget)}</span>
+              {/* Despesas */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-medium text-muted-foreground">Despesas</h3>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-bold text-foreground tabular-nums">{formatCurrencyShort(payablesCurrent)}</span>
+                    </div>
+                  </div>
+
+                  {/* Small circular progress */}
+                  <div className="relative w-12 h-12">
+                    <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        className="stroke-border"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        className="stroke-expense"
+                        strokeWidth="2"
+                        strokeDasharray={`${payablesProgress}, 100`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs font-medium text-foreground">{Math.round(payablesProgress)}%</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div
-                    className="bg-red-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${payablesProgress || 0}%` }}
-                  />
+
+                {/* Progress bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Restam {formatCurrencyShort(payablesRemaining)} do limite</span>
+                    <span className="text-muted-foreground">meta &lt;{formatCurrencyShort(payablesTarget)}</span>
+                  </div>
+                  <div className="w-full bg-secondary rounded-full h-2">
+                    <div
+                      className="bg-expense h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${payablesProgress}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Summary Cards (resumo numérico) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <SummaryCard title="Total em Aberto" value={summary?.totalOpen || 0} icon={DollarSign} />
-          <SummaryCard title="Total a Receber" value={summary?.totalReceivables || 0} icon={TrendingUp} />
-          <SummaryCard title="Total a Pagar" value={summary?.totalPayables || 0} icon={TrendingDown} />
-          <SummaryCard title="Próximos 30 dias" value={aging?.next30Days || 0} icon={Calendar} />
+        {/* Métricas complementares (não duplicam o tracker de metas acima) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {summaryLoading ? <SummaryCardSkeleton /> : (
+            <SummaryCard title="Total em aberto" value={summary?.totalOpen || 0} icon={DollarSign} />
+          )}
+          {agingLoading ? <SummaryCardSkeleton /> : (
+            <SummaryCard title="Próximos 30 dias" value={aging?.next30Days || 0} icon={Calendar} />
+          )}
         </div>
 
         {/* DRE inline — resultado do mês */}
-        <MonthlyResult transactions={transactions || []} areas={areas || []} />
+        {transactionsLoading ? (
+          <ListSkeleton rows={3} />
+        ) : (
+          <MonthlyResult transactions={transactions || []} areas={areas || []} />
+        )}
 
         {/* Calendário do mês + listas (lançamentos em atraso, vencimentos próximos) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <MonthCalendar transactions={transactions || []} />
-          <div className="space-y-6">
-            <PendingListCard
-              title="Lançamentos em atraso"
-              variant="danger"
-              transactions={overdue}
-              emptyLabel="Nenhum lançamento vencido. 👍"
-            />
-            <PendingListCard
-              title="Vencimentos nos próximos 7 dias"
-              variant="warning"
-              transactions={upcoming}
-              emptyLabel="Nenhum vencimento nos próximos 7 dias."
-            />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {transactionsLoading ? (
+            <>
+              <ListSkeleton rows={6} />
+              <div className="space-y-4">
+                <ListSkeleton />
+                <ListSkeleton />
+              </div>
+            </>
+          ) : (
+            <>
+              <MonthCalendar transactions={transactions || []} />
+              <div className="space-y-4">
+                <PendingListCard
+                  title="Lançamentos em atraso"
+                  variant="danger"
+                  transactions={overdue}
+                  emptyLabel="Nenhum lançamento vencido. 👍"
+                />
+                <PendingListCard
+                  title="Vencimentos nos próximos 7 dias"
+                  variant="warning"
+                  transactions={upcoming}
+                  emptyLabel="Nenhum vencimento nos próximos 7 dias."
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Cashflow Chart */}
-        <div className="mt-8">
-          <CashflowChart />
-        </div>
+        <CashflowChart />
       </div>
     </MainLayout>
   )
