@@ -1,8 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Calendar, ArrowRight } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { AlertCircle, Calendar, ArrowRight, Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import { mutate as globalMutate } from "swr"
+import { api } from "@/lib/client/api"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/shared/types"
 
@@ -47,6 +52,15 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amount)
 }
 
+async function revalidatePendingCaches() {
+  await Promise.all([
+    globalMutate((key) => typeof key === "string" && key.startsWith("/transactions")),
+    globalMutate("/reports/summary"),
+    globalMutate("/reports/aging"),
+    globalMutate((key) => typeof key === "string" && key.startsWith("/reports/cashflow")),
+  ])
+}
+
 export function PendingListCard({
   title,
   variant,
@@ -60,6 +74,23 @@ export function PendingListCard({
   const visible = transactions.slice(0, maxItems)
   const hasMore = transactions.length > maxItems
   const total = transactions.reduce((sum, t) => sum + Number(t.amount || 0), 0)
+
+  const [pendingId, setPendingId] = useState<string | null>(null)
+
+  const handleMarkPaid = async (transaction: Transaction) => {
+    if (pendingId) return
+    setPendingId(transaction.id)
+    try {
+      await api.put<Transaction>(`/transactions/${transaction.id}`, { status: "completed" })
+      await revalidatePendingCaches()
+      toast.success(`"${transaction.description || "Transação"}" marcada como paga.`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Tente novamente."
+      toast.error(`Não foi possível marcar como pago. ${message}`)
+    } finally {
+      setPendingId(null)
+    }
+  }
 
   return (
     <Card>
@@ -84,17 +115,30 @@ export function PendingListCard({
           <p className="text-sm text-slate-500 py-4 text-center">{emptyLabel}</p>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {visible.map((t) => (
-              <li key={t.id} className="flex items-center justify-between py-2 text-sm">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-slate-500 font-mono text-xs whitespace-nowrap">{formatBR(t.date)}</span>
-                  <span className="text-slate-800 truncate">{t.description || "(sem descrição)"}</span>
-                </div>
-                <span className={cn("font-medium whitespace-nowrap ml-2", style.amount)}>
-                  {formatCurrency(Number(t.amount || 0))}
-                </span>
-              </li>
-            ))}
+            {visible.map((t) => {
+              const isProcessing = pendingId === t.id
+              return (
+                <li key={t.id} className="flex items-center justify-between py-2 text-sm">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-slate-400 shrink-0" />
+                    ) : (
+                      <Checkbox
+                        checked={false}
+                        onCheckedChange={() => handleMarkPaid(t)}
+                        aria-label={`Marcar "${t.description || "transação"}" como paga`}
+                        disabled={pendingId !== null}
+                      />
+                    )}
+                    <span className="text-slate-500 font-mono text-xs whitespace-nowrap">{formatBR(t.date)}</span>
+                    <span className="text-slate-800 truncate">{t.description || "(sem descrição)"}</span>
+                  </div>
+                  <span className={cn("font-medium whitespace-nowrap ml-2", style.amount)}>
+                    {formatCurrency(Number(t.amount || 0))}
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         )}
         {(hasMore || transactions.length > 0) && (
