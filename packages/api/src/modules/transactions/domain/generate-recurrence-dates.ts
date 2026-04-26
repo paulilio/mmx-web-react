@@ -1,6 +1,7 @@
 import type {
   RecurrenceFrequency,
   DayOfWeekEnum,
+  WeekOfMonth,
 } from "./recurring-template.types"
 
 export interface RecurrenceRule {
@@ -8,7 +9,9 @@ export interface RecurrenceRule {
   interval: number
   daysOfWeek?: DayOfWeekEnum[]
   dayOfMonth?: number | null
-  monthlyMode?: string | null
+  weekOfMonth?: WeekOfMonth | null
+  monthOfYear?: number | null
+  monthlyMode?: string | null // "dayOfMonth" | "weekOfMonth"
   count?: number | null
   endDate?: Date | null
 }
@@ -61,6 +64,36 @@ function addYears(date: Date, years: number): Date {
   return addMonthsClamped(date, years * 12)
 }
 
+const WEEK_OF_MONTH_INDEX: Record<WeekOfMonth, number> = {
+  FIRST: 1,
+  SECOND: 2,
+  THIRD: 3,
+  FOURTH: 4,
+  LAST: -1,
+}
+
+/**
+ * Resolve a Nth ocorrência de um dia da semana num mês.
+ * weekOfMonthIndex: 1..4 ou -1 (LAST).
+ */
+function nthDayOfWeekInMonth(
+  year: number,
+  monthZeroBased: number,
+  dayOfWeekIndex: number,
+  weekOfMonthIndex: number,
+): Date {
+  if (weekOfMonthIndex === -1) {
+    // LAST: começa do último dia do mês e volta até bater o weekday
+    const lastDay = utcDate(year, monthZeroBased + 1, 0)
+    const offset = (lastDay.getUTCDay() - dayOfWeekIndex + 7) % 7
+    return utcDate(year, monthZeroBased, lastDay.getUTCDate() - offset)
+  }
+  // FIRST..FOURTH: começa do dia 1 e avança
+  const firstDay = utcDate(year, monthZeroBased, 1)
+  const offset = (dayOfWeekIndex - firstDay.getUTCDay() + 7) % 7
+  return utcDate(year, monthZeroBased, 1 + offset + (weekOfMonthIndex - 1) * 7)
+}
+
 function isSameOrBefore(a: Date, b: Date): boolean {
   return a.getTime() <= b.getTime()
 }
@@ -94,12 +127,22 @@ export function generateRecurrenceDates({
   const dates: Date[] = []
 
   if (rule.frequency === "DAILY") {
+    const allowedWeekdays =
+      rule.daysOfWeek && rule.daysOfWeek.length > 0
+        ? new Set(rule.daysOfWeek.map((d) => DAY_INDEX[d]))
+        : null
     let i = 0
+    let safety = 0
     while (true) {
       const candidate = addDays(start, rule.interval * i)
+      i++
+      safety++
+      if (safety > HARD_CAP * 10) break // safety: evita loop infinito se filtragem for muito restritiva
+      if (allowedWeekdays && !allowedWeekdays.has(candidate.getUTCDay())) {
+        continue // pula weekdays fora da lista (ex.: "todo dia útil")
+      }
       const result = pushIfWithinLimits(dates, candidate, rule.count, endDate)
       if (result === "stop") break
-      i++
     }
     return dates
   }
@@ -136,23 +179,62 @@ export function generateRecurrenceDates({
   }
 
   if (rule.frequency === "MONTHLY") {
+    // Resolve dia base do mês alvo:
+    // - monthlyMode="weekOfMonth": primeira/segunda/.../última ocorrência de daysOfWeek[0] no mês
+    // - dayOfMonth fixo: clamp ao último dia do mês alvo
+    // - default: usa start.day (clamp em fim-de-mês)
+    const usesWeekOfMonth =
+      rule.monthlyMode === "weekOfMonth" &&
+      rule.weekOfMonth &&
+      rule.daysOfWeek &&
+      rule.daysOfWeek.length > 0
+
+    const targetDay = rule.dayOfMonth ?? start.getUTCDate()
+
     let i = 0
     while (true) {
-      const candidate = addMonthsClamped(start, rule.interval * i)
+      let candidate: Date
+      if (usesWeekOfMonth) {
+        const reference = addMonthsClamped(start, rule.interval * i)
+        const dayOfWeekIdx = DAY_INDEX[rule.daysOfWeek![0]!]
+        const weekIdx = WEEK_OF_MONTH_INDEX[rule.weekOfMonth!]
+        candidate = nthDayOfWeekInMonth(
+          reference.getUTCFullYear(),
+          reference.getUTCMonth(),
+          dayOfWeekIdx,
+          weekIdx,
+        )
+      } else {
+        // Move o "dia base" pra targetDay com clamp em fim-de-mês
+        const reference = addMonthsClamped(start, rule.interval * i)
+        const lastDay = utcDate(reference.getUTCFullYear(), reference.getUTCMonth() + 1, 0).getUTCDate()
+        candidate = utcDate(
+          reference.getUTCFullYear(),
+          reference.getUTCMonth(),
+          Math.min(targetDay, lastDay),
+        )
+      }
       const result = pushIfWithinLimits(dates, candidate, rule.count, endDate)
       if (result === "stop") break
       i++
+      if (i > HARD_CAP * 2) break
     }
     return dates
   }
 
   if (rule.frequency === "YEARLY") {
+    // Se monthOfYear definido, fixa o mês; senão usa o mês do start.
+    const targetMonth = rule.monthOfYear != null ? rule.monthOfYear - 1 : start.getUTCMonth()
+    const targetDay = rule.dayOfMonth ?? start.getUTCDate()
     let i = 0
     while (true) {
-      const candidate = addYears(start, rule.interval * i)
+      const targetYear = start.getUTCFullYear() + rule.interval * i
+      const lastDay = utcDate(targetYear, targetMonth + 1, 0).getUTCDate()
+      const candidate = utcDate(targetYear, targetMonth, Math.min(targetDay, lastDay))
       const result = pushIfWithinLimits(dates, candidate, rule.count, endDate)
       if (result === "stop") break
       i++
+      if (i > HARD_CAP * 2) break
     }
     return dates
   }

@@ -58,6 +58,8 @@ export class CreateRecurringSeriesUseCase {
       interval: input.template.interval,
       daysOfWeek: input.template.daysOfWeek ?? [],
       dayOfMonth: input.template.dayOfMonth ?? null,
+      weekOfMonth: input.template.weekOfMonth ?? null,
+      monthOfYear: input.template.monthOfYear ?? null,
       monthlyMode: input.template.monthlyMode ?? null,
       count: input.template.count ?? null,
       endDate: input.template.endDate ?? null,
