@@ -43,13 +43,19 @@ test.describe("/transactions — criação via modal", () => {
     await page.goto("/transactions")
     await expect(page.getByRole("heading", { name: "Transações", level: 1 })).toBeVisible()
 
+    // Espera SWR settle pra evitar elementos sendo recriados durante interação.
+    await page.waitForLoadState("networkidle")
+
     // Garante a tab que vamos checar (Despesas variáveis), pra ver a transação criada na lista.
-    await page.getByRole("tab", { name: "Despesas variáveis" }).click()
+    // force: true porque rerenders frequentes do tabs do Radix detach o elemento entre
+    // resolução do locator e o evento real (race com SWR data fetching).
+    await page.getByRole("tab", { name: "Despesas variáveis" }).click({ force: true })
+    await page.waitForLoadState("networkidle")
 
     // Abre o modal Nova Transação.
-    await page.getByRole("button", { name: "Adicionar registro" }).click()
+    await page.getByRole("button", { name: "Adicionar registro" }).click({ force: true })
     const modal = page.getByRole("dialog", { name: "Nova Transação" })
-    await expect(modal).toBeVisible()
+    await expect(modal).toBeVisible({ timeout: 10_000 })
 
     // Tipo Despesa já é o default — só verifica.
     await expect(modal.getByRole("combobox", { name: /tipo/i }).or(modal.locator('[role="combobox"]').first())).toBeVisible()
@@ -103,9 +109,12 @@ test.describe("/transactions — criação via modal", () => {
 
   test("submit fica bloqueado quando descrição está vazia (validação react-hook-form)", async ({ page }) => {
     await page.goto("/transactions")
-    await page.getByRole("button", { name: "Adicionar registro" }).click()
+    await expect(page.getByRole("heading", { name: "Transações", level: 1 })).toBeVisible()
+    await page.waitForLoadState("networkidle")
+
+    await page.getByRole("button", { name: "Adicionar registro" }).click({ force: true })
     const modal = page.getByRole("dialog", { name: "Nova Transação" })
-    await expect(modal).toBeVisible()
+    await expect(modal).toBeVisible({ timeout: 10_000 })
 
     // Preenche todos os outros campos obrigatórios menos descrição.
     await modal.getByPlaceholder("R$ 0,00").click()
