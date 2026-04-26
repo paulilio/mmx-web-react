@@ -782,12 +782,18 @@ export function TransactionFormModal({
 
             <div>
               <Label htmlFor="description" className="mb-2 block text-sm font-medium text-slate-700">
-                Descrição
+                Descrição <span className="text-red-600" aria-hidden="true">*</span>
               </Label>
               <Textarea
                 id="description"
-                placeholder="Descrição da transação (opcional)"
-                {...register("description")}
+                placeholder="Ex.: Almoço no restaurante, conta de luz, salário..."
+                {...register("description", {
+                  required: "Descrição é obrigatória",
+                  validate: (value: string) =>
+                    (typeof value === "string" && value.trim().length > 0) || "Descrição é obrigatória",
+                })}
+                aria-invalid={errors.description ? "true" : "false"}
+                aria-required="true"
                 className="w-full"
                 rows={3}
               />

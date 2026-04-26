@@ -20,33 +20,41 @@ const VALID_STATUS_TRANSITIONS: Record<
   CANCELLED: [],
 }
 
+function validationError(message: string, code = "VALIDATION_ERROR"): Error {
+  return Object.assign(new Error(message), { status: 400, code })
+}
+
+function conflictError(message: string, code: string): Error {
+  return Object.assign(new Error(message), { status: 409, code })
+}
+
 export function validateAmount(amount: number): void {
   if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error("Valor da transacao deve ser maior que zero")
+    throw validationError("Valor da transacao deve ser maior que zero", "INVALID_AMOUNT")
   }
 
   if (amount > MAX_AMOUNT) {
-    throw new Error("Valor da transacao excede o limite permitido")
+    throw validationError("Valor da transacao excede o limite permitido", "INVALID_AMOUNT")
   }
 }
 
 export function validateTransactionDate(date: Date): void {
   if (Number.isNaN(date.getTime())) {
-    throw new Error("Data da transacao invalida")
+    throw validationError("Data da transacao invalida", "INVALID_DATE")
   }
 }
 
 export function validateRequiredFields(input: RequiredTransactionFields): void {
   if (!input.userId?.trim()) {
-    throw new Error("Usuario da transacao e obrigatorio")
+    throw validationError("Usuario da transacao e obrigatorio", "MISSING_USER")
   }
 
   if (!input.categoryId?.trim()) {
-    throw new Error("Categoria da transacao e obrigatoria")
+    throw validationError("Categoria da transacao e obrigatoria", "MISSING_CATEGORY")
   }
 
   if (!input.description?.trim()) {
-    throw new Error("Descricao da transacao e obrigatoria")
+    throw validationError("Descricao da transacao e obrigatoria", "MISSING_DESCRIPTION")
   }
 }
 
@@ -64,7 +72,7 @@ export function ensureExpenseWithinBalance(
   }
 
   if (amount > currentBalance) {
-    throw new Error("Saldo insuficiente para registrar esta despesa")
+    throw conflictError("Saldo insuficiente para registrar esta despesa", "INSUFFICIENT_BALANCE")
   }
 }
 
@@ -79,6 +87,9 @@ export function validateStatusTransition(
   const allowedTransitions = VALID_STATUS_TRANSITIONS[from] ?? []
 
   if (!allowedTransitions.includes(to)) {
-    throw new Error("Mudanca de status da transacao nao permitida")
+    throw validationError(
+      "Mudanca de status da transacao nao permitida",
+      "INVALID_STATUS_TRANSITION",
+    )
   }
 }
