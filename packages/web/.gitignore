@@ -1,1 +1,4 @@
 .vercel
+.playwright/
+playwright-report/
+test-results/

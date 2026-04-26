@@ -68,11 +68,27 @@ jobs:
       - name: Install Playwright browsers
         working-directory: packages/web
         run: pnpm exec playwright install --with-deps chromium
+      - name: Mint E2E access token (1h TTL, fresh per run)
+        env:
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          MMX_E2E_TEST_USER_ID: ${{ secrets.MMX_E2E_TEST_USER_ID }}
+          MMX_E2E_TEST_USER_EMAIL: ${{ secrets.MMX_E2E_TEST_USER_EMAIL }}
+        run: |
+          token="$(node scripts/e2e-token.mjs)"
+          if [[ -z "$token" ]]; then
+            echo "::error::e2e-token.mjs retornou vazio — verifique se os secrets JWT_ACCESS_SECRET, MMX_E2E_TEST_USER_ID e MMX_E2E_TEST_USER_EMAIL estão configurados em Settings → Secrets."
+            exit 1
+          fi
+          echo "::add-mask::$token"
+          echo "MMX_E2E_TOKEN=$token" >> $GITHUB_ENV
       - name: Run E2E against production
         working-directory: packages/web
         env:
           E2E_BASE_URL: https://app.moedamix.com.br
           E2E_API_BASE: https://api.moedamix.com.br
+          E2E_COOKIE_DOMAIN: .moedamix.com.br
+          # MMX_E2E_TOKEN vem do step anterior via $GITHUB_ENV — globalSetup
+          # detecta o override e reusa sem mintar de novo, e o spec usa pra cleanup.
         run: pnpm exec playwright test
       - name: Upload Playwright report
         if: failure()
