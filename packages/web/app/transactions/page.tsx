@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, Fragment } from "react"
 import {
   Plus,
   TrendingUp,
@@ -13,6 +13,7 @@ import {
   Repeat,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   Settings,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -24,8 +25,10 @@ import { useTransactions } from "@/hooks/use-transactions"
 import { useCategories } from "@/hooks/use-categories"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useAreas } from "@/hooks/use-areas"
+import { useContacts } from "@/hooks/use-contacts"
 import { TransactionFormModal } from "@/components/transactions/transaction-form-modal"
 import { RecurringDeleteModal } from "@/components/transactions/recurring-delete-modal"
+import { TransactionDetailRow } from "@/components/transactions/transaction-detail-row"
 import { formatCurrency } from "@/lib/shared/utils"
 import { formatDateToPtBR, isSameMonth } from "@/lib/shared/date-utils"
 import { MainLayout } from "@/components/layout/main-layout"
@@ -230,6 +233,17 @@ export default function TransactionsPage() {
   const { categories, isLoading: categoriesLoading } = useCategories()
   const { categoryGroups, isLoading: categoryGroupsLoading } = useCategoryGroups()
   const { areas, isLoading: areasLoading } = useAreas()
+  const { contacts } = useContacts()
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const isLoading = transactionsLoading || categoriesLoading || categoryGroupsLoading || areasLoading
   const hasData = transactions.length > 0 && categories.length > 0
@@ -1151,6 +1165,7 @@ export default function TransactionsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-200">
+                      <th className="w-8 py-3 px-2" aria-label="Expandir detalhes" />
                       {visibleColumns.id && (
                         <th className="text-left py-3 px-4 font-medium text-slate-600">
                           <button
@@ -1256,7 +1271,7 @@ export default function TransactionsPage() {
                     {isLoading ? (
                       <tr>
                         <td
-                          colSpan={Object.values(visibleColumns).filter(Boolean).length}
+                          colSpan={Object.values(visibleColumns).filter(Boolean).length + 1}
                           className="text-center py-8 text-slate-500"
                         >
                           Carregando transações...
@@ -1265,7 +1280,7 @@ export default function TransactionsPage() {
                     ) : filteredTransactions.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={Object.values(visibleColumns).filter(Boolean).length}
+                          colSpan={Object.values(visibleColumns).filter(Boolean).length + 1}
                           className="text-center py-8 text-slate-500"
                         >
                           Nenhuma transação encontrada para este período.
@@ -1277,9 +1292,28 @@ export default function TransactionsPage() {
                         const isIncome = category?.type === "income"
                         const transactionStatus = transaction.status || "pending"
                         const isEditing = editingTransaction === transaction.id
+                        const isExpanded = expandedIds.has(transaction.id)
+                        const visibleColumnCount = Object.values(visibleColumns).filter(Boolean).length + 1
 
                         return (
-                          <tr key={transaction.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <Fragment key={transaction.id}>
+                          <tr className="border-b border-slate-100 hover:bg-slate-50">
+                            <td className="w-8 py-3 px-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleExpanded(transaction.id)}
+                                aria-expanded={isExpanded}
+                                aria-controls={`tx-detail-${transaction.id}`}
+                                aria-label={isExpanded ? "Colapsar detalhes" : "Expandir detalhes"}
+                                className="flex h-5 w-5 items-center justify-center rounded text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                              >
+                                <ChevronRight
+                                  className={`h-4 w-4 transition-transform ${
+                                    isExpanded ? "rotate-90" : ""
+                                  }`}
+                                />
+                              </button>
+                            </td>
                             {visibleColumns.id && (
                               <td className="py-3 px-4 text-slate-500 text-xs font-mono">{transaction.id}</td>
                             )}
@@ -1537,6 +1571,21 @@ export default function TransactionsPage() {
                               </td>
                             )}
                           </tr>
+                          {isExpanded && (
+                            <tr id={`tx-detail-${transaction.id}`} className="border-b border-slate-100">
+                              <td colSpan={visibleColumnCount} className="p-0">
+                                <TransactionDetailRow
+                                  transaction={transaction}
+                                  allTransactions={transactions}
+                                  categories={categories}
+                                  categoryGroups={categoryGroups}
+                                  areas={areas}
+                                  contacts={contacts}
+                                />
+                              </td>
+                            </tr>
+                          )}
+                          </Fragment>
                         )
                       })
                     )}
