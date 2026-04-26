@@ -105,8 +105,18 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
-      - name: Run smoke tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run public smoke tests
         env:
           API_URL: https://api.moedamix.com.br
           WEB_URL: https://app.moedamix.com.br
         run: bash scripts/smoke/smoke.sh
+      - name: Run authenticated recurrence smoke
+        env:
+          API_URL: https://api.moedamix.com.br
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          MMX_E2E_TEST_USER_ID: ${{ secrets.MMX_E2E_TEST_USER_ID }}
+          MMX_E2E_TEST_USER_EMAIL: ${{ secrets.MMX_E2E_TEST_USER_EMAIL }}
+        run: node scripts/smoke/recurring.mjs
