@@ -39,5 +39,6 @@ Available commands:
 - `/checkpoint` — create/verify/list named checkpoints during long tasks
 - `/agentic-engineering` — decompose work into units, route models, eval-first execution
 - `/update-docs` — verify and update READMEs, docs/, guides, CODEBASE_MAP and AI bridges
+- `/impeccable <intent> [target]` — apply frontend design workflows (audit, polish, critique, harden, distill, animate, …) using `.ai/skills/impeccable/`. Triggered automatically by `.ai/rules/frontend-design.md` on UI changes.
 
 Governance rule: when a new command is created in `.ai/commands/`, create the corresponding wrapper in `.claude/commands/` and `.github/prompts/`. Kernel first, then wrappers.

@@ -133,3 +133,8 @@ Para ambiente local real (API + banco), mantenha `NEXT_PUBLIC_USE_API=true` e `D
 - TypeScript estrito
 - mensagens de usuario preferencialmente em portugues
 - evitar alteracoes em components/ui sem necessidade
+- mudancas visuais em components/ ou app/ disparam a regra .ai/rules/frontend-design.md (consulta automatica ao skill .ai/skills/impeccable/)
+
+## Comandos de IA
+
+Slash commands de engenharia (start-task, ship, regression-check, impeccable, ...) ficam listados em [CLAUDE.md](CLAUDE.md). Especificacao canonica em .ai/commands/, wrappers em .claude/commands/ e .github/prompts/.
