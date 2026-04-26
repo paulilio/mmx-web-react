@@ -15,12 +15,18 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
 import { TransactionApplicationService } from "./application/transaction.service"
 import { RecurringTemplateApplicationService } from "./application/recurring-template.service"
+import { CreateRecurringSeriesUseCase } from "./application/use-cases/create-recurring-series.use-case"
 import {
   mapTransaction,
   parseTransactionStatus,
   parseTransactionType,
 } from "@/core/lib/server/http/transactions-mapper"
-import { mapRecurringTemplate } from "@/core/lib/server/http/recurring-template-mapper"
+import {
+  mapRecurringTemplate,
+  parseRecurrenceFrequency,
+  parseDayOfWeek,
+  parseWeekOfMonth,
+} from "@/core/lib/server/http/recurring-template-mapper"
 
 @Controller("transactions")
 @UseGuards(JwtAuthGuard)
@@ -28,6 +34,7 @@ export class TransactionsController {
   constructor(
     private readonly transactionService: TransactionApplicationService,
     private readonly recurringService: RecurringTemplateApplicationService,
+    private readonly createRecurringSeries: CreateRecurringSeriesUseCase,
   ) {}
   @Get()
   async list(
@@ -156,6 +163,139 @@ export class TransactionsController {
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
     const deleted = await this.transactionService.remove(id, userId)
     return mapTransaction(deleted)
+  }
+
+  @Post("recurring")
+  @HttpCode(HttpStatus.CREATED)
+  async createRecurringSeriesEndpoint(
+    @AuthUser() userId: string,
+    @Body() body: {
+      template?: {
+        frequency?: string
+        interval?: number
+        daysOfWeek?: string[]
+        dayOfMonth?: number | null
+        weekOfMonth?: string | null
+        monthOfYear?: number | null
+        monthlyMode?: string | null
+        count?: number | null
+        startDate?: string
+        endDate?: string | null
+      }
+      base?: {
+        description?: string
+        amount?: number
+        type?: string
+        categoryId?: string
+        contactId?: string | null
+        status?: string
+        notes?: string | null
+        areaId?: string | null
+        categoryGroupId?: string | null
+      }
+    },
+  ) {
+    if (!body?.template || !body?.base) {
+      throw Object.assign(new Error("template e base são obrigatórios"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const t = body.template
+    const b = body.base
+
+    if (!t.frequency || !t.startDate) {
+      throw Object.assign(new Error("template.frequency e template.startDate são obrigatórios"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    if (!b.type || !b.categoryId) {
+      throw Object.assign(new Error("base.type e base.categoryId são obrigatórios"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+
+    const frequency = parseRecurrenceFrequency(t.frequency)
+    if (!frequency) {
+      throw Object.assign(new Error("template.frequency inválido"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const baseType = parseTransactionType(b.type)
+    if (!baseType) {
+      throw Object.assign(new Error("base.type inválido"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const baseStatus = parseTransactionStatus(b.status ?? null) ?? "PENDING"
+
+    const daysOfWeek = (t.daysOfWeek ?? [])
+      .map((d) => parseDayOfWeek(d))
+      .filter((d): d is NonNullable<typeof d> => d !== undefined)
+
+    const weekOfMonth = t.weekOfMonth ? parseWeekOfMonth(t.weekOfMonth) ?? null : null
+
+    const startDate = new Date(t.startDate)
+    if (Number.isNaN(startDate.getTime())) {
+      throw Object.assign(new Error("template.startDate inválido"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const endDate = t.endDate ? new Date(t.endDate) : null
+    if (endDate && Number.isNaN(endDate.getTime())) {
+      throw Object.assign(new Error("template.endDate inválido"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+
+    const baseAmount = Number(b.amount ?? 0)
+
+    const result = await this.createRecurringSeries.execute({
+      userId,
+      template: {
+        userId,
+        frequency,
+        interval: Number(t.interval ?? 1),
+        daysOfWeek,
+        dayOfMonth: t.dayOfMonth ?? null,
+        weekOfMonth,
+        monthOfYear: t.monthOfYear ?? null,
+        monthlyMode: t.monthlyMode ?? null,
+        count: t.count ?? null,
+        startDate,
+        endDate,
+        templateAmount: baseAmount,
+        templateDescription: b.description ?? "",
+        templateNotes: b.notes ?? null,
+        templateType: baseType,
+        templateCategoryId: b.categoryId,
+        templateContactId: b.contactId ?? null,
+        templateAreaId: b.areaId ?? null,
+        templateCategoryGroupId: b.categoryGroupId ?? null,
+      },
+      base: {
+        description: b.description ?? "",
+        amount: baseAmount,
+        type: baseType,
+        categoryId: b.categoryId,
+        contactId: b.contactId ?? null,
+        status: baseStatus,
+        notes: b.notes ?? null,
+        areaId: b.areaId ?? null,
+        categoryGroupId: b.categoryGroupId ?? null,
+      },
+    })
+
+    return {
+      template: mapRecurringTemplate(result.template),
+      executions: result.executions.map(mapTransaction),
+    }
   }
 
   @Get("recurring/:templateId")

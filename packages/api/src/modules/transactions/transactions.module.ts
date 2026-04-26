@@ -6,6 +6,7 @@ import { PrismaTransactionRepository } from "./infrastructure/repositories/prism
 import { PrismaRecurringTemplateRepository } from "./infrastructure/repositories/prisma-recurring-template.repository"
 import { TransactionApplicationService } from "./application/transaction.service"
 import { RecurringTemplateApplicationService } from "./application/recurring-template.service"
+import { CreateRecurringSeriesUseCase } from "./application/use-cases/create-recurring-series.use-case"
 
 @Module({
   controllers: [TransactionsController],
@@ -14,6 +15,7 @@ import { RecurringTemplateApplicationService } from "./application/recurring-tem
     { provide: RECURRING_TEMPLATE_REPOSITORY, useClass: PrismaRecurringTemplateRepository },
     TransactionApplicationService,
     RecurringTemplateApplicationService,
+    CreateRecurringSeriesUseCase,
   ],
 })
 export class TransactionsModule {}
