@@ -32,6 +32,10 @@ async function deleteTransaction(request: APIRequestContext, id: string): Promis
 }
 
 test.describe("/transactions — criação via modal", () => {
+  // Página tem várias chamadas SWR encadeadas + Container App pode estar em cold start;
+  // 60s é folga suficiente pro fluxo completo (login → carregar → criar → cleanup).
+  test.setTimeout(90_000)
+
   test.afterEach(async ({ request }) => {
     if (createdTransactionId) {
       await deleteTransaction(request, createdTransactionId)
