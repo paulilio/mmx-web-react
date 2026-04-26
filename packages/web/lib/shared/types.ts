@@ -179,12 +179,56 @@ export interface Transaction {
   status: "completed" | "pending" | "cancelled"
   notes?: string
   recurrence?: TransactionRecurrence
+  templateId?: string | null
+  template?: RecurringTemplate | null
+  seriesIndex?: number | null
+  skipped?: boolean
+  isException?: boolean
   areaId?: string
   categoryGroupId?: string
   parentId?: string
   generatedFrom?: string
   createdAt: string
   updatedAt: string
+}
+
+export interface RecurringTemplate {
+  id: string
+  userId?: string
+  frequency: "daily" | "weekly" | "monthly" | "yearly"
+  interval: number
+  daysOfWeek: DayOfWeek[]
+  dayOfMonth: number | null
+  weekOfMonth: "first" | "second" | "third" | "fourth" | "last" | null
+  monthOfYear: number | null
+  monthlyMode: string | null
+  count: number | null
+  startDate: string
+  endDate: string | null
+  paused: boolean
+  pausedAt: string | null
+  templateAmount: number
+  templateDescription: string
+  templateNotes: string | null
+  templateType: "income" | "expense"
+  templateCategoryId: string
+  templateContactId: string | null
+  templateAreaId: string | null
+  templateCategoryGroupId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RecurringSeriesView {
+  template: RecurringTemplate
+  executions: Transaction[]
+  counts: {
+    total: number
+    pending: number
+    completed: number
+    cancelled: number
+    skipped: number
+  }
 }
 
 export interface TransactionFormData {
