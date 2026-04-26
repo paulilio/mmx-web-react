@@ -64,7 +64,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 async function requestApi<T>(
   endpoint: string,
   init?: {
-    method?: "GET" | "POST" | "PUT" | "DELETE"
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
     body?: unknown
   },
 ): Promise<T> {
@@ -721,9 +721,19 @@ export async function deleteJSON<T>(endpoint: string): Promise<T> {
   return requestApi<T>(endpoint, { method: "DELETE" })
 }
 
+export async function patchJSON<T>(endpoint: string, data: unknown): Promise<T> {
+  if (!USE_API) {
+    await mockDelay()
+    throw new Error(`Mock endpoint not implemented (PATCH): ${endpoint}`)
+  }
+
+  return requestApi<T>(endpoint, { method: "PATCH", body: data })
+}
+
 export const api = {
   get: getJSON,
   post: postJSON,
   put: putJSON,
+  patch: patchJSON,
   delete: deleteJSON,
 }

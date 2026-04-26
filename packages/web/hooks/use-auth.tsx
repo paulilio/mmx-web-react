@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
-import type { User } from "@/types/auth"
+import type { User, UserPreferences } from "@/types/auth"
 import { api } from "@/lib/client/api"
 import { USE_API } from "@/lib/shared/config"
 import { logAuditEvent } from "@/lib/shared/utils"
@@ -27,6 +27,26 @@ type ApiAuthUser = {
   lastName?: string
   isEmailConfirmed?: boolean
   planType?: User["planType"]
+  preferences?: unknown
+}
+
+function mergePreferences(raw: unknown): UserPreferences {
+  const base: UserPreferences = {
+    theme: "system",
+    language: "pt-BR",
+    notifications: { email: true, push: true, sms: false },
+    layout: { sidebarCollapsed: false, compactMode: false },
+  }
+  if (raw && typeof raw === "object") {
+    const incoming = raw as Partial<UserPreferences>
+    return {
+      ...base,
+      ...incoming,
+      notifications: { ...base.notifications, ...(incoming.notifications ?? {}) },
+      layout: { ...base.layout, ...(incoming.layout ?? {}) },
+    }
+  }
+  return base
 }
 
 function mapApiUser(data: ApiAuthUser): User {
@@ -38,12 +58,7 @@ function mapApiUser(data: ApiAuthUser): User {
     isEmailConfirmed: Boolean(data.isEmailConfirmed),
     createdAt: new Date().toISOString(),
     planType: data.planType ?? "free",
-    preferences: {
-      theme: "system",
-      language: "pt-BR",
-      notifications: { email: true, push: true, sms: false },
-      layout: { sidebarCollapsed: false, compactMode: false },
-    },
+    preferences: mergePreferences(data.preferences),
   }
 }
 

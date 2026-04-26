@@ -38,8 +38,8 @@ describe("GetCurrentUserUseCase", () => {
     vi.clearAllMocks()
   })
 
-  it("retorna AuthUserView + isEmailConfirmed para user existente", async () => {
-    const user = makeUser({ id: "user-1", email: "u@test.com", firstName: "Ana", isEmailConfirmed: true, planType: "PREMIUM" })
+  it("retorna AuthUserView + isEmailConfirmed + preferences para user existente", async () => {
+    const user = makeUser({ id: "user-1", email: "u@test.com", firstName: "Ana", isEmailConfirmed: true, planType: "PREMIUM", preferences: { theme: "dark" } })
     const useCase = new GetCurrentUserUseCase(makeUserRepo(user))
 
     const result = await useCase.execute("user-1")
@@ -51,7 +51,17 @@ describe("GetCurrentUserUseCase", () => {
       lastName: "Silva",
       planType: "PREMIUM",
       isEmailConfirmed: true,
+      preferences: { theme: "dark" },
     })
+  })
+
+  it("retorna preferences null quando user não tem preferências", async () => {
+    const user = makeUser({ preferences: null })
+    const useCase = new GetCurrentUserUseCase(makeUserRepo(user))
+
+    const result = await useCase.execute("user-1")
+
+    expect(result.preferences).toBeNull()
   })
 
   it("retorna isEmailConfirmed=false quando user ainda não confirmou", async () => {

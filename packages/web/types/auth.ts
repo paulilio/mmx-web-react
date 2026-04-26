@@ -68,6 +68,7 @@ export interface UserPreferences {
     sidebarCollapsed: boolean
     compactMode: boolean
   }
+  hasSeenWelcome?: boolean
 }
 
 export interface CreditCardInfo {

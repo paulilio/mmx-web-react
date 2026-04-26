@@ -3,6 +3,7 @@
 import { MainLayout } from "@/components/layout/main-layout"
 import { SummaryCard } from "@/components/dashboard/summary-card"
 import { CashflowChart } from "@/components/dashboard/cashflow-chart"
+import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
 import { DollarSign, AlertTriangle, Clock, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
 import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/shared/constants"
@@ -14,6 +15,7 @@ export default function DashboardPage() {
   if (summaryLoading || agingLoading) {
     return (
       <MainLayout>
+        <WelcomeModal />
         <div className="flex items-center justify-center h-full">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
@@ -70,6 +72,7 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
+      <WelcomeModal />
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="border-b border-slate-200 pb-4">

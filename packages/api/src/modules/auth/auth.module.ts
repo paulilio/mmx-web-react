@@ -15,6 +15,7 @@ import { RefreshSessionUseCase } from "./application/use-cases/refresh-session.u
 import { LogoutUseCase } from "./application/use-cases/logout.use-case"
 import { LogoutAllUseCase } from "./application/use-cases/logout-all.use-case"
 import { GetCurrentUserUseCase } from "./application/use-cases/get-current-user.use-case"
+import { UpdatePreferencesUseCase } from "./application/use-cases/update-preferences.use-case"
 import { RequestEmailVerificationUseCase } from "./application/use-cases/request-email-verification.use-case"
 import { VerifyEmailUseCase } from "./application/use-cases/verify-email.use-case"
 import { ForgotPasswordUseCase } from "./application/use-cases/forgot-password.use-case"
@@ -46,6 +47,7 @@ import { MicrosoftOAuthController } from "./oauth/microsoft-oauth.controller"
     LogoutUseCase,
     LogoutAllUseCase,
     GetCurrentUserUseCase,
+    UpdatePreferencesUseCase,
     RequestEmailVerificationUseCase,
     VerifyEmailUseCase,
     ForgotPasswordUseCase,

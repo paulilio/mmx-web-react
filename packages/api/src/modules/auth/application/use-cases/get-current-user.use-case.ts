@@ -6,11 +6,17 @@ import { type AuthUserView, toAuthUserView } from "../../domain/user.types"
 export class GetCurrentUserUseCase {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository) {}
 
-  async execute(userId: string): Promise<AuthUserView & { isEmailConfirmed: boolean }> {
+  async execute(
+    userId: string,
+  ): Promise<AuthUserView & { isEmailConfirmed: boolean; preferences: unknown }> {
     const user = await this.userRepo.findById(userId)
     if (!user) {
       throw Object.assign(new Error("Usuário não encontrado"), { status: 404, code: "USER_NOT_FOUND" })
     }
-    return { ...toAuthUserView(user), isEmailConfirmed: user.isEmailConfirmed }
+    return {
+      ...toAuthUserView(user),
+      isEmailConfirmed: user.isEmailConfirmed,
+      preferences: user.preferences ?? null,
+    }
   }
 }

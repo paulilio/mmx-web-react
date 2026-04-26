@@ -96,6 +96,7 @@ export class HandleOAuthCallbackUseCase {
           isEmailConfirmed: true,
           ...(profile.picture ? { profilePhoto: profile.picture } : {}),
           planType: "FREE",
+          preferences: { hasSeenWelcome: false },
           lastLogin: new Date(),
         })
         await this.oauthAccountRepo.create({

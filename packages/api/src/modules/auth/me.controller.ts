@@ -1,7 +1,9 @@
 import {
   Controller,
   Get,
+  Patch,
   Post,
+  Body,
   Req,
   Res,
   UseGuards,
@@ -13,6 +15,7 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { GetCurrentUserUseCase } from "./application/use-cases/get-current-user.use-case"
 import { LogoutAllUseCase } from "./application/use-cases/logout-all.use-case"
 import { RequestEmailVerificationUseCase } from "./application/use-cases/request-email-verification.use-case"
+import { UpdatePreferencesUseCase } from "./application/use-cases/update-preferences.use-case"
 import { extractRequestContext } from "../../common/utils/request-context"
 import { clearAuthCookies } from "../../common/utils/cookies"
 import { createRateLimitGuard } from "../../common/guards/rate-limit.guard"
@@ -29,6 +32,7 @@ export class MeController {
     private readonly getCurrentUser: GetCurrentUserUseCase,
     private readonly logoutAll: LogoutAllUseCase,
     private readonly requestEmailVerification: RequestEmailVerificationUseCase,
+    private readonly updatePreferences: UpdatePreferencesUseCase,
   ) {}
 
   @Get("me")
@@ -39,6 +43,19 @@ export class MeController {
       throw Object.assign(new Error("Autenticação obrigatória"), { status: 401, code: "AUTH_REQUIRED" })
     }
     return this.getCurrentUser.execute(userId)
+  }
+
+  @Patch("preferences")
+  @UseGuards(JwtAuthGuard)
+  async patchPreferences(
+    @Req() req: Request & { userId?: string },
+    @Body() body: unknown,
+  ) {
+    const userId = req.userId
+    if (!userId) {
+      throw Object.assign(new Error("Autenticação obrigatória"), { status: 401, code: "AUTH_REQUIRED" })
+    }
+    return this.updatePreferences.execute(userId, body)
   }
 
   @Post("logout-all")

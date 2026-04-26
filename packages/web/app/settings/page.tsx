@@ -42,6 +42,7 @@ import {
   FileText,
   AlertCircle,
   Database,
+  Sparkles,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -56,7 +57,7 @@ export default function SettingsPage() {
   const [selectedAreaId, setSelectedAreaId] = useState<string>("")
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
 
-  const { exportData, importData, clearData } = useSettingsMaintenance()
+  const { exportData, importData, clearData, getDefaultSeed } = useSettingsMaintenance()
 
   const { areas } = useAreas()
   const { categoryGroups, updateCategoryGroup } = useCategoryGroups()
@@ -134,11 +135,11 @@ export default function SettingsPage() {
   })
 
   const clearDataButton = useActionButton({
-    actionName: "Dados mock limpos",
+    actionName: "Dados limpos",
     onAction: async () => {
       await clearData()
     },
-    successMessage: "Dados mock limpos com sucesso. Recarregue a página manualmente para ver as mudanças.",
+    successMessage: "Seus dados foram limpos. Recarregue a página manualmente para ver as mudanças.",
   })
 
   const downloadModelButton = useActionButton({
@@ -149,11 +150,11 @@ export default function SettingsPage() {
           {
             id: "string",
             name: "string",
-            type: "income | fixed_expenses | daily_expenses | personal | taxes_fees",
+            type: "INCOME | FIXED_EXPENSES | DAILY_EXPENSES | PERSONAL | TAXES_FEES",
             description: "string",
             color: "string",
             icon: "string",
-            status: "active | inactive",
+            status: "ACTIVE | INACTIVE",
             createdAt: "ISO 8601 date",
             updatedAt: "ISO 8601 date",
           },
@@ -166,7 +167,7 @@ export default function SettingsPage() {
             areaId: "string",
             color: "string",
             icon: "string",
-            status: "active | inactive",
+            status: "ACTIVE | INACTIVE",
             createdAt: "ISO 8601 date",
             updatedAt: "ISO 8601 date",
           },
@@ -176,10 +177,10 @@ export default function SettingsPage() {
             id: "string",
             name: "string",
             description: "string",
-            type: "income | expense",
+            type: "INCOME | EXPENSE",
             categoryGroupId: "string",
             areaId: "string",
-            status: "active | inactive",
+            status: "ACTIVE | INACTIVE",
             createdAt: "ISO 8601 date",
             updatedAt: "ISO 8601 date",
           },
@@ -189,11 +190,13 @@ export default function SettingsPage() {
             id: "string",
             description: "string",
             amount: "number",
-            type: "income | expense",
+            type: "INCOME | EXPENSE",
             categoryId: "string",
+            categoryGroupId: "string",
+            areaId: "string",
             contactId: "string | null",
             date: "ISO 8601 date",
-            status: "completed | pending | cancelled",
+            status: "PENDING | COMPLETED | CANCELLED",
             notes: "string | null",
             createdAt: "ISO 8601 date",
             updatedAt: "ISO 8601 date",
@@ -206,8 +209,8 @@ export default function SettingsPage() {
             email: "string | null",
             phone: "string | null",
             identifier: "string | null",
-            type: "customer | supplier",
-            status: "active | inactive",
+            type: "CUSTOMER | SUPPLIER",
+            status: "ACTIVE | INACTIVE",
             createdAt: "ISO 8601 date",
             updatedAt: "ISO 8601 date",
           },
@@ -224,6 +227,24 @@ export default function SettingsPage() {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     },
+  })
+
+  const downloadExampleButton = useActionButton({
+    actionName: "Exemplo JSON baixado",
+    onAction: async () => {
+      const seed = await getDefaultSeed()
+      const blob = new Blob([JSON.stringify(seed, null, 2)], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "mmx-exemplo.json"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    },
+    successMessage: "Exemplo JSON baixado com sucesso! Use o botão Carregar Seed para importar.",
+    errorMessage: "Erro ao baixar exemplo. Tente novamente.",
   })
 
   const associateGroupsButton = useActionButton({
@@ -297,12 +318,12 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Gerenciar Dados Mock
+              Gerenciar Meus Dados
             </CardTitle>
-            <p className="text-sm text-slate-600">Gerencie os dados de teste do sistema através de arquivos JSON</p>
+            <p className="text-sm text-slate-600">Carregue, limpe ou exporte seus dados através de arquivos JSON</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="h-20 flex-col gap-2 bg-transparent">
@@ -367,7 +388,7 @@ export default function SettingsPage() {
                     className="h-20 flex-col gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
                   >
                     <Trash2 className="h-6 w-6" />
-                    <span>Limpar Dados Mock</span>
+                    <span>Limpar Meus Dados</span>
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -377,7 +398,7 @@ export default function SettingsPage() {
                       Confirmar Limpeza de Dados
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta ação irá remover permanentemente todos os dados mock do sistema (áreas, grupos categoria,
+                      Esta ação irá remover permanentemente todos os seus dados (áreas, grupos categoria,
                       categorias, transações e contatos).
                       <br />
                       <br />
@@ -403,6 +424,15 @@ export default function SettingsPage() {
               >
                 <Download className="h-6 w-6" />
                 <span>{downloadModelButton.getButtonText("Baixar Modelo JSON")}</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-20 flex-col gap-2 bg-transparent"
+                {...downloadExampleButton.buttonProps}
+              >
+                <Sparkles className="h-6 w-6" />
+                <span>{downloadExampleButton.getButtonText("Baixar Exemplo")}</span>
               </Button>
 
               <Dialog open={backupModalOpen} onOpenChange={setBackupModalOpen}>

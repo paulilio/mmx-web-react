@@ -54,6 +54,10 @@ async function revalidateSettingsCaches() {
 }
 
 export function useSettingsMaintenance() {
+  const getDefaultSeed = async (): Promise<SeedData> => {
+    return api.get<SeedData>("/settings/default-seed")
+  }
+
   const exportData = async (tables: SeedTableKey[]) => {
     if (!Array.isArray(tables) || tables.length === 0) {
       throw new Error("Selecione pelo menos uma tabela para exportar")
@@ -87,6 +91,7 @@ export function useSettingsMaintenance() {
     exportData,
     importData,
     clearData,
+    getDefaultSeed,
     validateSeedJSON,
   }
 }

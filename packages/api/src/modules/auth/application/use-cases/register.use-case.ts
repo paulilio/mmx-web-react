@@ -44,6 +44,7 @@ export class RegisterUseCase {
       phone: input.phone ?? null,
       cpfCnpj: input.cpfCnpj ?? null,
       planType: "FREE",
+      preferences: { hasSeenWelcome: false },
     })
 
     // O cadastro não pode falhar por causa do email — o user já está criado.
