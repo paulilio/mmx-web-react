@@ -56,7 +56,7 @@ export function UserProfileButton() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-auto p-3 justify-start gap-3 hover:bg-slate-100 transition-colors">
+          <Button variant="ghost" className="h-auto p-3 justify-start gap-3 hover:bg-accent transition-colors">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.profilePhoto || "/placeholder.svg"} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
@@ -64,14 +64,14 @@ export function UserProfileButton() {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col items-start min-w-0 flex-1">
-              <span className="text-sm font-medium text-slate-900 truncate">
+              <span className="text-sm font-medium text-foreground truncate">
                 {user.firstName} {user.lastName}
               </span>
               <Badge variant={getPlanBadgeVariant(user.planType)} className="text-xs">
                 {getPlanLabel(user.planType)}
               </Badge>
             </div>
-            <ChevronUp className="h-4 w-4 text-slate-400" />
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-64 z-50">
@@ -112,7 +112,7 @@ export function UserProfileButton() {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={logout} className="text-red-600">
+          <DropdownMenuItem onClick={logout} className="text-expense">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>

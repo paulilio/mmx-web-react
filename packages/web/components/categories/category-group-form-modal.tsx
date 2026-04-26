@@ -128,7 +128,7 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                 Nome *
               </Label>
               <Input id="name" {...register("name")} placeholder="Ex: Moradia, Transporte..." />
-              {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+              {errors.name && <p className="text-sm text-expense">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -147,7 +147,7 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                   <SelectItem value="inactive">Inativo</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.status && <p className="text-sm text-red-600">{errors.status.message}</p>}
+              {errors.status && <p className="text-sm text-expense">{errors.status.message}</p>}
             </div>
           </div>
 
@@ -184,7 +184,7 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                 ))}
               </SelectContent>
             </Select>
-            {errors.areaId && <p className="text-sm text-red-600">{errors.areaId.message}</p>}
+            {errors.areaId && <p className="text-sm text-expense">{errors.areaId.message}</p>}
           </div>
 
           {/* Visual Customization */}
@@ -201,14 +201,14 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                     key={color}
                     type="button"
                     className={`w-10 h-10 rounded-lg border-2 transition-all ${
-                      watchedColor === color ? "border-slate-400 scale-110" : "border-slate-200"
+                      watchedColor === color ? "border-foreground scale-110" : "border"
                     }`}
                     style={{ backgroundColor: color }}
                     onClick={() => setValue("color", color, { shouldDirty: true })}
                   />
                 ))}
               </div>
-              {errors.color && <p className="text-sm text-red-600">{errors.color.message}</p>}
+              {errors.color && <p className="text-sm text-expense">{errors.color.message}</p>}
             </div>
 
             {/* Icon Selection */}
@@ -220,7 +220,7 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                     key={iconName}
                     type="button"
                     className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-all ${
-                      watchedIcon === iconName ? "border-slate-400 bg-slate-50" : "border-slate-200 hover:bg-slate-50"
+                      watchedIcon === iconName ? "border-foreground bg-accent" : "border hover:bg-accent"
                     }`}
                     onClick={() => setValue("icon", iconName, { shouldDirty: true })}
                     title={ICON_DISPLAY_NAMES[iconName] || iconName}
@@ -229,14 +229,14 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                   </button>
                 ))}
               </div>
-              {errors.icon && <p className="text-sm text-red-600">{errors.icon.message}</p>}
+              {errors.icon && <p className="text-sm text-expense">{errors.icon.message}</p>}
             </div>
           </div>
 
           {/* Preview */}
-          <Card className="bg-slate-50">
+          <Card className="bg-accent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-slate-600">Preview do Grupo</CardTitle>
+              <CardTitle className="text-sm text-muted-foreground">Preview do Grupo</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
@@ -248,8 +248,8 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
                 </div>
                 <div>
                   <h3 className="font-semibold">{watch("name") || "Nome do Grupo"}</h3>
-                  <p className="text-sm text-slate-600">{watch("description") || "Descrição do grupo"}</p>
-                  <p className="text-xs text-slate-500 mt-1">Área: {getAreaName(watch("areaId"))}</p>
+                  <p className="text-sm text-muted-foreground">{watch("description") || "Descrição do grupo"}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Área: {getAreaName(watch("areaId"))}</p>
                 </div>
               </div>
             </CardContent>
@@ -260,7 +260,7 @@ export function CategoryGroupFormModal({ open, onOpenChange, categoryGroup }: Ca
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {categoryGroup ? "Atualizar" : "Criar"} Grupo
             </Button>

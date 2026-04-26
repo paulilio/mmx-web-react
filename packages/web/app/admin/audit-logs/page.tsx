@@ -113,17 +113,17 @@ export default function AuditLogsPage() {
   const getActionBadgeColor = (action: string) => {
     switch (action) {
       case "login_success":
-        return "bg-green-100 text-green-800"
+        return "bg-income/15 text-income"
       case "login_failure":
-        return "bg-red-100 text-red-800"
+        return "bg-expense/15 text-expense"
       case "user_created":
-        return "bg-blue-100 text-blue-800"
+        return "bg-primary/15 text-primary"
       case "password_reset_requested":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-warning/15 text-warning"
       case "organization_switched":
-        return "bg-purple-100 text-purple-800"
+        return "bg-secondary text-secondary-foreground"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-accent text-foreground"
     }
   }
 
@@ -166,21 +166,21 @@ export default function AuditLogsPage() {
   const uniqueActions = [...new Set(auditLogs.map((log) => log.action))]
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Logs de Auditoria</h1>
         <p className="text-muted-foreground">Visualize e monitore todas as atividades do sistema</p>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
+      <Card className="gap-3 py-4">
+        <CardHeader className="px-4">
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
             Filtros
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -228,31 +228,31 @@ export default function AuditLogsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="gap-3 py-4">
           <CardContent className="p-6">
             <div className="text-2xl font-bold">{filteredLogs.length}</div>
             <p className="text-xs text-muted-foreground">Total de eventos</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="gap-3 py-4">
           <CardContent className="p-6">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-income">
               {filteredLogs.filter((log) => log.action === "login_success").length}
             </div>
             <p className="text-xs text-muted-foreground">Logins realizados</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="gap-3 py-4">
           <CardContent className="p-6">
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-bold text-expense">
               {filteredLogs.filter((log) => log.action === "login_failure").length}
             </div>
             <p className="text-xs text-muted-foreground">Falhas de login</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="gap-3 py-4">
           <CardContent className="p-6">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-primary">
               {filteredLogs.filter((log) => log.action === "user_created").length}
             </div>
             <p className="text-xs text-muted-foreground">Usuários criados</p>
@@ -261,14 +261,14 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Audit Logs Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Eventos de Auditoria</CardTitle>
+      <Card className="gap-3 py-4">
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm">Eventos de Auditoria</CardTitle>
           <CardDescription>
             {filteredLogs.length} de {auditLogs.length} eventos
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4">
           <div className="space-y-4">
             {filteredLogs.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">

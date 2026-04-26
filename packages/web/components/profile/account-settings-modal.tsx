@@ -417,8 +417,8 @@ export function AccountSettingsModal({ open, onOpenChange }: AccountSettingsModa
                 {user.creditCard ? (
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">{user.creditCard.brand.toUpperCase()}</span>
+                      <div className="w-10 h-6 bg-foreground rounded flex items-center justify-center">
+                        <span className="text-background text-xs font-bold">{user.creditCard.brand.toUpperCase()}</span>
                       </div>
                       <div>
                         <p className="font-medium">{user.creditCard.maskedNumber}</p>

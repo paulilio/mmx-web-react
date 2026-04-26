@@ -53,21 +53,21 @@ export default function ContactsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Contatos</h1>
-            <p className="text-slate-600 mt-1">Gerencie seus clientes e fornecedores</p>
+            <h1 className="text-3xl font-bold text-foreground">Contatos</h1>
+            <p className="text-muted-foreground mt-1">Gerencie seus clientes e fornecedores</p>
           </div>
-          <Button onClick={handleNewContact} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleNewContact} className="bg-primary hover:bg-primary/90">
             <Plus className="mr-2 h-4 w-4" />
             Novo Contato
           </Button>
         </div>
 
         {/* Search */}
-        <Card>
-          <CardHeader>
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
             <CardTitle className="text-lg">Buscar Contatos</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4">
             <Input
               placeholder="Buscar por nome ou email..."
               value={searchTerm}
@@ -78,11 +78,11 @@ export default function ContactsPage() {
         </Card>
 
         {/* Contacts Table */}
-        <Card>
-          <CardContent className="p-0">
+        <Card className="gap-3 py-4">
+          <CardContent className="p-0 [&_td]:px-4 [&_th]:px-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : filteredContacts && filteredContacts.length > 0 ? (
               <Table>
@@ -104,8 +104,8 @@ export default function ContactsPage() {
                         <Badge
                           className={
                             contact.type === "customer"
-                              ? "bg-blue-100 text-blue-800 border-blue-200"
-                              : "bg-slate-100 text-slate-800 border-slate-200"
+                              ? "bg-primary/15 text-primary border-primary/30"
+                              : "bg-accent text-foreground border"
                           }
                         >
                           {contact.type === "customer" ? "Cliente" : "Fornecedor"}
@@ -128,7 +128,7 @@ export default function ContactsPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDelete(contact)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 p-0 text-expense hover:text-expense hover:bg-expense/10"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -139,7 +139,7 @@ export default function ContactsPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
                 <Users className="h-12 w-12 mb-4" />
                 <p className="text-lg font-medium">Nenhum contato encontrado</p>
                 <p className="text-sm">Comece criando seu primeiro contato</p>
@@ -150,7 +150,7 @@ export default function ContactsPage() {
 
         {/* Summary */}
         {filteredContacts && (
-          <div className="flex items-center gap-4 text-sm text-slate-600">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>Total: {filteredContacts.length} contatos</span>
             <span>Clientes: {filteredContacts.filter((c) => c.type === "customer").length}</span>
             <span>Fornecedores: {filteredContacts.filter((c) => c.type === "supplier").length}</span>

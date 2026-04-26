@@ -124,9 +124,9 @@ export default function BudgetPage() {
   }
 
   const getAvailableColor = (available: number) => {
-    if (available > 0) return "text-green-600"
-    if (available < 0) return "text-red-600"
-    return "text-slate-600"
+    if (available > 0) return "text-income"
+    if (available < 0) return "text-expense"
+    return "text-muted-foreground"
   }
 
   const totalPlanned = budgetSummaries.reduce((sum, item) => sum + item.planned, 0)
@@ -139,25 +139,25 @@ export default function BudgetPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-              <PiggyBank className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <PiggyBank className="h-8 w-8 text-primary" />
               Orçamento
             </h1>
-            <p className="text-slate-600 mt-1">Gerencie seus grupos orçamentários e controle de gastos</p>
+            <p className="text-muted-foreground mt-1">Gerencie seus grupos orçamentários e controle de gastos</p>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
             <CardTitle className="text-lg flex items-center gap-2">
               <Calendar className="h-5 w-5" />
               Período
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-slate-700">Mês:</label>
+                <label className="text-sm font-medium text-foreground">Mês:</label>
                 <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(Number.parseInt(v))}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
@@ -173,7 +173,7 @@ export default function BudgetPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-slate-700">Ano:</label>
+                <label className="text-sm font-medium text-foreground">Ano:</label>
                 <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(Number.parseInt(v))}>
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -192,54 +192,54 @@ export default function BudgetPage() {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="gap-3 py-4">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Planejado</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalPlanned)}</p>
+                  <p className="text-sm text-muted-foreground">Planejado</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(totalPlanned)}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-blue-600" />
+                <TrendingUp className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="gap-3 py-4">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Financiado</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalFunded)}</p>
+                  <p className="text-sm text-muted-foreground">Financiado</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(totalFunded)}</p>
                 </div>
-                <PiggyBank className="h-8 w-8 text-green-600" />
+                <PiggyBank className="h-8 w-8 text-income" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="gap-3 py-4">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Gasto</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalSpent)}</p>
+                  <p className="text-sm text-muted-foreground">Gasto</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(totalSpent)}</p>
                 </div>
-                <TrendingDown className="h-8 w-8 text-red-600" />
+                <TrendingDown className="h-8 w-8 text-expense" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="gap-3 py-4">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Disponível</p>
+                  <p className="text-sm text-muted-foreground">Disponível</p>
                   <p className={`text-2xl font-bold ${getAvailableColor(totalAvailable)}`}>
                     {formatCurrency(totalAvailable)}
                   </p>
                 </div>
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                    totalAvailable > 0 ? "bg-green-100" : totalAvailable < 0 ? "bg-red-100" : "bg-slate-100"
+                    totalAvailable > 0 ? "bg-income/15" : totalAvailable < 0 ? "bg-expense/15" : "bg-accent"
                   }`}
                 >
                   {totalAvailable > 0 ? "+" : totalAvailable < 0 ? "-" : "="}
@@ -249,14 +249,14 @@ export default function BudgetPage() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
             <CardTitle className="text-lg">Grupos de Categorias</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 [&_td]:px-4 [&_th]:px-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : budgetSummaries && budgetSummaries.length > 0 ? (
               <Table>
@@ -283,12 +283,12 @@ export default function BudgetPage() {
                           <DynamicIcon iconName={summary.categoryGroup.icon} size={18} />
                           <div>
                             <p className="font-medium">{summary.categoryGroup.name}</p>
-                            <p className="text-sm text-slate-500">{summary.categories.length} categorias</p>
+                            <p className="text-sm text-muted-foreground">{summary.categories.length} categorias</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-slate-600">{summary.area?.name || "Sem área"}</span>
+                        <span className="text-sm text-muted-foreground">{summary.area?.name || "Sem área"}</span>
                       </TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(summary.planned)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(summary.funded)}</TableCell>
@@ -341,7 +341,7 @@ export default function BudgetPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
                 <PiggyBank className="h-12 w-12 mb-4" />
                 <p className="text-lg font-medium">Nenhum grupo de categoria encontrado</p>
                 <p className="text-sm">Crie grupos de categorias na seção de Categorias</p>

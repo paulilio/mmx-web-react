@@ -110,9 +110,9 @@ export function TransferFundsModal({ open, onOpenChange, budgetGroups, month, ye
                 ))}
               </SelectContent>
             </Select>
-            {fromGroupId && <p className="text-sm text-slate-600 mt-1">Disponível: R$ {availableAmount.toFixed(2)}</p>}
+            {fromGroupId && <p className="text-sm text-muted-foreground mt-1">Disponível: R$ {availableAmount.toFixed(2)}</p>}
             {errors.fromBudgetGroupId && (
-              <p className="text-sm text-red-600 mt-1">{errors.fromBudgetGroupId.message}</p>
+              <p className="text-sm text-expense mt-1">{errors.fromBudgetGroupId.message}</p>
             )}
           </div>
 
@@ -139,7 +139,7 @@ export function TransferFundsModal({ open, onOpenChange, budgetGroups, month, ye
                 ))}
               </SelectContent>
             </Select>
-            {errors.toBudgetGroupId && <p className="text-sm text-red-600 mt-1">{errors.toBudgetGroupId.message}</p>}
+            {errors.toBudgetGroupId && <p className="text-sm text-expense mt-1">{errors.toBudgetGroupId.message}</p>}
           </div>
 
           <div>
@@ -154,7 +154,7 @@ export function TransferFundsModal({ open, onOpenChange, budgetGroups, month, ye
               max={availableAmount}
               {...register("amount", { valueAsNumber: true })}
             />
-            {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount.message}</p>}
+            {errors.amount && <p className="text-sm text-expense mt-1">{errors.amount.message}</p>}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

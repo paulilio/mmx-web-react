@@ -66,7 +66,7 @@ export function RecurringDeleteModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <AlertTriangle className="h-5 w-5 text-expense" />
             Excluir transação recorrente
           </DialogTitle>
           <DialogDescription>

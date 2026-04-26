@@ -161,7 +161,7 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
                 <ul className="space-y-3">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-3">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      <Check className="h-4 w-4 text-income flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
@@ -197,12 +197,12 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
           </div>
 
           {!user.creditCard && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-yellow-800">
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-warning">
                 <Shield className="h-4 w-4" />
                 <span className="font-medium">Payment Method Required</span>
               </div>
-              <p className="text-sm text-yellow-700 mt-1">
+              <p className="text-sm text-warning mt-1">
                 Please add a credit card in Account Settings before upgrading.
               </p>
             </div>

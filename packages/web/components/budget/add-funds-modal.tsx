@@ -85,7 +85,7 @@ export function AddFundsModal({ open, onOpenChange, budgetGroup, month, year }: 
         </DialogHeader>
 
         {budgetGroup && (
-          <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+          <div className="mb-4 p-3 bg-accent rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: budgetGroup.color }} />
               <span>{budgetGroup.icon}</span>
@@ -106,7 +106,7 @@ export function AddFundsModal({ open, onOpenChange, budgetGroup, month, year }: 
               placeholder="0,00"
               {...register("amount", { valueAsNumber: true })}
             />
-            {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount.message}</p>}
+            {errors.amount && <p className="text-sm text-expense mt-1">{errors.amount.message}</p>}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

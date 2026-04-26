@@ -128,13 +128,13 @@ export function RolloverModal({ open, onOpenChange, budgetGroup, month, year }: 
         </DialogHeader>
 
         {budgetGroup && (
-          <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+          <div className="mb-4 p-3 bg-accent rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: budgetGroup.color }} />
               <span>{budgetGroup.icon}</span>
               <span className="font-medium">{budgetGroup.name}</span>
             </div>
-            <p className="text-sm text-slate-600 mt-1">Disponível para rollover: R$ {availableAmount.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Disponível para rollover: R$ {availableAmount.toFixed(2)}</p>
           </div>
         )}
 
@@ -155,7 +155,7 @@ export function RolloverModal({ open, onOpenChange, budgetGroup, month, year }: 
           </div>
 
           {availableAmount <= 0 && (
-            <p className="text-sm text-amber-600">Não há fundos disponíveis para rollover neste grupo.</p>
+            <p className="text-sm text-warning">Não há fundos disponíveis para rollover neste grupo.</p>
           )}
 
           {rolloverEnabled && availableAmount > 0 && (
@@ -171,8 +171,8 @@ export function RolloverModal({ open, onOpenChange, budgetGroup, month, year }: 
                 max={availableAmount}
                 {...register("amount", { valueAsNumber: true })}
               />
-              {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount.message}</p>}
-              <p className="text-xs text-slate-500 mt-1">
+              {errors.amount && <p className="text-sm text-expense mt-1">{errors.amount.message}</p>}
+              <p className="text-xs text-muted-foreground mt-1">
                 Se não especificado, todo o valor disponível (R$ {availableAmount.toFixed(2)}) será transferido
               </p>
             </div>

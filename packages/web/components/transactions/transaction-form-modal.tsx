@@ -624,7 +624,7 @@ export function TransactionFormModal({
         <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto" key={transaction?.id || "new"}>
           <DialogHeader>
             {transaction?.id && (
-              <div className="absolute top-2 left-2 text-xs text-gray-400 font-mono bg-gray-50 px-1 py-0.5 rounded">
+              <div className="absolute top-2 left-2 text-xs text-muted-foreground font-mono bg-accent px-1 py-0.5 rounded">
                 ID: {transaction.id}
               </div>
             )}
@@ -640,7 +640,7 @@ export function TransactionFormModal({
             {/* Row 1: Data, Tipo, and Valor (25%, 25%, 50%) */}
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   Data
                 </Label>
@@ -653,7 +653,7 @@ export function TransactionFormModal({
               </div>
 
               <div>
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <ArrowUpDown className="h-4 w-4" />
                   Tipo
                 </Label>
@@ -672,7 +672,7 @@ export function TransactionFormModal({
               </div>
 
               <div className="col-span-2">
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
                   Valor
                 </Label>
@@ -683,7 +683,7 @@ export function TransactionFormModal({
             {/* Row 2: Área and Grupo side by side (50% each) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <Building className="h-4 w-4" />
                   Área
                 </Label>
@@ -705,7 +705,7 @@ export function TransactionFormModal({
               </div>
 
               <div>
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Grupo Categoria
                 </Label>
@@ -736,7 +736,7 @@ export function TransactionFormModal({
             {/* Row 3: Categoria and Status da Transação side by side (50% each) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <Tag className="h-4 w-4" />
                   Categoria
                 </Label>
@@ -763,7 +763,7 @@ export function TransactionFormModal({
               </div>
 
               <div className="ml-[5%]">
-                <Label className="mb-2 block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
                   Status da Transação
                 </Label>
@@ -781,8 +781,8 @@ export function TransactionFormModal({
             </div>
 
             <div>
-              <Label htmlFor="description" className="mb-2 block text-sm font-medium text-slate-700">
-                Descrição <span className="text-red-600" aria-hidden="true">*</span>
+              <Label htmlFor="description" className="mb-2 block text-sm font-medium text-foreground">
+                Descrição <span className="text-expense" aria-hidden="true">*</span>
               </Label>
               <Textarea
                 id="description"
@@ -797,7 +797,7 @@ export function TransactionFormModal({
                 className="w-full"
                 rows={3}
               />
-              {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
+              {errors.description && <p className="mt-1 text-sm text-expense">{errors.description.message}</p>}
             </div>
 
             <Separator />
@@ -805,8 +805,8 @@ export function TransactionFormModal({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Repeat className="h-4 w-4 text-slate-600" />
-                  <Label className="text-sm font-medium text-slate-700">Recorrência</Label>
+                  <Repeat className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium text-foreground">Recorrência</Label>
                 </div>
                 {hasExistingRecurrence && (
                   <Button
@@ -814,7 +814,7 @@ export function TransactionFormModal({
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowDeleteRecurrenceModal(true)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                    className="text-expense hover:text-expense hover:bg-expense/10 h-8 px-2"
                   >
                     <Trash2 className="h-3 w-3 mr-1" />
                     Excluir recorrência
@@ -824,8 +824,8 @@ export function TransactionFormModal({
 
               {hasExistingRecurrence ? (
                 <div className="space-y-3">
-                  <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                    <p className="text-sm text-amber-800 font-medium">
+                  <div className="bg-warning/10 border border-warning/30 rounded-md p-3">
+                    <p className="text-sm text-warning font-medium">
                       Para alterar a recorrência, exclua a atual e crie uma nova.
                     </p>
                   </div>
@@ -835,9 +835,9 @@ export function TransactionFormModal({
                       <Button
                         type="button"
                         variant="ghost"
-                        className="w-full justify-between p-3 h-auto bg-blue-50 border border-blue-200 hover:bg-blue-100"
+                        className="w-full justify-between p-3 h-auto bg-primary/10 border border-primary/30 hover:bg-primary/15"
                       >
-                        <div className="flex items-start text-blue-700">
+                        <div className="flex items-start text-primary">
                           <Info className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
                           <div className="text-sm font-medium text-left">
                             <div>Para alterar a recorrência, exclua a atual.</div>
@@ -845,19 +845,19 @@ export function TransactionFormModal({
                           </div>
                         </div>
                         {isRecurrenceDetailsOpen ? (
-                          <ChevronUp className="h-4 w-4 text-blue-600" />
+                          <ChevronUp className="h-4 w-4 text-primary" />
                         ) : (
-                          <ChevronDown className="h-4 w-4 text-blue-600" />
+                          <ChevronDown className="h-4 w-4 text-primary" />
                         )}
                       </Button>
                     </CollapsibleTrigger>
 
                     <CollapsibleContent>
-                      <Card className="bg-blue-50 border-blue-200 border-t-0 rounded-t-none">
+                      <Card className="bg-primary/10 border-primary/30 border-t-0 rounded-t-none">
                         <CardContent className="p-3 space-y-1">
                           <div className="grid grid-cols-1 gap-1 text-sm">
                             <div className="flex justify-between py-1">
-                              <span className="text-slate-600">Frequência:</span>
+                              <span className="text-muted-foreground">Frequência:</span>
                               <span className="font-medium">
                                 {recurrenceFrequency === "daily" && "Diário"}
                                 {recurrenceFrequency === "weekly" && "Semanal"}
@@ -867,7 +867,7 @@ export function TransactionFormModal({
                             </div>
 
                             <div className="flex justify-between py-1">
-                              <span className="text-slate-600">Intervalo:</span>
+                              <span className="text-muted-foreground">Intervalo:</span>
                               <span className="font-medium">
                                 A cada {watch("recurrence.interval") || 1}{" "}
                                 {recurrenceFrequency === "daily"
@@ -881,14 +881,14 @@ export function TransactionFormModal({
                             </div>
 
                             <div className="flex justify-between py-1">
-                              <span className="text-slate-600">Data de início:</span>
+                              <span className="text-muted-foreground">Data de início:</span>
                               <span className="font-medium">
                                 {watch("date") ? new Date(watch("date")).toLocaleDateString("pt-BR") : ""}
                               </span>
                             </div>
 
                             <div className="flex justify-between py-1">
-                              <span className="text-slate-600">Término:</span>
+                              <span className="text-muted-foreground">Término:</span>
                               <span className="font-medium">
                                 {recurrenceEndType === "count"
                                   ? `Após ${watch("recurrence.count")} ocorrências`
@@ -898,7 +898,7 @@ export function TransactionFormModal({
 
                             {recurrenceFrequency === "weekly" && watch("recurrence.daysOfWeek") && (
                               <div className="flex justify-between py-1">
-                                <span className="text-slate-600">Dias da semana:</span>
+                                <span className="text-muted-foreground">Dias da semana:</span>
                                 <span className="font-medium">
                                   {(watch("recurrence.daysOfWeek") || [])
                                     .map((day: string) => {
@@ -920,8 +920,8 @@ export function TransactionFormModal({
 
                             {(transaction?.parentId || transaction?.generatedFrom) && (
                               <div className="flex justify-between">
-                                <span className="text-slate-600">ID do registro pai:</span>
-                                <span className="font-mono text-xs font-medium bg-slate-100 px-2 py-1 rounded">
+                                <span className="text-muted-foreground">ID do registro pai:</span>
+                                <span className="font-mono text-xs font-medium bg-accent px-2 py-1 rounded">
                                   {transaction?.parentId || transaction?.generatedFrom}
                                 </span>
                               </div>
@@ -942,7 +942,7 @@ export function TransactionFormModal({
                         name="recurrence"
                         checked={!recurrenceEnabled}
                         onChange={() => handleRecurrenceToggle(false)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        className="h-4 w-4 text-primary focus:ring-primary border"
                       />
                       <Label htmlFor="no-repeat" className="text-sm font-medium">
                         Não se repete
@@ -956,7 +956,7 @@ export function TransactionFormModal({
                         name="recurrence"
                         checked={recurrenceEnabled}
                         onChange={() => handleRecurrenceToggle(true)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        className="h-4 w-4 text-primary focus:ring-primary border"
                       />
                       <Label htmlFor="repeats" className="text-sm font-medium">
                         Se repete...
@@ -965,16 +965,16 @@ export function TransactionFormModal({
                   </div>
 
                   {recurrenceEnabled && (
-                    <Card className="bg-blue-50 border-blue-200">
+                    <Card className="bg-primary/10 border-primary/30">
                       <CardContent className="p-4 space-y-4">
-                        <div className="flex items-center text-blue-700 mb-3">
+                        <div className="flex items-center text-primary mb-3">
                           <Info className="h-4 w-4 mr-2" />
                           <span className="text-sm font-medium">Transação recorrente</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="interval" className="text-xs text-slate-600 mb-2 block">
+                            <Label htmlFor="interval" className="text-xs text-muted-foreground mb-2 block">
                               Repetir a cada
                             </Label>
                             <div className="flex gap-2">
@@ -1007,7 +1007,7 @@ export function TransactionFormModal({
                           </div>
 
                           <div>
-                            <Label className="text-xs text-slate-600 mb-2 block">Termina em</Label>
+                            <Label className="text-xs text-muted-foreground mb-2 block">Termina em</Label>
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <input
@@ -1016,7 +1016,7 @@ export function TransactionFormModal({
                                   name="endType"
                                   checked={recurrenceEndType === "date"}
                                   onChange={() => handleEndTypeChange("date")}
-                                  className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-3 w-3 text-primary focus:ring-primary border"
                                 />
                                 <Label htmlFor="end-date" className="text-xs font-medium">
                                   Em
@@ -1038,7 +1038,7 @@ export function TransactionFormModal({
                                   name="endType"
                                   checked={recurrenceEndType === "count"}
                                   onChange={() => handleEndTypeChange("count")}
-                                  className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-3 w-3 text-primary focus:ring-primary border"
                                 />
                                 <Label htmlFor="end-count" className="text-xs font-medium">
                                   Após
@@ -1055,12 +1055,12 @@ export function TransactionFormModal({
                                   disabled={recurrenceEndType !== "count"}
                                   className="h-6 text-xs w-16"
                                 />
-                                <span className="text-xs text-slate-600">ocorrências</span>
+                                <span className="text-xs text-muted-foreground">ocorrências</span>
                               </div>
                             </div>
 
                             {endDateValidationMessage && (
-                              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                              <div className="mt-2 p-2 bg-warning/10 border border-warning/30 rounded text-xs text-warning">
                                 <strong>{endDateValidationMessage}</strong>
                               </div>
                             )}
@@ -1069,7 +1069,7 @@ export function TransactionFormModal({
 
                         {recurrenceFrequency === "weekly" && (
                           <div>
-                            <Label className="text-sm font-medium text-slate-700 mb-2 block">Dias da semana</Label>
+                            <Label className="text-sm font-medium text-foreground mb-2 block">Dias da semana</Label>
                             <div className="flex gap-1">
                               {dayOfWeekOptions.map((day) => (
                                 <div key={day} className="flex flex-col items-center">
@@ -1090,7 +1090,7 @@ export function TransactionFormModal({
                         {recurrenceFrequency === "monthly" && (
                           <div className="space-y-3">
                             <div>
-                              <Label className="text-sm font-medium text-slate-700">Repetir no</Label>
+                              <Label className="text-sm font-medium text-foreground">Repetir no</Label>
                               <Select
                                 value={watch("recurrence.monthlyType") || "dayOfMonth"}
                                 onValueChange={(value) => {
@@ -1144,7 +1144,7 @@ export function TransactionFormModal({
 
                         {recurrenceFrequency === "yearly" && (
                           <div className="space-y-2">
-                            <div className="text-sm text-slate-600">
+                            <div className="text-sm text-muted-foreground">
                               <Info className="h-4 w-4 inline mr-1" />
                               Repetirá anualmente em {formatDateToPtBR(transactionDate)} nos próximos anos
                             </div>
@@ -1157,10 +1157,10 @@ export function TransactionFormModal({
               )}
             </div>
 
-            <Card className="bg-slate-50 border-slate-200">
+            <Card className="bg-accent border">
               <CardContent className="py-2 px-4">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-slate-600">Hierarquia:</span>
+                  <span className="text-muted-foreground">Hierarquia:</span>
                   {selectedArea ? (
                     <>
                       <div className="flex items-center gap-1">
@@ -1168,10 +1168,10 @@ export function TransactionFormModal({
                         <DynamicIcon iconName={selectedArea.icon} size={14} />
                         <span className="font-medium">{selectedArea.name}</span>
                       </div>
-                      {selectedCategoryGroup && <ChevronRight className="h-3 w-3 text-slate-400" />}
+                      {selectedCategoryGroup && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
                     </>
                   ) : (
-                    <span className="text-slate-400 italic">Selecione uma área</span>
+                    <span className="text-muted-foreground italic">Selecione uma área</span>
                   )}
                   {selectedCategoryGroup ? (
                     <>
@@ -1183,15 +1183,15 @@ export function TransactionFormModal({
                         <DynamicIcon iconName={selectedCategoryGroup.icon} size={14} />
                         <span className="font-medium">{selectedCategoryGroup.name}</span>
                       </div>
-                      {selectedCategory && <ChevronRight className="h-3 w-3 text-slate-400" />}
+                      {selectedCategory && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
                     </>
                   ) : selectedArea ? (
-                    <span className="text-slate-400 italic">→ Selecione um grupo</span>
+                    <span className="text-muted-foreground italic">→ Selecione um grupo</span>
                   ) : null}
                   {selectedCategory ? (
                     <span className="font-medium">{selectedCategory.name}</span>
                   ) : selectedCategoryGroup ? (
-                    <span className="text-slate-400 italic">→ Selecione uma categoria</span>
+                    <span className="text-muted-foreground italic">→ Selecione uma categoria</span>
                   ) : null}
                 </div>
               </CardContent>
@@ -1201,7 +1201,7 @@ export function TransactionFormModal({
               <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-transparent">
                 Cancelar
               </Button>
-              <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700" {...submitButton.buttonProps}>
+              <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90" {...submitButton.buttonProps}>
                 {submitButton.getButtonText(transaction ? "Atualizar" : "Criar")}
               </Button>
             </div>
@@ -1213,10 +1213,10 @@ export function TransactionFormModal({
         <DialogContent className="sm:max-w-md bg-white shadow-xl border-0">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-              <Trash2 className="h-5 w-5 text-red-600" />
+              <Trash2 className="h-5 w-5 text-expense" />
               Excluir transações recorrentes
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-muted-foreground">
               Como você deseja excluir a recorrência desta transação?
             </DialogDescription>
           </DialogHeader>
@@ -1233,13 +1233,13 @@ export function TransactionFormModal({
                   onChange={(e) =>
                     setDeleteRecurrenceMode(e.target.value as "thisEvent" | "followingEvents" | "allEvents")
                   }
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 mt-0.5"
+                  className="h-4 w-4 text-expense focus:ring-expense border mt-0.5"
                 />
                 <div className="flex-1">
                   <Label htmlFor="delete-this-event" className="text-sm font-medium cursor-pointer block">
                     Este registro
                   </Label>
-                  <p className="text-xs text-gray-500 mt-1">Exclui apenas este registro. Os outros permanecem.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Exclui apenas este registro. Os outros permanecem.</p>
                 </div>
               </div>
 
@@ -1253,13 +1253,13 @@ export function TransactionFormModal({
                   onChange={(e) =>
                     setDeleteRecurrenceMode(e.target.value as "thisEvent" | "followingEvents" | "allEvents")
                   }
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 mt-0.5"
+                  className="h-4 w-4 text-expense focus:ring-expense border mt-0.5"
                 />
                 <div className="flex-1">
                   <Label htmlFor="delete-following-events" className="text-sm font-medium cursor-pointer block">
                     Este registro e os seguintes
                   </Label>
-                  <p className="text-xs text-gray-500 mt-1">Exclui este registro e os posteriores.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Exclui este registro e os posteriores.</p>
                 </div>
               </div>
 
@@ -1273,13 +1273,13 @@ export function TransactionFormModal({
                   onChange={(e) =>
                     setDeleteRecurrenceMode(e.target.value as "thisEvent" | "followingEvents" | "allEvents")
                   }
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 mt-0.5"
+                  className="h-4 w-4 text-expense focus:ring-expense border mt-0.5"
                 />
                 <div className="flex-1">
                   <Label htmlFor="delete-all-events" className="text-sm font-medium cursor-pointer block">
                     Todos os registros
                   </Label>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Exclui todos os registros: os anteriores, este e os posteriores.
                   </p>
                 </div>
@@ -1296,7 +1296,7 @@ export function TransactionFormModal({
             >
               Cancelar
             </Button>
-            <Button onClick={handleDeleteRecurrence} className="flex-1 bg-red-600 hover:bg-red-700">
+            <Button onClick={handleDeleteRecurrence} className="flex-1 bg-expense hover:bg-expense/90">
               Excluir
             </Button>
           </div>
@@ -1307,10 +1307,10 @@ export function TransactionFormModal({
         <DialogContent className="sm:max-w-md bg-white shadow-xl border-0">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-              <Repeat className="h-5 w-5 text-blue-600" />
+              <Repeat className="h-5 w-5 text-primary" />
               Editar transação recorrente
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-muted-foreground">
               Esta é uma transação recorrente. Como você deseja aplicar as alterações?
             </DialogDescription>
           </DialogHeader>
@@ -1326,13 +1326,13 @@ export function TransactionFormModal({
                     value="single"
                     checked={selectedApplyMode === "single"}
                     onChange={(e) => setSelectedApplyMode(e.target.value as "single" | "future" | "all")}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 text-primary focus:ring-primary border"
                   />
                   <Label htmlFor="apply-single-modal" className="text-sm font-semibold cursor-pointer">
                     Este registro
                   </Label>
                 </div>
-                <p className="text-xs text-gray-600 ml-7">Atualiza apenas este registro. Os outros permanecem.</p>
+                <p className="text-xs text-muted-foreground ml-7">Atualiza apenas este registro. Os outros permanecem.</p>
               </div>
 
               <div className="space-y-2">
@@ -1344,13 +1344,13 @@ export function TransactionFormModal({
                     value="future"
                     checked={selectedApplyMode === "future"}
                     onChange={(e) => setSelectedApplyMode(e.target.value as "single" | "future" | "all")}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 text-primary focus:ring-primary border"
                   />
                   <Label htmlFor="apply-future-modal" className="text-sm font-semibold cursor-pointer">
                     Este registro e os seguintes
                   </Label>
                 </div>
-                <p className="text-xs text-gray-600 ml-7">Altera este registro e os posteriores.</p>
+                <p className="text-xs text-muted-foreground ml-7">Altera este registro e os posteriores.</p>
               </div>
 
               <div className="space-y-2">
@@ -1362,13 +1362,13 @@ export function TransactionFormModal({
                     value="all"
                     checked={selectedApplyMode === "all"}
                     onChange={(e) => setSelectedApplyMode(e.target.value as "single" | "future" | "all")}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 text-primary focus:ring-primary border"
                   />
                   <Label htmlFor="apply-all-modal" className="text-sm font-semibold cursor-pointer">
                     Todos os registros
                   </Label>
                 </div>
-                <p className="text-xs text-gray-600 ml-7">
+                <p className="text-xs text-muted-foreground ml-7">
                   Altera todos os registros: os anteriores, este e os posteriores.
                 </p>
               </div>
@@ -1379,7 +1379,7 @@ export function TransactionFormModal({
             <Button type="button" variant="outline" onClick={() => setShowRecurringModal(false)}>
               Cancelar
             </Button>
-            <Button {...recurringEditButton.buttonProps} className="bg-blue-600 hover:bg-blue-700">
+            <Button {...recurringEditButton.buttonProps} className="bg-primary hover:bg-primary/90">
               {recurringEditButton.getButtonText("Confirmar")}
             </Button>
           </div>

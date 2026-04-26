@@ -137,7 +137,7 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
               Nome *
             </Label>
             <Input id="name" {...register("name")} placeholder="Nome da categoria" />
-            {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
+            {errors.name && <p className="text-sm text-expense mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
@@ -162,7 +162,7 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
                 <SelectItem value="expense">Despesa</SelectItem>
               </SelectContent>
             </Select>
-            {errors.type && <p className="text-sm text-red-600 mt-1">{errors.type.message}</p>}
+            {errors.type && <p className="text-sm text-expense mt-1">{errors.type.message}</p>}
           </div>
 
           {categoryType === "expense" && (
@@ -224,15 +224,15 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
                   </SelectContent>
                 </Select>
                 {errors.categoryGroupId && (
-                  <p className="text-sm text-red-600 mt-1">{errors.categoryGroupId.message}</p>
+                  <p className="text-sm text-expense mt-1">{errors.categoryGroupId.message}</p>
                 )}
               </div>
 
               {(selectedArea || selectedCategoryGroup) && (
-                <Card className="bg-slate-50">
+                <Card className="bg-accent">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-slate-600">Hierarquia:</span>
+                      <span className="text-muted-foreground">Hierarquia:</span>
                       {selectedArea && (
                         <>
                           <div className="flex items-center gap-1">
@@ -240,7 +240,7 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
                             <span>{selectedArea.icon}</span>
                             <span className="font-medium">{selectedArea.name}</span>
                           </div>
-                          {selectedCategoryGroup && <ChevronRight className="h-3 w-3 text-slate-400" />}
+                          {selectedCategoryGroup && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
                         </>
                       )}
                       {selectedCategoryGroup && (
@@ -253,7 +253,7 @@ export function CategoryFormModal({ open, onOpenChange, category }: CategoryForm
                             <span>{selectedCategoryGroup.icon}</span>
                             <span className="font-medium">{selectedCategoryGroup.name}</span>
                           </div>
-                          <ChevronRight className="h-3 w-3 text-slate-400" />
+                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
                           <span className="font-medium">{watch("name") || "Nova Categoria"}</span>
                         </>
                       )}

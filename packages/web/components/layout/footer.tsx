@@ -78,9 +78,9 @@ export function Footer() {
 
   const getEnvironmentBadge = () => {
     const envColors = {
-      mock: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      dev: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      prod: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      mock: "bg-warning/15 text-warning",
+      dev: "bg-primary/15 text-primary",
+      prod: "bg-income/15 text-income",
     }
 
     return (

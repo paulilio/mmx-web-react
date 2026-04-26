@@ -37,9 +37,9 @@ export function SessionMonitor() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm">
-      <Alert className="border-orange-200 bg-orange-50">
-        <Clock className="h-4 w-4 text-orange-600" />
-        <AlertDescription className="text-orange-800">
+      <Alert className="border-warning/30 bg-warning/10">
+        <Clock className="h-4 w-4 text-warning" />
+        <AlertDescription className="text-warning">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">Sessão expirando em:</p>

@@ -82,7 +82,7 @@ export function RecurringEditModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-orange-600" />
+            <AlertCircle className="h-5 w-5 text-warning" />
             Editar transação recorrente
           </DialogTitle>
           <DialogDescription>

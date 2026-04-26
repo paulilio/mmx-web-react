@@ -63,37 +63,37 @@ export function TransactionDetailRow({
     : null
 
   return (
-    <div className="bg-slate-50 px-6 py-4 border-y border-slate-200">
+    <div className="bg-accent px-6 py-4 border-y border">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         {/* Recorrência */}
         {isSeries && (
           <div className="md:col-span-2 flex items-start gap-3">
             <div className="mt-0.5">
               {seriesPaused ? (
-                <Pause className="h-4 w-4 text-amber-600" />
+                <Pause className="h-4 w-4 text-warning" />
               ) : (
-                <Repeat className="h-4 w-4 text-blue-600" />
+                <Repeat className="h-4 w-4 text-primary" />
               )}
             </div>
             <div className="flex-1 space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-slate-900">
+                <span className="font-medium text-foreground">
                   {seriesPaused ? "Série pausada" : "Série recorrente"}
                 </span>
-                <span className="text-slate-500">{seriesLabel}</span>
+                <span className="text-muted-foreground">{seriesLabel}</span>
                 {transaction.isException && (
-                  <span className="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-700">
+                  <span className="px-2 py-0.5 text-xs rounded bg-secondary text-secondary-foreground">
                     Exceção (editada individualmente)
                   </span>
                 )}
                 {transaction.skipped && (
-                  <span className="px-2 py-0.5 text-xs rounded bg-orange-100 text-orange-700">
+                  <span className="px-2 py-0.5 text-xs rounded bg-warning/15 text-warning">
                     Pulada
                   </span>
                 )}
               </div>
               {upcomingInSeries.length > 0 && (
-                <div className="text-slate-600">
+                <div className="text-muted-foreground">
                   Próximas:{" "}
                   {upcomingInSeries
                     .map((t) => `${formatDateToPtBR(t.date)} (${formatCurrency(t.amount)})`)
@@ -106,15 +106,15 @@ export function TransactionDetailRow({
 
         {/* Hierarquia */}
         <div className="flex items-start gap-3">
-          <MapPin className="h-4 w-4 text-slate-500 mt-0.5" />
+          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
           <div>
-            <div className="text-xs uppercase tracking-wide text-slate-500 mb-0.5">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
               Hierarquia
             </div>
-            <div className="text-slate-900">
-              {area?.name ?? <span className="text-slate-400">—</span>}
+            <div className="text-foreground">
+              {area?.name ?? <span className="text-muted-foreground">—</span>}
               {" › "}
-              {categoryGroup?.name ?? <span className="text-slate-400">—</span>}
+              {categoryGroup?.name ?? <span className="text-muted-foreground">—</span>}
               {" › "}
               <span className="font-medium">{category?.name ?? "—"}</span>
             </div>
@@ -123,13 +123,13 @@ export function TransactionDetailRow({
 
         {/* Contato */}
         <div className="flex items-start gap-3">
-          <User className="h-4 w-4 text-slate-500 mt-0.5" />
+          <User className="h-4 w-4 text-muted-foreground mt-0.5" />
           <div>
-            <div className="text-xs uppercase tracking-wide text-slate-500 mb-0.5">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
               Contato
             </div>
-            <div className="text-slate-900">
-              {contact ? contact.name : <span className="text-slate-400">Sem contato</span>}
+            <div className="text-foreground">
+              {contact ? contact.name : <span className="text-muted-foreground">Sem contato</span>}
             </div>
           </div>
         </div>
@@ -137,12 +137,12 @@ export function TransactionDetailRow({
         {/* Notas */}
         {transaction.notes && (
           <div className="md:col-span-2 flex items-start gap-3">
-            <FileText className="h-4 w-4 text-slate-500 mt-0.5" />
+            <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div className="flex-1">
-              <div className="text-xs uppercase tracking-wide text-slate-500 mb-0.5">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
                 Notas
               </div>
-              <div className="text-slate-900 whitespace-pre-wrap">{transaction.notes}</div>
+              <div className="text-foreground whitespace-pre-wrap">{transaction.notes}</div>
             </div>
           </div>
         )}

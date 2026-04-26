@@ -341,21 +341,21 @@ export default function SettingsPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-              <Settings className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <Settings className="h-8 w-8 text-primary" />
               Configurações
             </h1>
-            <p className="text-slate-600 mt-1">Gerencie as configurações do sistema</p>
+            <p className="text-muted-foreground mt-1">Gerencie as configurações do sistema</p>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Gerenciar Meus Dados
             </CardTitle>
-            <p className="text-sm text-slate-600">Carregue, limpe ou exporte seus dados através de arquivos JSON</p>
+            <p className="text-sm text-muted-foreground">Carregue, limpe ou exporte seus dados através de arquivos JSON</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -380,21 +380,21 @@ export default function SettingsPage() {
                     </div>
 
                     {selectedFile && (
-                      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="p-3 bg-primary/10 rounded-lg border border-primary/30">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-blue-600" />
+                          <FileText className="h-4 w-4 text-primary" />
                           <span className="text-sm font-medium">{selectedFile.name}</span>
                         </div>
-                        <p className="text-xs text-slate-600 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Tamanho: {(selectedFile.size / 1024).toFixed(2)} KB
                         </p>
                       </div>
                     )}
 
-                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="p-3 bg-warning/10 rounded-lg border border-warning/30">
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
-                        <div className="text-sm text-amber-800">
+                        <AlertCircle className="h-4 w-4 text-warning mt-0.5" />
+                        <div className="text-sm text-warning">
                           <p className="font-medium">Atenção:</p>
                           <p>Este processo irá sobrescrever todos os dados existentes.</p>
                         </div>
@@ -420,7 +420,7 @@ export default function SettingsPage() {
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-20 flex-col gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                    className="h-20 flex-col gap-2 text-expense hover:text-expense hover:bg-expense/10 bg-transparent"
                   >
                     <Trash2 className="h-6 w-6" />
                     <span>Limpar Meus Dados</span>
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle className="flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <AlertCircle className="h-5 w-5 text-expense" />
                       Confirmar Limpeza de Dados
                     </AlertDialogTitle>
                     <AlertDialogDescription>
@@ -444,7 +444,7 @@ export default function SettingsPage() {
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
                       {...clearDataButton.buttonProps}
-                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                      className="bg-expense hover:bg-expense/90 focus:ring-expense"
                     >
                       {clearDataButton.getButtonText("Sim, Limpar Dados")}
                     </AlertDialogAction>
@@ -504,8 +504,8 @@ export default function SettingsPage() {
                     </div>
 
                     {selectedTables.length > 0 && (
-                      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-blue-800">
+                      <div className="p-3 bg-primary/10 rounded-lg border border-primary/30">
+                        <p className="text-sm text-primary">
                           <strong>{selectedTables.length}</strong> tabela(s) selecionada(s) para exportação
                         </p>
                       </div>
@@ -535,17 +535,17 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
               Metas mensais
             </CardTitle>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted-foreground">
               Defina suas metas de recebimentos e limite de despesas. Aparecem nos donuts do dashboard.
             </p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="target-receivables">Meta de recebimentos (R$)</Label>
@@ -559,7 +559,7 @@ export default function SettingsPage() {
                   value={receivablesTargetInput}
                   onChange={(e) => setReceivablesTargetInput(e.target.value)}
                 />
-                <p className="text-xs text-slate-500">Quanto você pretende receber. Padrão: R$ 200.000.</p>
+                <p className="text-xs text-muted-foreground">Quanto você pretende receber. Padrão: R$ 200.000.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="target-payables">Limite de despesas (R$)</Label>
@@ -573,7 +573,7 @@ export default function SettingsPage() {
                   value={payablesTargetInput}
                   onChange={(e) => setPayablesTargetInput(e.target.value)}
                 />
-                <p className="text-xs text-slate-500">Limite que você não quer ultrapassar. Padrão: R$ 80.000.</p>
+                <p className="text-xs text-muted-foreground">Limite que você não quer ultrapassar. Padrão: R$ 80.000.</p>
               </div>
             </div>
             <div className="flex justify-end mt-4">
@@ -585,13 +585,13 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="gap-3 py-4">
+          <CardHeader className="px-4">
             <CardTitle className="flex items-center gap-2">
               <Link2 className="h-5 w-5" />
               Associação Grupo Categoria ↔ Área
             </CardTitle>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted-foreground">
               Vincule grupos categoria às suas respectivas áreas para organizar melhor a hierarquia orçamentária
             </p>
           </CardHeader>
@@ -621,7 +621,7 @@ export default function SettingsPage() {
               </div>
 
               {selectedArea && (
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-primary/10 border-primary/30">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div
@@ -631,9 +631,9 @@ export default function SettingsPage() {
                         {selectedArea.icon}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900">{selectedArea.name}</h3>
-                        <p className="text-sm text-slate-600">{selectedArea.description || "Sem descrição"}</p>
-                        <Badge className="mt-1 bg-blue-100 text-blue-800 border-blue-200">
+                        <h3 className="font-semibold text-foreground">{selectedArea.name}</h3>
+                        <p className="text-sm text-muted-foreground">{selectedArea.description || "Sem descrição"}</p>
+                        <Badge className="mt-1 bg-primary/15 text-primary border-primary/30">
                           {groupsInArea.length} grupo(s) associado(s)
                         </Badge>
                       </div>
@@ -653,7 +653,7 @@ export default function SettingsPage() {
                     </Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {groupsInArea.map((group) => (
-                        <Card key={group.id} className="bg-green-50 border-green-200">
+                        <Card key={group.id} className="bg-income/10 border-income/30">
                           <CardContent className="p-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -669,7 +669,7 @@ export default function SettingsPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleDisassociate(group.id)}
-                                className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="h-6 w-6 p-0 text-expense hover:text-expense hover:bg-expense/10"
                               >
                                 <Unlink className="h-3 w-3" />
                               </Button>
@@ -693,8 +693,8 @@ export default function SettingsPage() {
                           key={group.id}
                           className={`cursor-pointer transition-all ${
                             selectedGroupIds.includes(group.id)
-                              ? "bg-blue-50 border-blue-300 ring-2 ring-blue-200"
-                              : "hover:bg-slate-50"
+                              ? "bg-primary/10 border-primary/40 ring-2 ring-primary/30"
+                              : "hover:bg-accent"
                           }`}
                           onClick={() => handleGroupToggle(group.id)}
                         >
@@ -719,8 +719,8 @@ export default function SettingsPage() {
                     </div>
 
                     {selectedGroupIds.length > 0 && (
-                      <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <span className="text-sm text-blue-800">
+                      <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/30">
+                        <span className="text-sm text-primary">
                           {selectedGroupIds.length} grupo(s) selecionado(s) para associar
                         </span>
                         <Button {...associateGroupsButton.buttonProps} size="sm">
@@ -733,7 +733,7 @@ export default function SettingsPage() {
                 )}
 
                 {groupsNotInArea.length === 0 && groupsInArea.length === 0 && (
-                  <div className="text-center py-8 text-slate-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>Nenhum grupo categoria disponível</p>
                     <p className="text-sm">Crie grupos categoria primeiro na página de Categorias</p>

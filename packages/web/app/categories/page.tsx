@@ -108,8 +108,8 @@ export default function CategoriesPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Categorias & Grupos</h1>
-            <p className="text-slate-600 mt-1">Organize suas transações por categoria e grupos categoria</p>
+            <h1 className="text-3xl font-bold text-foreground">Categorias & Grupos</h1>
+            <p className="text-muted-foreground mt-1">Organize suas transações por categoria e grupos categoria</p>
           </div>
         </div>
 
@@ -129,21 +129,21 @@ export default function CategoriesPage() {
           <TabsContent value="categories" className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Categorias</h2>
-                <p className="text-slate-600 text-sm">Gerencie suas categorias de receitas e despesas</p>
+                <h2 className="text-xl font-semibold text-foreground">Categorias</h2>
+                <p className="text-muted-foreground text-sm">Gerencie suas categorias de receitas e despesas</p>
               </div>
-              <Button onClick={handleNewCategory} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleNewCategory} className="bg-primary hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" />
                 Nova Categoria
               </Button>
             </div>
 
             {/* Search */}
-            <Card>
-              <CardHeader>
+            <Card className="gap-3 py-4">
+              <CardHeader className="px-4">
                 <CardTitle className="text-lg">Buscar Categorias</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4">
                 <Input
                   placeholder="Buscar por nome ou descrição..."
                   value={searchTerm}
@@ -154,11 +154,11 @@ export default function CategoriesPage() {
             </Card>
 
             {/* Categories Table */}
-            <Card>
-              <CardContent className="p-0">
+            <Card className="gap-3 py-4">
+              <CardContent className="p-0 [&_td]:px-4 [&_th]:px-4">
                 {categoriesLoading ? (
                   <div className="flex items-center justify-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
                 ) : filteredCategories && filteredCategories.length > 0 ? (
                   <Table>
@@ -179,8 +179,8 @@ export default function CategoriesPage() {
                             <Badge
                               className={
                                 category.type === "income"
-                                  ? "bg-blue-100 text-blue-800 border-blue-200"
-                                  : "bg-slate-100 text-slate-800 border-slate-200"
+                                  ? "bg-primary/15 text-primary border-primary/30"
+                                  : "bg-accent text-foreground border"
                               }
                             >
                               {category.type === "income" ? "Receita" : "Despesa"}
@@ -202,7 +202,7 @@ export default function CategoriesPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleDeleteCategory(category)}
-                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="h-8 w-8 p-0 text-expense hover:text-expense hover:bg-expense/10"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -213,7 +213,7 @@ export default function CategoriesPage() {
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+                  <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
                     <FolderOpen className="h-12 w-12 mb-4" />
                     <p className="text-lg font-medium">Nenhuma categoria encontrada</p>
                     <p className="text-sm">Comece criando sua primeira categoria</p>
@@ -224,7 +224,7 @@ export default function CategoriesPage() {
 
             {/* Categories Summary */}
             {filteredCategories && (
-              <div className="flex items-center gap-4 text-sm text-slate-600">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>Total: {filteredCategories.length} categorias</span>
                 <span>Receitas: {filteredCategories.filter((c) => c.type === "income").length}</span>
                 <span>Despesas: {filteredCategories.filter((c) => c.type === "expense").length}</span>
@@ -235,23 +235,23 @@ export default function CategoriesPage() {
           <TabsContent value="category-groups" className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Grupos Categoria</h2>
-                <p className="text-slate-600 text-sm">
+                <h2 className="text-xl font-semibold text-foreground">Grupos Categoria</h2>
+                <p className="text-muted-foreground text-sm">
                   Organize suas categorias em grupos para melhor controle orçamentário
                 </p>
               </div>
-              <Button onClick={handleNewCategoryGroup} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleNewCategoryGroup} className="bg-primary hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Grupo
               </Button>
             </div>
 
             {/* Search */}
-            <Card>
-              <CardHeader>
+            <Card className="gap-3 py-4">
+              <CardHeader className="px-4">
                 <CardTitle className="text-lg">Buscar Grupos</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4">
                 <Input
                   placeholder="Buscar por nome ou descrição..."
                   value={searchTerm}
@@ -264,7 +264,7 @@ export default function CategoriesPage() {
             {/* Category Groups Cards */}
             {categoryGroupsLoading ? (
               <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : filteredCategoryGroups && filteredCategoryGroups.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -284,8 +284,8 @@ export default function CategoriesPage() {
                             <Badge
                               className={
                                 group.status === "active"
-                                  ? "bg-green-100 text-green-800 border-green-200"
-                                  : "bg-gray-100 text-gray-800 border-gray-200"
+                                  ? "bg-income/15 text-income border-income/30"
+                                  : "bg-accent text-foreground border"
                               }
                             >
                               {group.status === "active" ? "Ativo" : "Inativo"}
@@ -305,17 +305,17 @@ export default function CategoriesPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDeleteCategoryGroup(group)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 p-0 text-expense hover:text-expense hover:bg-expense/10"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-slate-600 text-sm mb-3">{group.description || "Sem descrição"}</p>
+                    <CardContent className="px-4">
+                      <p className="text-muted-foreground text-sm mb-3">{group.description || "Sem descrição"}</p>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Categorias:</span>
+                        <span className="text-muted-foreground">Categorias:</span>
                         <span className="font-medium">{getCategoriesCount(group.id)}</span>
                       </div>
                     </CardContent>
@@ -323,7 +323,7 @@ export default function CategoriesPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
                 <Users className="h-12 w-12 mb-4" />
                 <p className="text-lg font-medium">Nenhum grupo encontrado</p>
                 <p className="text-sm">Comece criando seu primeiro grupo categoria</p>
@@ -332,7 +332,7 @@ export default function CategoriesPage() {
 
             {/* Category Groups Summary */}
             {filteredCategoryGroups && (
-              <div className="flex items-center gap-4 text-sm text-slate-600">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>Total: {filteredCategoryGroups.length} grupos</span>
                 <span>Ativos: {filteredCategoryGroups.filter((g) => g.status === "active").length}</span>
                 <span>Inativos: {filteredCategoryGroups.filter((g) => g.status === "inactive").length}</span>

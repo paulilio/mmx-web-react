@@ -41,7 +41,7 @@ export function TransactionActionsMenu({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 w-8 p-0 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+          className="h-8 w-8 p-0 text-muted-foreground hover:bg-accent hover:text-foreground"
           aria-label="Ações da transação"
         >
           <MoreHorizontal className="h-4 w-4" />
@@ -91,7 +91,7 @@ export function TransactionActionsMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={onDelete}
-          className="text-red-600 focus:bg-red-50 focus:text-red-700"
+          className="text-expense focus:bg-expense/10 focus:text-expense"
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir

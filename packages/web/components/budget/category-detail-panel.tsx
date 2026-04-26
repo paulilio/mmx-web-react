@@ -34,24 +34,24 @@ export function CategoryDetailPanel({ budgetSummary }: CategoryDetailPanelProps)
             </div>
             <div>
               <CardTitle className="text-lg">{budgetSummary.categoryGroup.name}</CardTitle>
-              <p className="text-sm text-slate-600">{budgetSummary.categoryGroup.description}</p>
+              <p className="text-sm text-muted-foreground">{budgetSummary.categoryGroup.description}</p>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-slate-600">Financiado</p>
+              <p className="text-sm text-muted-foreground">Financiado</p>
               <p className="text-lg font-semibold">{formatCurrency(budgetSummary.funded)}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-600">Gasto</p>
+              <p className="text-sm text-muted-foreground">Gasto</p>
               <p className="text-lg font-semibold">{formatCurrency(budgetSummary.spent)}</p>
             </div>
           </div>
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-slate-600">Progresso</span>
+              <span className="text-sm text-muted-foreground">Progresso</span>
               <span className="text-sm font-medium">
                 {getSpentPercentage(budgetSummary.spent, budgetSummary.funded).toFixed(1)}%
               </span>
@@ -76,13 +76,13 @@ export function CategoryDetailPanel({ budgetSummary }: CategoryDetailPanelProps)
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <h4 className="font-medium">{category.name}</h4>
-                      {category.description && <p className="text-sm text-slate-600">{category.description}</p>}
+                      {category.description && <p className="text-sm text-muted-foreground">{category.description}</p>}
                     </div>
                     <Badge
                       className={
                         category.type === "income"
-                          ? "bg-blue-100 text-blue-800 border-blue-200"
-                          : "bg-slate-100 text-slate-800 border-slate-200"
+                          ? "bg-primary/15 text-primary border-primary/30"
+                          : "bg-accent text-foreground border"
                       }
                     >
                       {category.type === "income" ? "Receita" : "Despesa"}
@@ -90,7 +90,7 @@ export function CategoryDetailPanel({ budgetSummary }: CategoryDetailPanelProps)
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <TrendingDown className="h-4 w-4" />
                       <span>Gasto: {formatCurrency(category.spent)}</span>
                     </div>
@@ -101,7 +101,7 @@ export function CategoryDetailPanel({ budgetSummary }: CategoryDetailPanelProps)
           </div>
         ) : (
           <Card>
-            <CardContent className="p-8 text-center text-slate-500">
+            <CardContent className="p-8 text-center text-muted-foreground">
               <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>Nenhuma categoria associada a este grupo</p>
             </CardContent>

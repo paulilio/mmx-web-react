@@ -96,7 +96,7 @@ export function ContactFormModal({ open, onOpenChange, contact }: ContactFormMod
               Nome *
             </Label>
             <Input id="name" {...register("name")} placeholder="Nome do contato" />
-            {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
+            {errors.name && <p className="text-sm text-expense mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
@@ -115,7 +115,7 @@ export function ContactFormModal({ open, onOpenChange, contact }: ContactFormMod
                 <SelectItem value="supplier">Fornecedor</SelectItem>
               </SelectContent>
             </Select>
-            {errors.type && <p className="text-sm text-red-600 mt-1">{errors.type.message}</p>}
+            {errors.type && <p className="text-sm text-expense mt-1">{errors.type.message}</p>}
           </div>
 
           <div>
@@ -123,7 +123,7 @@ export function ContactFormModal({ open, onOpenChange, contact }: ContactFormMod
               Email
             </Label>
             <Input id="email" type="email" {...register("email")} placeholder="email@exemplo.com" />
-            {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-sm text-expense mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
