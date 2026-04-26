@@ -17,7 +17,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -634,6 +633,16 @@ export default function TransactionsPage() {
     const [year, month, day] = isoDate.split("-")
     const ptBRDate = `${day}/${month}/${year}`
     setEditingValue(ptBRDate)
+  }
+
+  const toggleTransactionStatus = async (transaction: Transaction) => {
+    const next: Transaction["status"] =
+      transaction.status === "completed" ? "pending" : "completed"
+    try {
+      await updateTransaction(transaction.id, { ...transaction, status: next })
+    } catch {
+      // Error surfaced via toast no hook.
+    }
   }
 
   const saveInlineEdit = async () => {
@@ -1408,38 +1417,48 @@ export default function TransactionsPage() {
                                     </Button>
                                   </div>
                                 ) : (
-                                  <button
-                                    onClick={() => startEditing(transaction.id, "status", transactionStatus)}
-                                    className="hover:bg-slate-100 px-2 py-1 rounded"
-                                  >
-                                    <Badge
-                                      variant="secondary"
-                                      className={`${
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      role="checkbox"
+                                      aria-checked={transactionStatus === "completed"}
+                                      aria-label={
                                         transactionStatus === "completed"
-                                          ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                          ? "Marcar como pendente"
+                                          : "Marcar como concluída"
+                                      }
+                                      onClick={() => toggleTransactionStatus(transaction)}
+                                      disabled={transactionStatus === "cancelled"}
+                                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                                        transactionStatus === "completed"
+                                          ? "border-green-600 bg-green-600 text-white hover:bg-green-700 hover:border-green-700"
                                           : transactionStatus === "pending"
-                                            ? "bg-gray-100 text-gray-700 hover:bg-gray-100"
-                                            : "bg-red-100 text-red-800 hover:bg-red-100"
+                                            ? "border-slate-300 bg-white hover:border-green-500 hover:bg-green-50"
+                                            : "border-slate-200 bg-slate-100 cursor-not-allowed"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-1">
-                                        <div
-                                          className={`w-2 h-2 rounded-full ${
-                                            transactionStatus === "completed"
-                                              ? "bg-green-500"
-                                              : transactionStatus === "pending"
-                                                ? "bg-gray-400"
-                                                : "bg-red-500"
-                                          }`}
-                                        />
-                                        {transactionStatus === "completed"
-                                          ? "Concluída"
+                                      {transactionStatus === "completed" && (
+                                        <Check className="h-3 w-3" strokeWidth={3} />
+                                      )}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => startEditing(transaction.id, "status", transactionStatus)}
+                                      className={`text-xs hover:underline ${
+                                        transactionStatus === "completed"
+                                          ? "text-green-700"
                                           : transactionStatus === "pending"
-                                            ? "Pendente"
-                                            : "Cancelada"}
-                                      </div>
-                                    </Badge>
-                                  </button>
+                                            ? "text-slate-500"
+                                            : "text-red-600 line-through"
+                                      }`}
+                                    >
+                                      {transactionStatus === "completed"
+                                        ? "Concluída"
+                                        : transactionStatus === "pending"
+                                          ? "Pendente"
+                                          : "Cancelada"}
+                                    </button>
+                                  </div>
                                 )}
                               </td>
                             )}
