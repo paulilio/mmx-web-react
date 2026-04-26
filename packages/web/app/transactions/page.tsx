@@ -1020,9 +1020,9 @@ export default function TransactionsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="pending">Previsto</SelectItem>
-                  <SelectItem value="completed">Consolidado</SelectItem>
-                  <SelectItem value="cancelled">Cancelado</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -1395,9 +1395,9 @@ export default function TransactionsPage() {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="pending">Previsto</SelectItem>
-                                        <SelectItem value="completed">Consolidado</SelectItem>
-                                        <SelectItem value="cancelled">Cancelado</SelectItem>
+                                        <SelectItem value="pending">Pendente</SelectItem>
+                                        <SelectItem value="completed">Concluída</SelectItem>
+                                        <SelectItem value="cancelled">Cancelada</SelectItem>
                                       </SelectContent>
                                     </Select>
                                     <Button size="sm" variant="ghost" onClick={saveInlineEdit} className="h-6 w-6 p-0">
@@ -1433,10 +1433,10 @@ export default function TransactionsPage() {
                                           }`}
                                         />
                                         {transactionStatus === "completed"
-                                          ? "Consolidado"
+                                          ? "Concluída"
                                           : transactionStatus === "pending"
-                                            ? "Previsto"
-                                            : "Cancelado"}
+                                            ? "Pendente"
+                                            : "Cancelada"}
                                       </div>
                                     </Badge>
                                   </button>
