@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Plus_Jakarta_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "sonner"
 import { Suspense } from "react"
@@ -8,9 +8,9 @@ import "./globals.css"
 import ClientLayout from "./client-layout"
 import { AuthProvider } from "@/hooks/use-auth"
 
-const inter = Inter({
+const sansFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans-app",
   display: "swap",
 })
 
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`font-sans ${inter.variable}`}>
+      <body className={`font-sans ${sansFont.variable}`}>
         <Suspense fallback={null}>
           <AuthProvider>
             <ClientLayout>{children}</ClientLayout>
