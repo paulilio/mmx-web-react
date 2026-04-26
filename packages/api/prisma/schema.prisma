@@ -69,22 +69,47 @@ enum OAuthProvider {
   MICROSOFT
 }
 
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum WeekOfMonth {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+  LAST
+}
+
+enum DayOfWeekEnum {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
 model User {
-  id                    String             @id @default(cuid())
-  email                 String             @unique
+  id                    String              @id @default(cuid())
+  email                 String              @unique
   passwordHash          String?
   firstName             String
   lastName              String
   phone                 String?
   cpfCnpj               String?
-  isEmailConfirmed      Boolean            @default(false)
+  isEmailConfirmed      Boolean             @default(false)
   defaultOrganizationId String?
-  planType              PlanType           @default(FREE)
+  planType              PlanType            @default(FREE)
   profilePhoto          String?
   preferences           Json?
   lastLogin             DateTime?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
   transactions          Transaction[]
   categories            Category[]
   contacts              Contact[]
@@ -97,6 +122,7 @@ model User {
   oneTimeTokens         OneTimeToken[]
   oauthAccounts         OAuthAccount[]
   bankConnections       BankConnection[]
+  recurringTemplates    RecurringTemplate[]
 
   @@index([email])
 }
@@ -206,6 +232,11 @@ model Transaction {
   status                  TransactionStatus     @default(PENDING)
   notes                   String?
   recurrence              Json?
+  templateId              String?
+  template                RecurringTemplate?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  seriesIndex             Int?
+  skipped                 Boolean               @default(false)
+  isException             Boolean               @default(false)
   areaId                  String?
   categoryGroupId         String?
   deletedAt               DateTime?
@@ -218,6 +249,46 @@ model Transaction {
   @@index([userId, deletedAt, date])
   @@index([userId, status])
   @@index([userId, categoryId])
+  @@index([userId, templateId, date])
+  @@index([userId, skipped])
+}
+
+model RecurringTemplate {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  frequency   RecurrenceFrequency
+  interval    Int                 @default(1)
+  daysOfWeek  DayOfWeekEnum[]
+  dayOfMonth  Int?
+  weekOfMonth WeekOfMonth?
+  monthOfYear Int?
+  monthlyMode String?
+
+  count     Int?
+  startDate DateTime  @db.Date
+  endDate   DateTime? @db.Date
+
+  paused   Boolean   @default(false)
+  pausedAt DateTime?
+
+  templateAmount          Decimal         @db.Decimal(14, 2)
+  templateDescription     String          @default("")
+  templateNotes           String?
+  templateType            TransactionType
+  templateCategoryId      String
+  templateContactId       String?
+  templateAreaId          String?
+  templateCategoryGroupId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@index([userId, paused])
+  @@index([userId, createdAt])
 }
 
 model Category {
