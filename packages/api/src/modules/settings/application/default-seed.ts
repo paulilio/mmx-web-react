@@ -1,47 +1,94 @@
+import { randomUUID } from "node:crypto"
 import type { SeedData } from "../domain/settings.types"
 
-const ID = {
+interface SeedIds {
   // Areas
-  AREA_INCOME: "seed_area_income",
-  AREA_FIXED: "seed_area_fixed",
-  AREA_DAILY: "seed_area_daily",
-  AREA_PERSONAL: "seed_area_personal",
-  AREA_TAXES: "seed_area_taxes",
+  AREA_INCOME: string
+  AREA_FIXED: string
+  AREA_DAILY: string
+  AREA_PERSONAL: string
+  AREA_TAXES: string
   // Groups
-  GROUP_SALARY: "seed_group_salary",
-  GROUP_EXTRA: "seed_group_extra",
-  GROUP_HOUSING: "seed_group_housing",
-  GROUP_UTILITIES: "seed_group_utilities",
-  GROUP_FOOD: "seed_group_food",
-  GROUP_TRANSPORT: "seed_group_transport",
-  GROUP_HEALTH: "seed_group_health",
-  GROUP_TAXES: "seed_group_taxes",
+  GROUP_SALARY: string
+  GROUP_EXTRA: string
+  GROUP_HOUSING: string
+  GROUP_UTILITIES: string
+  GROUP_FOOD: string
+  GROUP_TRANSPORT: string
+  GROUP_HEALTH: string
+  GROUP_TAXES: string
   // Categories
-  CAT_SALARY: "seed_cat_salary",
-  CAT_FREELANCE: "seed_cat_freelance",
-  CAT_RENT: "seed_cat_rent",
-  CAT_ELECTRIC: "seed_cat_electric",
-  CAT_WATER: "seed_cat_water",
-  CAT_INTERNET: "seed_cat_internet",
-  CAT_GROCERIES: "seed_cat_groceries",
-  CAT_RESTAURANT: "seed_cat_restaurant",
-  CAT_FUEL: "seed_cat_fuel",
-  CAT_UBER: "seed_cat_uber",
-  CAT_GYM: "seed_cat_gym",
-  CAT_PHARMACY: "seed_cat_pharmacy",
-  CAT_IPTU: "seed_cat_iptu",
+  CAT_SALARY: string
+  CAT_FREELANCE: string
+  CAT_RENT: string
+  CAT_ELECTRIC: string
+  CAT_WATER: string
+  CAT_INTERNET: string
+  CAT_GROCERIES: string
+  CAT_RESTAURANT: string
+  CAT_FUEL: string
+  CAT_UBER: string
+  CAT_GYM: string
+  CAT_PHARMACY: string
+  CAT_IPTU: string
   // Contacts
-  CONTACT_EMPLOYER: "seed_contact_employer",
-  CONTACT_CLIENT_JOAO: "seed_contact_client_joao",
-  CONTACT_CLIENT_TECHCORP: "seed_contact_client_techcorp",
-  CONTACT_CLIENT_MARIA: "seed_contact_client_maria",
-  CONTACT_CLIENT_MERCADOLIVRE: "seed_contact_client_mercadolivre",
-  CONTACT_LANDLORD: "seed_contact_landlord",
-  CONTACT_ENEL: "seed_contact_enel",
-  CONTACT_SABESP: "seed_contact_sabesp",
-  CONTACT_VIVO: "seed_contact_vivo",
-  CONTACT_CARREFOUR: "seed_contact_carrefour",
-} as const
+  CONTACT_EMPLOYER: string
+  CONTACT_CLIENT_JOAO: string
+  CONTACT_CLIENT_TECHCORP: string
+  CONTACT_CLIENT_MARIA: string
+  CONTACT_CLIENT_MERCADOLIVRE: string
+  CONTACT_LANDLORD: string
+  CONTACT_ENEL: string
+  CONTACT_SABESP: string
+  CONTACT_VIVO: string
+  CONTACT_CARREFOUR: string
+}
+
+function makeIds(): SeedIds {
+  // Namespace único por chamada — evita colisão entre users diferentes
+  // que importam o mesmo seed (createMany com skipDuplicates ignora se id já existe).
+  // Use cuid-like format compatível com Prisma @default(cuid()).
+  const ns = randomUUID().replace(/-/g, "").slice(0, 16)
+  const id = (label: string) => `seed_${ns}_${label}`
+  return {
+    AREA_INCOME: id("area_income"),
+    AREA_FIXED: id("area_fixed"),
+    AREA_DAILY: id("area_daily"),
+    AREA_PERSONAL: id("area_personal"),
+    AREA_TAXES: id("area_taxes"),
+    GROUP_SALARY: id("group_salary"),
+    GROUP_EXTRA: id("group_extra"),
+    GROUP_HOUSING: id("group_housing"),
+    GROUP_UTILITIES: id("group_utilities"),
+    GROUP_FOOD: id("group_food"),
+    GROUP_TRANSPORT: id("group_transport"),
+    GROUP_HEALTH: id("group_health"),
+    GROUP_TAXES: id("group_taxes"),
+    CAT_SALARY: id("cat_salary"),
+    CAT_FREELANCE: id("cat_freelance"),
+    CAT_RENT: id("cat_rent"),
+    CAT_ELECTRIC: id("cat_electric"),
+    CAT_WATER: id("cat_water"),
+    CAT_INTERNET: id("cat_internet"),
+    CAT_GROCERIES: id("cat_groceries"),
+    CAT_RESTAURANT: id("cat_restaurant"),
+    CAT_FUEL: id("cat_fuel"),
+    CAT_UBER: id("cat_uber"),
+    CAT_GYM: id("cat_gym"),
+    CAT_PHARMACY: id("cat_pharmacy"),
+    CAT_IPTU: id("cat_iptu"),
+    CONTACT_EMPLOYER: id("contact_employer"),
+    CONTACT_CLIENT_JOAO: id("contact_client_joao"),
+    CONTACT_CLIENT_TECHCORP: id("contact_client_techcorp"),
+    CONTACT_CLIENT_MARIA: id("contact_client_maria"),
+    CONTACT_CLIENT_MERCADOLIVRE: id("contact_client_mercadolivre"),
+    CONTACT_LANDLORD: id("contact_landlord"),
+    CONTACT_ENEL: id("contact_enel"),
+    CONTACT_SABESP: id("contact_sabesp"),
+    CONTACT_VIVO: id("contact_vivo"),
+    CONTACT_CARREFOUR: id("contact_carrefour"),
+  }
+}
 
 function dateAt(offsetMonths: number, day: number): string {
   const today = new Date()
@@ -66,7 +113,7 @@ type SeedTransaction = {
   notes: string | null
 }
 
-function buildMonth(offsetMonths: number): SeedTransaction[] {
+function buildMonth(offsetMonths: number, ID: SeedIds, txPrefix: string): SeedTransaction[] {
   const monthLabel = `m${offsetMonths}`
   const isCurrentMonth = offsetMonths === 0
   const completed = "COMPLETED"
@@ -77,9 +124,11 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
   const statusForDay = (day: number): "PENDING" | "COMPLETED" =>
     isCurrentMonth && day > todayDay ? pending : completed
 
+  const txId = (label: string) => `${txPrefix}_${monthLabel}_${label}`
+
   const txs: SeedTransaction[] = [
     {
-      id: `seed_tx_${monthLabel}_salary`,
+      id: txId("salary"),
       description: "Salário mensal",
       amount: 5500,
       type: "INCOME",
@@ -92,7 +141,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_rent`,
+      id: txId("rent"),
       description: "Aluguel",
       amount: 1800,
       type: "EXPENSE",
@@ -105,7 +154,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_electric`,
+      id: txId("electric"),
       description: "Conta de luz",
       amount: 215.4,
       type: "EXPENSE",
@@ -118,7 +167,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_water`,
+      id: txId("water"),
       description: "Conta de água",
       amount: 84.9,
       type: "EXPENSE",
@@ -131,7 +180,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_internet`,
+      id: txId("internet"),
       description: "Internet fibra",
       amount: 99.9,
       type: "EXPENSE",
@@ -144,7 +193,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_groc1`,
+      id: txId("groc1"),
       description: "Compras semana 1",
       amount: 387.55,
       type: "EXPENSE",
@@ -157,7 +206,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_groc2`,
+      id: txId("groc2"),
       description: "Compras semana 2",
       amount: 412.3,
       type: "EXPENSE",
@@ -170,7 +219,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_groc3`,
+      id: txId("groc3"),
       description: "Compras semana 3",
       amount: 354.8,
       type: "EXPENSE",
@@ -183,7 +232,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_groc4`,
+      id: txId("groc4"),
       description: "Compras semana 4",
       amount: 421.05,
       type: "EXPENSE",
@@ -196,7 +245,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_rest1`,
+      id: txId("rest1"),
       description: "Almoço executivo",
       amount: 58.5,
       type: "EXPENSE",
@@ -209,7 +258,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_rest2`,
+      id: txId("rest2"),
       description: "Jantar com amigos",
       amount: 142.9,
       type: "EXPENSE",
@@ -222,7 +271,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_rest3`,
+      id: txId("rest3"),
       description: "Lanche rápido",
       amount: 32.0,
       type: "EXPENSE",
@@ -235,7 +284,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_rest4`,
+      id: txId("rest4"),
       description: "Pizza fim de semana",
       amount: 86.4,
       type: "EXPENSE",
@@ -248,7 +297,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_rest5`,
+      id: txId("rest5"),
       description: "Cafeteria",
       amount: 24.5,
       type: "EXPENSE",
@@ -261,7 +310,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_fuel1`,
+      id: txId("fuel1"),
       description: "Abastecimento",
       amount: 245.0,
       type: "EXPENSE",
@@ -274,7 +323,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_fuel2`,
+      id: txId("fuel2"),
       description: "Abastecimento",
       amount: 230.0,
       type: "EXPENSE",
@@ -287,7 +336,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_fuel3`,
+      id: txId("fuel3"),
       description: "Abastecimento",
       amount: 260.5,
       type: "EXPENSE",
@@ -300,7 +349,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_fuel4`,
+      id: txId("fuel4"),
       description: "Abastecimento",
       amount: 235.0,
       type: "EXPENSE",
@@ -313,7 +362,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_uber1`,
+      id: txId("uber1"),
       description: "Corrida Uber",
       amount: 38.9,
       type: "EXPENSE",
@@ -326,7 +375,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_uber2`,
+      id: txId("uber2"),
       description: "Corrida Uber",
       amount: 52.3,
       type: "EXPENSE",
@@ -339,7 +388,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_gym`,
+      id: txId("gym"),
       description: "Mensalidade academia",
       amount: 119.9,
       type: "EXPENSE",
@@ -352,7 +401,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_pharm1`,
+      id: txId("pharm1"),
       description: "Farmácia",
       amount: 87.4,
       type: "EXPENSE",
@@ -365,7 +414,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
       notes: null,
     },
     {
-      id: `seed_tx_${monthLabel}_pharm2`,
+      id: txId("pharm2"),
       description: "Farmácia",
       amount: 142.0,
       type: "EXPENSE",
@@ -381,7 +430,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
 
   if (offsetMonths === 1 || offsetMonths === 0) {
     txs.push({
-      id: `seed_tx_${monthLabel}_freelance`,
+      id: txId("freelance"),
       description: "Projeto freelance — landing page",
       amount: 1800,
       type: "INCOME",
@@ -397,7 +446,7 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
 
   if (offsetMonths === 2) {
     txs.push({
-      id: `seed_tx_${monthLabel}_iptu`,
+      id: txId("iptu"),
       description: "IPTU 2026 — parcela",
       amount: 287.0,
       type: "EXPENSE",
@@ -415,7 +464,15 @@ function buildMonth(offsetMonths: number): SeedTransaction[] {
 }
 
 export function getDefaultSeed(): SeedData {
-  const transactions = [...buildMonth(2), ...buildMonth(1), ...buildMonth(0)]
+  const ID = makeIds()
+  // Prefixo curto e único pra ids de transações desta chamada
+  const txPrefix = `seed_tx_${randomUUID().replace(/-/g, "").slice(0, 16)}`
+
+  const transactions = [
+    ...buildMonth(2, ID, txPrefix),
+    ...buildMonth(1, ID, txPrefix),
+    ...buildMonth(0, ID, txPrefix),
+  ]
 
   const areas = [
     {
