@@ -98,7 +98,7 @@ export class PrismaReportingRepository implements IReportingRepository {
         .reduce((acc, item) => acc + this.toAmount(item.totalAmount), 0)
 
     return {
-      totalOpen: 0,
+      totalOpen: sumBy((item) => item.status === "PENDING"),
       totalOverdue: 0,
       totalNext7Days: 0,
       totalNext30Days: 0,
@@ -184,11 +184,6 @@ export class PrismaReportingRepository implements IReportingRepository {
               : "future"
       const amount = this.toAmount(item.totalAmount)
 
-      if (bucket === "overdue") report.overdue += amount
-      if (bucket === "next7Days") report.next7Days += amount
-      if (bucket === "next30Days") report.next30Days += amount
-      if (bucket === "future") report.future += amount
-
       if (item.status === "COMPLETED") {
         if (bucket === "overdue") report.completedOverdue += amount
         if (bucket === "next7Days") report.completedNext7Days += amount
@@ -199,6 +194,10 @@ export class PrismaReportingRepository implements IReportingRepository {
         if (bucket === "overdue") report.pendingOverdue += amount
         if (bucket === "next7Days") report.pendingNext7Days += amount
         if (bucket === "next30Days") report.pendingNext30Days += amount
+        if (bucket === "overdue") report.overdue += amount
+        if (bucket === "next7Days") report.next7Days += amount
+        if (bucket === "next30Days") report.next30Days += amount
+        if (bucket === "future") report.future += amount
       }
     }
 
