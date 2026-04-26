@@ -19,7 +19,7 @@ import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/share
 export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
   const { data: aging, isLoading: agingLoading } = useAgingReport()
-  const { transactions, isLoading: transactionsLoading } = useTransactions()
+  const { transactions, isLoading: transactionsLoading } = useTransactions({ pageSize: 500 })
   const { areas } = useAreas()
   const { user } = useAuth()
 

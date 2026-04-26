@@ -9,6 +9,7 @@ interface TransactionsParams {
   month?: string
   date_from?: string
   date_to?: string
+  pageSize?: number
 }
 
 export function useTransactions(params: TransactionsParams = {}, onDataChange?: () => void) {
