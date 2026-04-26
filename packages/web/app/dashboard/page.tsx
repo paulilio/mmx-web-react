@@ -1,18 +1,47 @@
 "use client"
 
+import { useMemo } from "react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { SummaryCard } from "@/components/dashboard/summary-card"
 import { CashflowChart } from "@/components/dashboard/cashflow-chart"
+import { Greeting } from "@/components/dashboard/greeting"
+import { PendingListCard } from "@/components/dashboard/pending-list-card"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
-import { DollarSign, AlertTriangle, Clock, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
+import { useTransactions } from "@/hooks/use-transactions"
+import { DollarSign, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
 import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/shared/constants"
 
 export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
   const { data: aging, isLoading: agingLoading } = useAgingReport()
+  const { transactions, isLoading: transactionsLoading } = useTransactions()
 
-  if (summaryLoading || agingLoading) {
+  const { overdue, upcoming } = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const next7 = new Date(today)
+    next7.setDate(today.getDate() + 7)
+
+    const pending = (transactions || []).filter(
+      (t) => t.status?.trim().toLowerCase() === "pending",
+    )
+
+    const overdueList = pending
+      .filter((t) => new Date(t.date) < today)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    const upcomingList = pending
+      .filter((t) => {
+        const d = new Date(t.date)
+        return d >= today && d <= next7
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    return { overdue: overdueList, upcoming: upcomingList }
+  }, [transactions])
+
+  if (summaryLoading || agingLoading || transactionsLoading) {
     return (
       <MainLayout>
         <WelcomeModal />
@@ -70,11 +99,7 @@ export default function DashboardPage() {
     <MainLayout>
       <WelcomeModal />
       <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="border-b border-slate-200 pb-4">
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-600 mt-1">Visão geral das suas finanças</p>
-        </div>
+        <Greeting />
 
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -176,18 +201,28 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Summary Cards */}
+        {/* Summary Cards (resumo numérico) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <SummaryCard title="Total em Aberto" value={summary?.totalOpen || 0} icon={DollarSign} />
-          <SummaryCard title="Vencidos" value={aging?.overdue || 0} icon={AlertTriangle} variant="danger" />
-          <SummaryCard title="Próximos 7 dias" value={aging?.next7Days || 0} icon={Clock} variant="warning" />
+          <SummaryCard title="Total a Receber" value={summary?.totalReceivables || 0} icon={TrendingUp} />
+          <SummaryCard title="Total a Pagar" value={summary?.totalPayables || 0} icon={TrendingDown} />
           <SummaryCard title="Próximos 30 dias" value={aging?.next30Days || 0} icon={Calendar} />
         </div>
 
-        {/* Additional Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SummaryCard title="Total a Receber" value={summary?.totalReceivables || 0} icon={TrendingUp} />
-          <SummaryCard title="Total a Pagar" value={summary?.totalPayables || 0} icon={TrendingDown} />
+        {/* Listas: lançamentos em atraso + vencimentos próximos */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PendingListCard
+            title="Lançamentos em atraso"
+            variant="danger"
+            transactions={overdue}
+            emptyLabel="Nenhum lançamento vencido. 👍"
+          />
+          <PendingListCard
+            title="Vencimentos nos próximos 7 dias"
+            variant="warning"
+            transactions={upcoming}
+            emptyLabel="Nenhum vencimento nos próximos 7 dias."
+          />
         </div>
 
         {/* Cashflow Chart */}
