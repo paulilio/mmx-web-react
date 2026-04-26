@@ -22,6 +22,7 @@ import { ToggleRecurringPauseUseCase } from "./application/use-cases/toggle-recu
 import { SkipNextOccurrenceUseCase } from "./application/use-cases/skip-next-occurrence.use-case"
 import { DuplicateTransactionUseCase } from "./application/use-cases/duplicate-transaction.use-case"
 import { MarkAsExceptionUseCase } from "./application/use-cases/mark-as-exception.use-case"
+import { DeleteRecurringSeriesUseCase } from "./application/use-cases/delete-recurring-series.use-case"
 import {
   mapTransaction,
   parseTransactionStatus,
@@ -46,6 +47,7 @@ export class TransactionsController {
     private readonly skipNext: SkipNextOccurrenceUseCase,
     private readonly duplicate: DuplicateTransactionUseCase,
     private readonly markAsException: MarkAsExceptionUseCase,
+    private readonly deleteRecurringSeries: DeleteRecurringSeriesUseCase,
   ) {}
   @Get()
   async list(
@@ -418,6 +420,28 @@ export class TransactionsController {
   ) {
     const tx = await this.duplicate.execute(userId, id, { date: body?.date })
     return mapTransaction(tx)
+  }
+
+  @Delete("recurring/:templateId")
+  async deleteRecurringSeriesEndpoint(
+    @AuthUser() userId: string,
+    @Param("templateId") templateId: string,
+    @Query("applyMode") applyMode?: string,
+    @Query("fromTransactionId") fromTransactionId?: string,
+  ) {
+    const mode = (applyMode ?? "all") as "single" | "future" | "all"
+    if (mode !== "single" && mode !== "future" && mode !== "all") {
+      throw Object.assign(new Error("applyMode deve ser single|future|all"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    return this.deleteRecurringSeries.execute({
+      userId,
+      templateId,
+      applyMode: mode,
+      fromTransactionId,
+    })
   }
 
   @Patch(":id/exception")
