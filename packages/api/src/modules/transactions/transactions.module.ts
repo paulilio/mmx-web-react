@@ -7,6 +7,11 @@ import { PrismaRecurringTemplateRepository } from "./infrastructure/repositories
 import { TransactionApplicationService } from "./application/transaction.service"
 import { RecurringTemplateApplicationService } from "./application/recurring-template.service"
 import { CreateRecurringSeriesUseCase } from "./application/use-cases/create-recurring-series.use-case"
+import { UpdateRecurringSeriesUseCase } from "./application/use-cases/update-recurring-series.use-case"
+import { ToggleRecurringPauseUseCase } from "./application/use-cases/toggle-recurring-pause.use-case"
+import { SkipNextOccurrenceUseCase } from "./application/use-cases/skip-next-occurrence.use-case"
+import { DuplicateTransactionUseCase } from "./application/use-cases/duplicate-transaction.use-case"
+import { MarkAsExceptionUseCase } from "./application/use-cases/mark-as-exception.use-case"
 
 @Module({
   controllers: [TransactionsController],
@@ -16,6 +21,11 @@ import { CreateRecurringSeriesUseCase } from "./application/use-cases/create-rec
     TransactionApplicationService,
     RecurringTemplateApplicationService,
     CreateRecurringSeriesUseCase,
+    UpdateRecurringSeriesUseCase,
+    ToggleRecurringPauseUseCase,
+    SkipNextOccurrenceUseCase,
+    DuplicateTransactionUseCase,
+    MarkAsExceptionUseCase,
   ],
 })
 export class TransactionsModule {}

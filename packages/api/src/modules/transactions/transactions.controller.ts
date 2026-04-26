@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -16,6 +17,11 @@ import { AuthUser } from "../../common/decorators/auth-user.decorator"
 import { TransactionApplicationService } from "./application/transaction.service"
 import { RecurringTemplateApplicationService } from "./application/recurring-template.service"
 import { CreateRecurringSeriesUseCase } from "./application/use-cases/create-recurring-series.use-case"
+import { UpdateRecurringSeriesUseCase } from "./application/use-cases/update-recurring-series.use-case"
+import { ToggleRecurringPauseUseCase } from "./application/use-cases/toggle-recurring-pause.use-case"
+import { SkipNextOccurrenceUseCase } from "./application/use-cases/skip-next-occurrence.use-case"
+import { DuplicateTransactionUseCase } from "./application/use-cases/duplicate-transaction.use-case"
+import { MarkAsExceptionUseCase } from "./application/use-cases/mark-as-exception.use-case"
 import {
   mapTransaction,
   parseTransactionStatus,
@@ -35,6 +41,11 @@ export class TransactionsController {
     private readonly transactionService: TransactionApplicationService,
     private readonly recurringService: RecurringTemplateApplicationService,
     private readonly createRecurringSeries: CreateRecurringSeriesUseCase,
+    private readonly updateRecurringSeries: UpdateRecurringSeriesUseCase,
+    private readonly togglePause: ToggleRecurringPauseUseCase,
+    private readonly skipNext: SkipNextOccurrenceUseCase,
+    private readonly duplicate: DuplicateTransactionUseCase,
+    private readonly markAsException: MarkAsExceptionUseCase,
   ) {}
   @Get()
   async list(
@@ -315,5 +326,133 @@ export class TransactionsController {
       executions: view.executions.map(mapTransaction),
       counts: view.counts,
     }
+  }
+
+  @Patch("recurring/:templateId")
+  async updateRecurringSeriesEndpoint(
+    @AuthUser() userId: string,
+    @Param("templateId") templateId: string,
+    @Body() body: {
+      applyMode?: "future" | "all"
+      fromDate?: string
+      patch?: {
+        description?: string
+        amount?: number
+        type?: string
+        categoryId?: string
+        contactId?: string | null
+        status?: string
+        notes?: string | null
+        areaId?: string | null
+        categoryGroupId?: string | null
+      }
+    },
+  ) {
+    const applyMode = body.applyMode ?? "all"
+    if (applyMode !== "future" && applyMode !== "all") {
+      throw Object.assign(new Error("applyMode deve ser future|all"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const fromDate = body.fromDate ? new Date(body.fromDate) : undefined
+    if (fromDate && Number.isNaN(fromDate.getTime())) {
+      throw Object.assign(new Error("fromDate inválido"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const p = body.patch ?? {}
+    const result = await this.updateRecurringSeries.execute({
+      userId,
+      templateId,
+      applyMode,
+      fromDate,
+      patch: {
+        description: p.description,
+        amount: p.amount !== undefined ? Number(p.amount) : undefined,
+        type: p.type ? parseTransactionType(p.type) ?? undefined : undefined,
+        categoryId: p.categoryId,
+        contactId: p.contactId,
+        status: p.status ? parseTransactionStatus(p.status) ?? undefined : undefined,
+        notes: p.notes,
+        areaId: p.areaId,
+        categoryGroupId: p.categoryGroupId,
+      },
+    })
+    return { updated: result.updated, template: mapRecurringTemplate(result.template) }
+  }
+
+  @Patch("recurring/:templateId/pause")
+  async pauseRecurringSeries(
+    @AuthUser() userId: string,
+    @Param("templateId") templateId: string,
+    @Body() body: { paused?: boolean },
+  ) {
+    if (typeof body.paused !== "boolean") {
+      throw Object.assign(new Error("paused deve ser boolean"), {
+        status: 400,
+        code: "INVALID_INPUT",
+      })
+    }
+    const template = await this.togglePause.execute(userId, templateId, body.paused)
+    return { template: mapRecurringTemplate(template) }
+  }
+
+  @Post(":id/skip")
+  @HttpCode(HttpStatus.OK)
+  async skipNextOccurrence(
+    @AuthUser() userId: string,
+    @Param("id") id: string,
+  ) {
+    const tx = await this.skipNext.execute(userId, id)
+    return mapTransaction(tx)
+  }
+
+  @Post(":id/duplicate")
+  @HttpCode(HttpStatus.CREATED)
+  async duplicateTransaction(
+    @AuthUser() userId: string,
+    @Param("id") id: string,
+    @Body() body: { date?: string },
+  ) {
+    const tx = await this.duplicate.execute(userId, id, { date: body?.date })
+    return mapTransaction(tx)
+  }
+
+  @Patch(":id/exception")
+  async markAsExceptionEndpoint(
+    @AuthUser() userId: string,
+    @Param("id") id: string,
+    @Body() body: {
+      description?: string
+      amount?: number
+      type?: string
+      categoryId?: string
+      contactId?: string | null
+      date?: string
+      status?: string
+      notes?: string | null
+      areaId?: string | null
+      categoryGroupId?: string | null
+    },
+  ) {
+    const tx = await this.markAsException.execute({
+      userId,
+      transactionId: id,
+      patch: {
+        description: body.description,
+        amount: body.amount !== undefined ? Number(body.amount) : undefined,
+        type: body.type ? parseTransactionType(body.type) ?? undefined : undefined,
+        categoryId: body.categoryId,
+        contactId: body.contactId,
+        date: body.date,
+        status: body.status ? parseTransactionStatus(body.status) ?? undefined : undefined,
+        notes: body.notes,
+        areaId: body.areaId,
+        categoryGroupId: body.categoryGroupId,
+      },
+    })
+    return mapTransaction(tx)
   }
 }
