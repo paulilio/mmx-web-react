@@ -29,6 +29,8 @@ import { useContacts } from "@/hooks/use-contacts"
 import { TransactionFormModal } from "@/components/transactions/transaction-form-modal"
 import { RecurringDeleteModal } from "@/components/transactions/recurring-delete-modal"
 import { TransactionDetailRow } from "@/components/transactions/transaction-detail-row"
+import { TransactionActionsMenu } from "@/components/transactions/transaction-actions-menu"
+import { toast } from "sonner"
 import { formatCurrency } from "@/lib/shared/utils"
 import { formatDateToPtBR, isSameMonth } from "@/lib/shared/date-utils"
 import { MainLayout } from "@/components/layout/main-layout"
@@ -228,6 +230,9 @@ export default function TransactionsPage() {
     updateTransaction,
     deleteTransaction,
     deleteRecurrence,
+    skipNextOccurrence,
+    toggleSeriesPause,
+    duplicateTransaction,
   } = useTransactions({ pageSize: 500 }, handleDataChange)
 
   const { categories, isLoading: categoriesLoading } = useCategories()
@@ -1550,23 +1555,42 @@ export default function TransactionsPage() {
 
                             {visibleColumns.actions && (
                               <td className="py-3 px-4">
-                                <div className="flex items-center justify-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEditTransaction(transaction)}
-                                    className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteTransaction(transaction.id)}
-                                    className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
+                                <div className="flex items-center justify-center">
+                                  <TransactionActionsMenu
+                                    transaction={transaction}
+                                    onEdit={() => handleEditTransaction(transaction)}
+                                    onEditOnlyThis={() => handleEditTransaction(transaction)}
+                                    onDuplicate={async () => {
+                                      try {
+                                        await duplicateTransaction(transaction.id)
+                                        toast.success("Transação duplicada para hoje")
+                                      } catch (err) {
+                                        console.error(err)
+                                        toast.error("Não foi possível duplicar a transação")
+                                      }
+                                    }}
+                                    onSkipNext={async () => {
+                                      try {
+                                        await skipNextOccurrence(transaction.id)
+                                        toast.success("Ocorrência pulada")
+                                      } catch (err) {
+                                        console.error(err)
+                                        toast.error("Não foi possível pular esta ocorrência")
+                                      }
+                                    }}
+                                    onTogglePause={async () => {
+                                      if (!transaction.templateId) return
+                                      const wasPaused = transaction.template?.paused ?? false
+                                      try {
+                                        await toggleSeriesPause(transaction.templateId, !wasPaused)
+                                        toast.success(wasPaused ? "Série retomada" : "Série pausada")
+                                      } catch (err) {
+                                        console.error(err)
+                                        toast.error("Não foi possível alternar o estado da série")
+                                      }
+                                    }}
+                                    onDelete={() => handleDeleteTransaction(transaction.id)}
+                                  />
                                 </div>
                               </td>
                             )}
