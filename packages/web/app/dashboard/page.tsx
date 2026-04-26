@@ -56,10 +56,6 @@ export default function DashboardPage() {
     return isNaN(remaining) ? payablesTarget : Math.max(remaining, 0)
   })()
 
-  // Mock comparison with previous period (you can replace with real data)
-  const receivablesGrowth = 30 // +30%
-  const payablesGrowth = 2 // +2%
-
   const formatCurrency = (value: number | string | null | undefined) => {
     const numericValue = typeof value === "number" ? value : Number.parseFloat(String(value || 0))
     const safeValue = isNaN(numericValue) ? 0 : numericValue
@@ -89,8 +85,6 @@ export default function DashboardPage() {
                   <h3 className="text-sm font-medium text-slate-600">Recebimentos</h3>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-slate-900">{formatCurrency(receivablesCurrent)}</span>
-                    <span className="text-sm text-slate-500">Outubro do ano anterior</span>
-                    <span className="text-sm font-medium text-green-600">↗ {receivablesGrowth}%</span>
                   </div>
                 </div>
 
@@ -139,8 +133,6 @@ export default function DashboardPage() {
                   <h3 className="text-sm font-medium text-slate-600">Despesas</h3>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-slate-900">{formatCurrency(payablesCurrent)}</span>
-                    <span className="text-sm text-slate-500">Outubro do ano anterior</span>
-                    <span className="text-sm font-medium text-green-600">↗ {payablesGrowth}%</span>
                   </div>
                 </div>
 
