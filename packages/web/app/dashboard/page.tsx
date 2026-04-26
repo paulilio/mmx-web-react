@@ -6,10 +6,12 @@ import { SummaryCard } from "@/components/dashboard/summary-card"
 import { CashflowChart } from "@/components/dashboard/cashflow-chart"
 import { Greeting } from "@/components/dashboard/greeting"
 import { MonthCalendar } from "@/components/dashboard/month-calendar"
+import { MonthlyResult } from "@/components/dashboard/monthly-result"
 import { PendingListCard } from "@/components/dashboard/pending-list-card"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useDashboardSummary, useAgingReport } from "@/hooks/use-dashboard-data"
 import { useTransactions } from "@/hooks/use-transactions"
+import { useAreas } from "@/hooks/use-areas"
 import { useAuth } from "@/hooks/use-auth"
 import { DollarSign, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
 import { DEFAULT_RECEIVABLES_TARGET, DEFAULT_PAYABLES_TARGET } from "@/lib/shared/constants"
@@ -18,6 +20,7 @@ export default function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
   const { data: aging, isLoading: agingLoading } = useAgingReport()
   const { transactions, isLoading: transactionsLoading } = useTransactions()
+  const { areas } = useAreas()
   const { user } = useAuth()
 
   const { overdue, upcoming } = useMemo(() => {
@@ -217,6 +220,9 @@ export default function DashboardPage() {
           <SummaryCard title="Total a Pagar" value={summary?.totalPayables || 0} icon={TrendingDown} />
           <SummaryCard title="Próximos 30 dias" value={aging?.next30Days || 0} icon={Calendar} />
         </div>
+
+        {/* DRE inline — resultado do mês */}
+        <MonthlyResult transactions={transactions || []} areas={areas || []} />
 
         {/* Calendário do mês + listas (lançamentos em atraso, vencimentos próximos) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
