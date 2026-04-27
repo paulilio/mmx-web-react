@@ -7,7 +7,9 @@ import { RegisterConnectionUseCase } from "./application/use-cases/register-conn
 import { SyncTransactionsUseCase } from "./application/use-cases/sync-transactions.use-case"
 import { RevokeConnectionUseCase } from "./application/use-cases/revoke-connection.use-case"
 import { ReconcileTransactionUseCase } from "./application/use-cases/reconcile-transaction.use-case"
+import { HandleWebhookEventUseCase } from "./application/use-cases/handle-webhook-event.use-case"
 import { SyncJobRunner } from "./application/jobs/sync-job.runner"
+import { BelvoIpAllowlistGuard } from "@/common/guards/belvo-ip-allowlist.guard"
 import {
   BANK_CONNECTION_REPOSITORY,
 } from "./application/ports/bank-connection-repository.port"
@@ -66,7 +68,9 @@ const belvoProvider: FactoryProvider = {
     SyncTransactionsUseCase,
     RevokeConnectionUseCase,
     ReconcileTransactionUseCase,
+    HandleWebhookEventUseCase,
     SyncJobRunner,
+    BelvoIpAllowlistGuard,
     { provide: BANK_CONNECTION_REPOSITORY, useClass: PrismaBankConnectionRepository },
     { provide: IMPORTED_TRANSACTION_REPOSITORY, useClass: PrismaImportedTransactionRepository },
     { provide: SYNC_JOB_REPOSITORY, useClass: PrismaSyncJobRepository },

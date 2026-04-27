@@ -81,12 +81,25 @@ export class BelvoProviderAdapter implements OpenFinanceProvider {
     private readonly secretPassword: string,
   ) {}
 
-  async createWidgetToken(_input: ProviderWidgetTokenInput): Promise<ProviderWidgetTokenOutput> {
-    const res = await this.http.request<BelvoTokenResponse>("POST", "/api/token/", {
+  async createWidgetToken(input: ProviderWidgetTokenInput): Promise<ProviderWidgetTokenOutput> {
+    const body: Record<string, unknown> = {
       id: this.secretId,
       password: this.secretPassword,
       scopes: TOKEN_SCOPES,
-    })
+    }
+
+    const cpfDigits = sanitizeCpf(input.cpf)
+    if (cpfDigits && input.fullName?.trim()) {
+      body.widget = {
+        consent: {
+          identification_info: [
+            { type: "CPF", number: cpfDigits, name: input.fullName.trim() },
+          ],
+        },
+      }
+    }
+
+    const res = await this.http.request<BelvoTokenResponse>("POST", "/api/token/", body)
     return {
       accessToken: res.access,
       refreshToken: res.refresh,
@@ -142,6 +155,12 @@ export class BelvoProviderAdapter implements OpenFinanceProvider {
   async revokeLink(linkId: string): Promise<void> {
     await this.http.request<unknown>("DELETE", `/api/links/${linkId}/`)
   }
+}
+
+function sanitizeCpf(value: string | undefined): string | null {
+  if (!value) return null
+  const digits = value.replace(/\D/g, "")
+  return digits.length === 11 ? digits : null
 }
 
 function mapLinkStatus(status: string): ProviderLink["status"] {

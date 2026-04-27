@@ -56,6 +56,7 @@ export interface ProviderOwner {
 export interface ProviderWidgetTokenInput {
   externalUserId: string
   cpf?: string
+  fullName?: string
 }
 
 export interface ProviderWidgetTokenOutput {

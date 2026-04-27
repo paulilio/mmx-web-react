@@ -48,6 +48,7 @@ function makeRepos(opts?: {
     ),
     findByIdAndUser: vi.fn(),
     findByProviderLinkId: vi.fn(),
+    findByPlainProviderLinkId: vi.fn(),
     listByUser: vi.fn(),
     update: vi.fn(),
   }

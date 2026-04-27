@@ -39,6 +39,7 @@ function makeConnections(initial?: { userId: string; status: string }) {
     ),
     findByIdAndUser: vi.fn(),
     findByProviderLinkId: vi.fn(),
+    findByPlainProviderLinkId: vi.fn(),
     listByUser: vi.fn(),
     update: vi.fn(async (id, patch) => ({ id, ...patch } as never)),
   }

@@ -110,6 +110,10 @@ function validateOpenFinance(env, errors, warnings) {
   if (!process.env.BELVO_WEBHOOK_SECRET && (process.env.BELVO_SECRET_ID || isProdLike)) {
     warnings.push("BELVO_WEBHOOK_SECRET empty; webhook endpoint will reject all calls")
   }
+
+  if (!process.env.BELVO_WEBHOOK_IPS && isProdLike) {
+    warnings.push("BELVO_WEBHOOK_IPS empty; webhook endpoint accepts any source IP (configure with Belvo's source IPs in production)")
+  }
 }
 
 function main() {

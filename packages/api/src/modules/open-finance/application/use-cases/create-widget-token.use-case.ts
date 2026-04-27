@@ -7,6 +7,7 @@ import {
 export interface CreateWidgetTokenInput {
   userId: string
   cpf?: string
+  fullName?: string
 }
 
 export interface CreateWidgetTokenOutput {
@@ -26,6 +27,7 @@ export class CreateWidgetTokenUseCase {
     const result = await this.provider.createWidgetToken({
       externalUserId: input.userId,
       cpf: input.cpf,
+      fullName: input.fullName,
     })
     return {
       accessToken: result.accessToken,

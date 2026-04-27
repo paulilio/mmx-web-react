@@ -10,10 +10,21 @@ export class BelvoHttpError extends Error {
     public readonly status: number,
     public readonly path: string,
     public readonly body: unknown,
+    public readonly requestId: string | null = null,
   ) {
-    super(`Belvo ${status} on ${path}`)
+    super(`Belvo ${status} on ${path} (request_id=${requestId ?? "n/a"})`)
     this.name = "BelvoHttpError"
   }
+}
+
+function extractRequestId(headers: Headers, body: unknown): string | null {
+  const fromHeader = headers.get("x-request-id")
+  if (fromHeader && fromHeader.trim().length > 0) return fromHeader
+  if (body && typeof body === "object" && "request_id" in body) {
+    const value = (body as { request_id?: unknown }).request_id
+    if (typeof value === "string" && value.trim().length > 0) return value
+  }
+  return null
 }
 
 export class BelvoHttpClient {
@@ -51,7 +62,10 @@ export class BelvoHttpClient {
         parsed = text
       }
     }
-    if (!response.ok) throw new BelvoHttpError(response.status, path, parsed)
+    if (!response.ok) {
+      const requestId = extractRequestId(response.headers, parsed)
+      throw new BelvoHttpError(response.status, path, parsed, requestId)
+    }
     return parsed as T
   }
 

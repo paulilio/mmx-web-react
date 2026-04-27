@@ -1,11 +1,14 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { PrismaService } from "@/infrastructure/database/prisma/prisma.service"
+import { decrypt } from "@/core/lib/server/security/encryption"
 import type { BankConnectionRepositoryPort } from "../../application/ports/bank-connection-repository.port"
 import type { BankConnectionEntity, BankConnectionProps } from "../../domain/bank-connection-entity"
 import type { BankConnectionStatus } from "../../domain/bank-connection-rules"
 
 @Injectable()
 export class PrismaBankConnectionRepository implements BankConnectionRepositoryPort {
+  private readonly logger = new Logger(PrismaBankConnectionRepository.name)
+
   constructor(private readonly prisma: PrismaService) {}
 
   async create(entity: BankConnectionEntity): Promise<BankConnectionProps> {
@@ -41,6 +44,21 @@ export class PrismaBankConnectionRepository implements BankConnectionRepositoryP
       where: { provider_providerLinkId: { provider, providerLinkId } },
     })
     return row ? rowToProps(row) : null
+  }
+
+  async findByPlainProviderLinkId(
+    provider: string,
+    plainProviderLinkId: string,
+  ): Promise<BankConnectionProps | null> {
+    const rows = await this.prisma.bankConnection.findMany({ where: { provider } })
+    for (const row of rows) {
+      try {
+        if (decrypt(row.providerLinkId) === plainProviderLinkId) return rowToProps(row)
+      } catch (err) {
+        this.logger.warn(`Falha ao decrypt providerLinkId de connection ${row.id}: ${(err as Error).message}`)
+      }
+    }
+    return null
   }
 
   async listByUser(userId: string): Promise<BankConnectionProps[]> {

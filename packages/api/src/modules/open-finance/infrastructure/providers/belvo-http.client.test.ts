@@ -29,6 +29,49 @@ describe("BelvoHttpClient", () => {
     await expect(client.request("GET", "/api/links/")).rejects.toBeInstanceOf(BelvoHttpError)
   })
 
+  it("propaga requestId de header x-request-id no erro", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ message: "no" }), {
+          status: 500,
+          headers: { "x-request-id": "req-from-header" },
+        }),
+    )
+    const client = makeClient(fetchMock as unknown as typeof fetch)
+    try {
+      await client.request("GET", "/api/links/")
+      expect.fail("expected throw")
+    } catch (err) {
+      expect(err).toBeInstanceOf(BelvoHttpError)
+      expect((err as BelvoHttpError).requestId).toBe("req-from-header")
+      expect((err as BelvoHttpError).message).toContain("req-from-header")
+    }
+  })
+
+  it("fallback pra body.request_id quando header ausente", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify({ request_id: "req-from-body", message: "no" }), { status: 400 }),
+    )
+    const client = makeClient(fetchMock as unknown as typeof fetch)
+    try {
+      await client.request("GET", "/api/links/")
+      expect.fail("expected throw")
+    } catch (err) {
+      expect((err as BelvoHttpError).requestId).toBe("req-from-body")
+    }
+  })
+
+  it("requestId null quando nem header nem body têm", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ message: "no" }), { status: 403 }))
+    const client = makeClient(fetchMock as unknown as typeof fetch)
+    try {
+      await client.request("GET", "/api/links/")
+      expect.fail("expected throw")
+    } catch (err) {
+      expect((err as BelvoHttpError).requestId).toBeNull()
+    }
+  })
+
   it("getAllPages segue cursor next", async () => {
     let call = 0
     const fetchMock = vi.fn(async () => {

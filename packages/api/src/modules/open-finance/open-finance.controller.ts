@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AuthUser } from "../../common/decorators/auth-user.decorator"
+import { PrismaService } from "@/infrastructure/database/prisma/prisma.service"
 import { OpenFinanceService } from "./application/open-finance.service"
 import { CreateWidgetTokenUseCase } from "./application/use-cases/create-widget-token.use-case"
 import { RegisterConnectionUseCase } from "./application/use-cases/register-connection.use-case"
@@ -38,11 +39,20 @@ export class OpenFinanceController {
     private readonly registerConnection: RegisterConnectionUseCase,
     private readonly revokeConnection: RevokeConnectionUseCase,
     private readonly reconcileTransaction: ReconcileTransactionUseCase,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Post("widget-token")
   async postWidgetToken(@AuthUser() userId: string) {
-    const out = await this.createWidgetToken.execute({ userId })
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { cpfCnpj: true, firstName: true, lastName: true },
+    })
+    const out = await this.createWidgetToken.execute({
+      userId,
+      cpf: user?.cpfCnpj ?? undefined,
+      fullName: user ? `${user.firstName} ${user.lastName}`.trim() : undefined,
+    })
     return { data: out, error: null }
   }
 

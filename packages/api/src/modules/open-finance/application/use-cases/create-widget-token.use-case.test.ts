@@ -29,6 +29,7 @@ describe("CreateWidgetTokenUseCase", () => {
     expect(provider.createWidgetToken).toHaveBeenCalledWith({
       externalUserId: "user-1",
       cpf: undefined,
+      fullName: undefined,
     })
   })
 
@@ -38,13 +39,14 @@ describe("CreateWidgetTokenUseCase", () => {
     await expect(useCase.execute({ userId: "" })).rejects.toThrow(/userId/)
   })
 
-  it("repassa cpf opcional", async () => {
+  it("repassa cpf e fullName opcionais", async () => {
     const provider = makeProvider()
     const useCase = new CreateWidgetTokenUseCase(provider)
-    await useCase.execute({ userId: "user-1", cpf: "76109277673" })
+    await useCase.execute({ userId: "user-1", cpf: "76109277673", fullName: "Paulilio Ferreira" })
     expect(provider.createWidgetToken).toHaveBeenCalledWith({
       externalUserId: "user-1",
       cpf: "76109277673",
+      fullName: "Paulilio Ferreira",
     })
   })
 })

@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest"
-import { mapAccount, mapBill, mapOwner, mapTransaction } from "./belvo-provider.adapter"
+import { describe, expect, it, vi } from "vitest"
+import { BelvoProviderAdapter, mapAccount, mapBill, mapOwner, mapTransaction } from "./belvo-provider.adapter"
+import { BelvoHttpClient } from "./belvo-http.client"
 
 // Synthetic fixtures based on Open Finance Brasil + Belvo public docs.
 // Refine to real values when the first sandbox payload is captured.
@@ -103,5 +104,78 @@ describe("belvo-provider adapter", () => {
   it("mapOwner usa fallback para nome ausente", () => {
     const mapped = mapOwner({ ...OWNER_FIXTURE, display_name: undefined })
     expect(mapped.displayName).toBe("(sem nome)")
+  })
+
+  it("createWidgetToken inclui identification_info quando cpf+fullName presentes", async () => {
+    let capturedBody: Record<string, unknown> | null = null
+    const fetchMock = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      capturedBody = init?.body ? JSON.parse(init.body as string) : null
+      return new Response(
+        JSON.stringify({ access: "a", refresh: "r", expires_in: 1200 }),
+        { status: 200 },
+      )
+    })
+    const http = new BelvoHttpClient({
+      host: "https://sandbox.belvo.com",
+      secretId: "id",
+      secretPassword: "pwd",
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    })
+    const adapter = new BelvoProviderAdapter(http, "id", "pwd")
+    await adapter.createWidgetToken({
+      externalUserId: "u1",
+      cpf: "761.092.776-73",
+      fullName: "Paulilio Ferreira",
+    })
+    expect(capturedBody).not.toBeNull()
+    const widget = (capturedBody as { widget?: { consent?: { identification_info?: unknown[] } } } | null)?.widget
+    expect(widget?.consent?.identification_info).toEqual([
+      { type: "CPF", number: "76109277673", name: "Paulilio Ferreira" },
+    ])
+  })
+
+  it("createWidgetToken NÃO inclui identification_info quando cpf inválido (CNPJ)", async () => {
+    let capturedBody: Record<string, unknown> | null = null
+    const fetchMock = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      capturedBody = init?.body ? JSON.parse(init.body as string) : null
+      return new Response(
+        JSON.stringify({ access: "a", refresh: "r", expires_in: 1200 }),
+        { status: 200 },
+      )
+    })
+    const http = new BelvoHttpClient({
+      host: "https://sandbox.belvo.com",
+      secretId: "id",
+      secretPassword: "pwd",
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    })
+    const adapter = new BelvoProviderAdapter(http, "id", "pwd")
+    await adapter.createWidgetToken({
+      externalUserId: "u1",
+      cpf: "63707732000136",
+      fullName: "Castler Digital",
+    })
+    expect(capturedBody).not.toBeNull()
+    expect((capturedBody as { widget?: unknown } | null)?.widget).toBeUndefined()
+  })
+
+  it("createWidgetToken NÃO inclui identification_info quando fullName ausente", async () => {
+    let capturedBody: Record<string, unknown> | null = null
+    const fetchMock = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      capturedBody = init?.body ? JSON.parse(init.body as string) : null
+      return new Response(
+        JSON.stringify({ access: "a", refresh: "r", expires_in: 1200 }),
+        { status: 200 },
+      )
+    })
+    const http = new BelvoHttpClient({
+      host: "https://sandbox.belvo.com",
+      secretId: "id",
+      secretPassword: "pwd",
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    })
+    const adapter = new BelvoProviderAdapter(http, "id", "pwd")
+    await adapter.createWidgetToken({ externalUserId: "u1", cpf: "76109277673" })
+    expect((capturedBody as { widget?: unknown } | null)?.widget).toBeUndefined()
   })
 })

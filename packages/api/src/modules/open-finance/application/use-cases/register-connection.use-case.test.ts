@@ -34,6 +34,7 @@ function makeConnections(overrides: Partial<BankConnectionRepositoryPort> = {}):
     findById: vi.fn(),
     findByIdAndUser: vi.fn(),
     findByProviderLinkId: vi.fn(async () => null),
+    findByPlainProviderLinkId: vi.fn(async () => null),
     listByUser: vi.fn(),
     update: vi.fn(),
     ...overrides,

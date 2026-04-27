@@ -74,6 +74,28 @@ Se `BELVO_SECRET_ID` ou `BELVO_SECRET_PASSWORD` ausentes, o módulo registra um 
 
 `verifyHmacSha256(rawBody, signatureHex, secret)` em `core/lib/server/security/webhook-signature.ts`. Usa `timingSafeEqual` para evitar timing attacks. Em produção, configurar `NestFactory.create({ rawBody: true })` — atualmente verificamos `JSON.stringify(body)` (stub).
 
+## Webhook Event Dispatcher
+
+`HandleWebhookEventUseCase` roteia eventos Belvo após HMAC validado:
+
+| `event_type` | Ação |
+|---|---|
+| `consent_expired`, `link.expired` | `BankConnection.status = EXPIRED`, `lastError = "consent_expired"` |
+| `link.invalid` | `BankConnection.status = ERROR`, `lastError = "link_invalid"` |
+| `token_required` | `BankConnection.status = EXPIRED`, `lastError = "token_required"` |
+| `transactions.new`, `transactions.historical_update` | enfileira `SyncJob(PENDING)` |
+| outros | só persiste em `WebhookEvent` |
+
+Lookup de `BankConnection` por `linkId` plaintext: `findByPlainProviderLinkId` faz scan + decrypt iterativo (volume baixo). Follow-up: coluna `providerLinkIdHash` com índice.
+
+## Webhook IP Allowlist
+
+`BelvoIpAllowlistGuard` (em `common/guards/`) opcional, via env `BELVO_WEBHOOK_IPS` (CSV). Vazio = aceita qualquer IP. Em produção, preencher com IPs Belvo (obtidos na cert call). Respeita `X-Forwarded-For` e `X-Real-IP`.
+
+## Belvo `request_id` logging
+
+`BelvoHttpError` carrega `requestId` extraído do header `x-request-id` (preferencial) ou body `request_id`. Mensagem do error inclui `request_id=...` pra correlação rápida com support tickets Belvo.
+
 ## Variáveis de Ambiente
 
 | Var | Obrigatória | Função |
@@ -83,6 +105,7 @@ Se `BELVO_SECRET_ID` ou `BELVO_SECRET_PASSWORD` ausentes, o módulo registra um 
 | `BELVO_SECRET_PASSWORD` | opcional | idem |
 | `BELVO_ENV` | não | `sandbox` (default) ou `production` |
 | `BELVO_WEBHOOK_SECRET` | recomendado | HMAC secret — sem ele, webhook recusa tudo |
+| `BELVO_WEBHOOK_IPS` | recomendado (prod) | CSV de IPs Belvo. Vazio = aceita qualquer |
 | `MMX_OPEN_FINANCE_AUTO_RECONCILE` | não | `false` default — reconcile só quando explícito |
 | `MMX_OPEN_FINANCE_RUNNER_ENABLED` | não | `true` default |
 

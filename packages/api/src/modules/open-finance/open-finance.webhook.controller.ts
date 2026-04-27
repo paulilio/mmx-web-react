@@ -7,10 +7,13 @@ import {
   Logger,
   Post,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common"
 import { PrismaService } from "@/infrastructure/database/prisma/prisma.service"
 import { Prisma } from "@prisma/client"
 import { verifyHmacSha256 } from "@/core/lib/server/security/webhook-signature"
+import { BelvoIpAllowlistGuard } from "@/common/guards/belvo-ip-allowlist.guard"
+import { HandleWebhookEventUseCase } from "./application/use-cases/handle-webhook-event.use-case"
 
 const SIGNATURE_HEADER = "x-belvo-signature"
 
@@ -27,9 +30,13 @@ const SIGNATURE_HEADER = "x-belvo-signature"
 export class OpenFinanceWebhookController {
   private readonly logger = new Logger(OpenFinanceWebhookController.name)
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly handleEvent: HandleWebhookEventUseCase,
+  ) {}
 
   @Post("belvo")
+  @UseGuards(BelvoIpAllowlistGuard)
   @HttpCode(HttpStatus.OK)
   async handleBelvo(
     @Headers(SIGNATURE_HEADER) signature: string | undefined,
@@ -54,6 +61,7 @@ export class OpenFinanceWebhookController {
     }
 
     const eventType = typeof body?.event_type === "string" ? body.event_type : null
+    const linkId = extractLinkId(body)
 
     await this.prisma.webhookEvent.create({
       data: {
@@ -64,7 +72,21 @@ export class OpenFinanceWebhookController {
       },
     })
 
-    this.logger.log(`Webhook Belvo recebido (event=${eventType ?? "unknown"})`)
+    const result = await this.handleEvent.execute({ eventType, linkId })
+
+    this.logger.log(`Webhook Belvo recebido (event=${eventType ?? "unknown"} action=${result.action})`)
     return { received: true }
   }
+}
+
+function extractLinkId(body: Record<string, unknown> | undefined): string | null {
+  if (!body) return null
+  const direct = body.link_id
+  if (typeof direct === "string" && direct.trim().length > 0) return direct
+  const nested = body.data
+  if (nested && typeof nested === "object" && "link_id" in nested) {
+    const value = (nested as { link_id?: unknown }).link_id
+    if (typeof value === "string" && value.trim().length > 0) return value
+  }
+  return null
 }
