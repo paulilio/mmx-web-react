@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalendarDays, ArrowUp, ArrowDown } from "lucide-react"
+import { CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/shared/types"
 
@@ -34,8 +34,6 @@ export function MonthCalendar({ transactions }: MonthCalendarProps) {
     const map = new Map<number, DayMarkers>()
     for (const t of transactions) {
       if (!t.date) continue
-      // Date strings stored as YYYY-MM-DD UTC. parse to UTC components
-      // to avoid timezone bumping the date by ±1.
       const parsed = new Date(t.date)
       if (Number.isNaN(parsed.getTime())) continue
       if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month) continue
@@ -54,7 +52,7 @@ export function MonthCalendar({ transactions }: MonthCalendarProps) {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
-    const startWeekday = firstDay.getDay() // 0 = Sun
+    const startWeekday = firstDay.getDay()
 
     const result: Array<number | null> = []
     for (let i = 0; i < startWeekday; i++) result.push(null)
@@ -72,15 +70,21 @@ export function MonthCalendar({ transactions }: MonthCalendarProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4">
-        <div className="grid grid-cols-7 gap-1 text-center text-xs">
+        <div className="grid grid-cols-7">
           {WEEKDAYS.map((label) => (
-            <div key={label} className="font-medium text-muted-foreground py-1">
+            <div
+              key={label}
+              className="text-[10px] uppercase tracking-wide font-medium text-muted-foreground py-1.5 text-center"
+            >
               {label}
             </div>
           ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-px bg-border rounded-md overflow-hidden border">
           {cells.map((day, idx) => {
             if (day === null) {
-              return <div key={`empty-${idx}`} className="h-12" />
+              return <div key={`empty-${idx}`} className="bg-card h-9" />
             }
             const markers = txByDay.get(day)
             const isToday = day === todayDate
@@ -88,29 +92,38 @@ export function MonthCalendar({ transactions }: MonthCalendarProps) {
               <div
                 key={day}
                 className={cn(
-                  "h-12 rounded flex flex-col items-center justify-between py-1 px-0.5",
-                  "border border-transparent",
-                  isToday
-                    ? "bg-primary/10 border-primary/40 text-primary font-semibold"
-                    : "hover:bg-accent",
+                  "bg-card h-9 px-1.5 py-1 flex flex-col items-start justify-between transition-colors",
+                  "hover:bg-accent",
                 )}
               >
-                <span className="text-sm leading-none">{day}</span>
-                <div className="flex items-center gap-0.5 h-3">
-                  {markers?.income && <ArrowUp className="h-3 w-3 text-income" strokeWidth={3} />}
-                  {markers?.expense && <ArrowDown className="h-3 w-3 text-expense" strokeWidth={3} />}
-                </div>
+                <span
+                  className={cn(
+                    "text-[11px] leading-none tabular-nums",
+                    isToday
+                      ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-[10px]"
+                      : "text-foreground/80 px-1 pt-0.5",
+                  )}
+                >
+                  {day}
+                </span>
+                {(markers?.income || markers?.expense) && (
+                  <div className="flex items-center gap-1 self-end">
+                    {markers?.income && <span className="h-1.5 w-1.5 rounded-full bg-income" />}
+                    {markers?.expense && <span className="h-1.5 w-1.5 rounded-full bg-expense" />}
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
-        <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground border-t pt-3">
-          <span className="flex items-center gap-1">
-            <ArrowUp className="h-3 w-3 text-income" strokeWidth={3} />
+
+        <div className="flex items-center gap-4 mt-3 text-[11px] text-muted-foreground border-t pt-3">
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-income" />
             Entradas
           </span>
-          <span className="flex items-center gap-1">
-            <ArrowDown className="h-3 w-3 text-expense" strokeWidth={3} />
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-expense" />
             Saídas
           </span>
         </div>
