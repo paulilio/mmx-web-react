@@ -267,56 +267,67 @@ export default function CategoriesPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : filteredCategoryGroups && filteredCategoryGroups.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredCategoryGroups.map((group) => (
-                  <Card key={group.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                  <Card key={group.id} className="gap-2 py-3 hover:bg-accent/30 transition-colors">
+                    <CardHeader className="px-4 pb-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
-                            style={{ backgroundColor: group.color }}
+                            className="w-9 h-9 rounded-md flex items-center justify-center shrink-0"
+                            style={{
+                              backgroundColor: `${group.color}1a`,
+                              color: group.color,
+                            }}
                           >
-                            <DynamicIcon iconName={group.icon} size={20} className="text-white" />
+                            <DynamicIcon iconName={group.icon} size={18} />
                           </div>
-                          <div>
-                            <CardTitle className="text-lg">{group.name}</CardTitle>
-                            <Badge
-                              className={
-                                group.status === "active"
-                                  ? "bg-income/15 text-income border-income/30"
-                                  : "bg-accent text-foreground border"
-                              }
-                            >
-                              {group.status === "active" ? "Ativo" : "Inativo"}
-                            </Badge>
+                          <div className="min-w-0">
+                            <CardTitle className="text-sm font-semibold truncate">{group.name}</CardTitle>
+                            {group.description && (
+                              <p className="text-xs text-muted-foreground truncate mt-0.5">{group.description}</p>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5 shrink-0">
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => handleEditCategoryGroup(group)}
-                            className="h-8 w-8 p-0"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                            aria-label="Editar grupo"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-3.5 w-3.5" />
                           </Button>
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => handleDeleteCategoryGroup(group)}
-                            className="h-8 w-8 p-0 text-expense hover:text-expense hover:bg-expense/10"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-expense hover:bg-expense/10"
+                            aria-label="Excluir grupo"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="px-4">
-                      <p className="text-muted-foreground text-sm mb-3">{group.description || "Sem descrição"}</p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Categorias:</span>
-                        <span className="font-medium">{getCategoriesCount(group.id)}</span>
+                    <CardContent className="px-4 pt-2 border-t">
+                      <div className="flex items-center justify-between text-xs">
+                        <span
+                          className={`inline-flex items-center gap-1.5 ${
+                            group.status === "active" ? "text-income" : "text-muted-foreground"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              group.status === "active" ? "bg-income" : "bg-muted-foreground"
+                            }`}
+                          />
+                          {group.status === "active" ? "Ativo" : "Inativo"}
+                        </span>
+                        <span className="text-muted-foreground tabular-nums">
+                          {getCategoriesCount(group.id)} categoria{getCategoriesCount(group.id) === 1 ? "" : "s"}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>

@@ -18,7 +18,11 @@ import { AccountSettingsModal } from "./account-settings-modal"
 import { PersonalizationModal } from "./personalization-modal"
 import { UpgradeModal } from "./upgrade-modal"
 
-export function UserProfileButton() {
+interface UserProfileButtonProps {
+  collapsed?: boolean
+}
+
+export function UserProfileButton({ collapsed = false }: UserProfileButtonProps) {
   const { user, logout } = useAuth()
   const [showAccountSettings, setShowAccountSettings] = useState(false)
   const [showPersonalization, setShowPersonalization] = useState(false)
@@ -56,23 +60,42 @@ export function UserProfileButton() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-auto p-3 justify-start gap-3 hover:bg-accent transition-colors">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user.profilePhoto || "/placeholder.svg"} alt={`${user.firstName} ${user.lastName}`} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                {getInitials(user.firstName, user.lastName)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col items-start min-w-0 flex-1">
-              <span className="text-sm font-medium text-foreground truncate">
-                {user.firstName} {user.lastName}
-              </span>
-              <Badge variant={getPlanBadgeVariant(user.planType)} className="text-xs">
-                {getPlanLabel(user.planType)}
-              </Badge>
-            </div>
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          </Button>
+          {collapsed ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 p-0 mx-auto rounded-full hover:bg-accent"
+              aria-label={`${user.firstName} ${user.lastName} — abrir menu de perfil`}
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user.profilePhoto || "/placeholder.svg"} alt={`${user.firstName} ${user.lastName}`} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+                  {getInitials(user.firstName, user.lastName)}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              className="w-full h-auto px-2 py-2 justify-start gap-2 hover:bg-accent transition-colors"
+            >
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src={user.profilePhoto || "/placeholder.svg"} alt={`${user.firstName} ${user.lastName}`} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+                  {getInitials(user.firstName, user.lastName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col items-start min-w-0 flex-1">
+                <span className="text-xs font-medium text-foreground truncate w-full text-left">
+                  {user.firstName} {user.lastName}
+                </span>
+                <Badge variant={getPlanBadgeVariant(user.planType)} className="text-[10px] px-1.5 py-0 mt-0.5">
+                  {getPlanLabel(user.planType)}
+                </Badge>
+              </div>
+              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            </Button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-64 z-50">
           <DropdownMenuLabel className="pb-2">

@@ -375,9 +375,9 @@ export default function BudgetPage() {
         />
 
         <Sheet open={showCategoryDetail} onOpenChange={setShowCategoryDetail}>
-          <SheetContent className="w-[400px] sm:w-[540px]">
-            <SheetHeader>
-              <SheetTitle>Detalhes do Grupo</SheetTitle>
+          <SheetContent className="w-full sm:max-w-xl lg:max-w-2xl overflow-y-auto p-6 gap-4">
+            <SheetHeader className="p-0">
+              <SheetTitle className="text-base">Detalhes do Grupo</SheetTitle>
             </SheetHeader>
             {selectedBudgetGroup && (
               <CategoryDetailPanel budgetSummary={selectedBudgetGroup} month={selectedMonth} year={selectedYear} />

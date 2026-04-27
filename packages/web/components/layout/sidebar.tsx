@@ -14,11 +14,13 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  Wallet,
 } from "lucide-react"
 import { UserProfileButton } from "@/components/profile/user-profile-button"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Contas", href: "/accounts", icon: Wallet },
   { name: "Transações", href: "/transactions", icon: ArrowRightLeft },
   { name: "Contatos", href: "/contacts", icon: Users },
   { name: "Categorias", href: "/categories", icon: FolderOpen },
@@ -119,8 +121,8 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className={cn("border-t border-sidebar-border overflow-hidden", collapsed ? "p-2" : "p-3")}>
-        <UserProfileButton />
+      <div className={cn("border-t border-sidebar-border", collapsed ? "p-2" : "p-2")}>
+        <UserProfileButton collapsed={collapsed} />
       </div>
     </div>
   )
