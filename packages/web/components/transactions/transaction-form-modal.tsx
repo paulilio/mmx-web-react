@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import { useCategories } from "@/hooks/use-categories"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useAreas } from "@/hooks/use-areas"
+import { useAccounts } from "@/hooks/use-accounts"
 import { transactionSchema, type TransactionFormData } from "@/lib/shared/validations"
 import type { Transaction, DayOfWeek } from "@/lib/shared/types"
 import { formatDateToPtBR, formatDateToISO } from "@/lib/shared/date-utils"
@@ -50,6 +51,8 @@ export function TransactionFormModal({
   const { categories } = useCategories()
   const { categoryGroups } = useCategoryGroups()
   const { areas } = useAreas()
+  const { accounts } = useAccounts()
+  const activeAccounts = useMemo(() => accounts.filter((a) => a.status !== "archived"), [accounts])
   const [displayAmount, setDisplayAmount] = useState("")
   const [displayDate, setDisplayDate] = useState("")
   const [displayEndDate, setDisplayEndDate] = useState("")
@@ -271,12 +274,13 @@ export function TransactionFormModal({
         reset({
           date: transaction.date,
           amount: transaction.amount,
-          categoryId: transaction.categoryId,
+          categoryId: transaction.categoryId ?? "",
           contactId: transaction.contactId || "",
           description: transaction.description || "",
-          type: transaction.type,
+          type: transaction.type === "transfer" ? "expense" : transaction.type,
           status: transaction.status || "pending",
           notes: transaction.notes || "",
+          accountId: transaction.accountId,
           recurrence: recurrenceData,
         })
       } else {
@@ -312,6 +316,7 @@ export function TransactionFormModal({
           type: "expense",
           status: "pending",
           notes: "",
+          accountId: "",
           recurrence: defaultRecurrence,
         })
       }
@@ -324,12 +329,13 @@ export function TransactionFormModal({
       reset({
         date: transaction.date,
         amount: transaction.amount,
-        categoryId: transaction.categoryId || "",
+        categoryId: transaction.categoryId ?? "",
         contactId: transaction.contactId || "",
         description: transaction.description || "",
-        type: transaction.type,
+        type: transaction.type === "transfer" ? "expense" : transaction.type,
         status: transaction.status,
         notes: transaction.notes || "",
+        accountId: transaction.accountId,
         recurrence: {
           enabled: transaction.recurrence?.enabled || false,
           frequency: transaction.recurrence?.frequency || "monthly",
@@ -621,15 +627,12 @@ export function TransactionFormModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto" key={transaction?.id || "new"}>
-          <DialogHeader>
-            {transaction?.id && (
-              <div className="absolute top-2 left-2 text-xs text-muted-foreground font-mono bg-accent px-1 py-0.5 rounded">
-                ID: {transaction.id}
-              </div>
-            )}
-            <DialogTitle>{transaction ? "Editar Transação" : "Nova Transação"}</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" key={transaction?.id || "new"}>
+          <DialogHeader className="pb-2 border-b">
+            <DialogTitle className="text-base">
+              {transaction ? "Editar Transação" : "Nova Transação"}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
               {transaction
                 ? "Edite os dados da transação e clique em Atualizar para salvar as alterações."
                 : "Preencha os dados da nova transação e clique em Criar para adicionar ao sistema."}
@@ -678,6 +681,33 @@ export function TransactionFormModal({
                 </Label>
                 <Input type="text" value={displayAmount} onChange={handleAmountChange} placeholder="R$ 0,00" />
               </div>
+            </div>
+
+            {/* Row 1.5: Conta */}
+            <div>
+              <Label className="mb-2 block text-sm font-medium text-foreground flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Conta
+              </Label>
+              <Select
+                value={watch("accountId") ?? ""}
+                onValueChange={(v) => setValue("accountId", v, { shouldValidate: true, shouldDirty: true })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a conta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeAccounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                      {account.institutionName ? ` · ${account.institutionName}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.accountId && (
+                <p className="text-xs text-destructive mt-1">{errors.accountId.message as string}</p>
+              )}
             </div>
 
             {/* Row 2: Área and Grupo side by side (50% each) */}
@@ -779,6 +809,8 @@ export function TransactionFormModal({
                 </Select>
               </div>
             </div>
+
+            <Separator />
 
             <div>
               <Label htmlFor="description" className="mb-2 block text-sm font-medium text-foreground">
@@ -1157,10 +1189,12 @@ export function TransactionFormModal({
               )}
             </div>
 
-            <Card className="bg-accent border">
+            <Separator />
+
+            <Card className="bg-accent/50 border">
               <CardContent className="py-2 px-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Hierarquia:</span>
+                <div className="flex items-center gap-2 text-xs flex-wrap">
+                  <span className="text-muted-foreground uppercase tracking-wide text-[11px]">Hierarquia</span>
                   {selectedArea ? (
                     <>
                       <div className="flex items-center gap-1">
@@ -1197,11 +1231,13 @@ export function TransactionFormModal({
               </CardContent>
             </Card>
 
-            <div className="flex gap-3">
+            <Separator />
+
+            <div className="flex gap-3 pt-1">
               <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-transparent">
                 Cancelar
               </Button>
-              <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90" {...submitButton.buttonProps}>
+              <Button type="submit" className="flex-1" {...submitButton.buttonProps}>
                 {submitButton.getButtonText(transaction ? "Atualizar" : "Criar")}
               </Button>
             </div>

@@ -13,18 +13,21 @@ import {
   ChevronDown,
   ChevronRight,
   Settings,
+  ArrowRightLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { useTransactions } from "@/hooks/use-transactions"
 import { useCategories } from "@/hooks/use-categories"
 import { useCategoryGroups } from "@/hooks/use-category-groups"
 import { useAreas } from "@/hooks/use-areas"
 import { useContacts } from "@/hooks/use-contacts"
 import { TransactionFormModal } from "@/components/transactions/transaction-form-modal"
+import { TransferFormModal } from "@/components/transactions/transfer-form-modal"
 import { RecurringDeleteModal } from "@/components/transactions/recurring-delete-modal"
 import { TransactionDetailRow } from "@/components/transactions/transaction-detail-row"
 import { TransactionActionsMenu } from "@/components/transactions/transaction-actions-menu"
@@ -172,6 +175,7 @@ const isValidDateString = (dateValue: unknown): boolean => {
 
 export default function TransactionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1)
@@ -657,6 +661,23 @@ export default function TransactionsPage() {
       transaction.status === "completed" ? "pending" : "completed"
     try {
       await updateTransaction(transaction.id, { ...transaction, status: next })
+      const desc = transaction.description || "Transação"
+      const previousStatus = transaction.status
+      toast.success(
+        next === "completed"
+          ? `"${desc}" marcada como Concluída`
+          : `"${desc}" marcada como Pendente`,
+        {
+          id: `tx-status-${transaction.id}`,
+          action: {
+            label: "Desfazer",
+            onClick: () => {
+              void updateTransaction(transaction.id, { ...transaction, status: previousStatus })
+            },
+          },
+          duration: 4000,
+        },
+      )
     } catch {
       // Error surfaced via toast no hook.
     }
@@ -769,7 +790,7 @@ export default function TransactionsPage() {
 
     return (
       <Select
-        value={transaction.categoryId}
+        value={transaction.categoryId ?? undefined}
         onValueChange={(value) => handleFieldUpdate(transaction.id, "categoryId", value)}
       >
         <SelectTrigger className="w-full h-8 text-xs border-0 bg-transparent hover:bg-accent">
@@ -845,10 +866,16 @@ export default function TransactionsPage() {
             <h1 className="text-xl font-semibold text-foreground">Transações</h1>
             <p className="text-xs text-muted-foreground mt-0.5">Receitas, despesas e transferências</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-income hover:bg-income/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar registro
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsTransferModalOpen(true)}>
+              <ArrowRightLeft className="h-4 w-4 mr-2" />
+              Transferir
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar registro
+            </Button>
+          </div>
         </div>
 
         {/* KPI strip estilo ZeroPaper — 4 tiles compactos com totais e progresso */}
@@ -870,7 +897,7 @@ export default function TransactionsPage() {
             <div className="text-lg font-semibold text-foreground tabular-nums mt-1">
               {formatCurrency(dashboardData.consolidatedIncome)}
             </div>
-            <div className="w-full bg-secondary rounded-full h-1 mt-2">
+            <div className="w-full bg-white rounded-full h-1 mt-2">
               <div
                 className="bg-income h-1 rounded-full transition-all duration-300"
                 style={{
@@ -896,7 +923,7 @@ export default function TransactionsPage() {
             <div className="text-lg font-semibold text-foreground tabular-nums mt-1">
               {formatCurrency(dashboardData.consolidatedExpenses)}
             </div>
-            <div className="w-full bg-secondary rounded-full h-1 mt-2">
+            <div className="w-full bg-white rounded-full h-1 mt-2">
               <div
                 className="bg-expense h-1 rounded-full transition-all duration-300"
                 style={{
@@ -913,102 +940,101 @@ export default function TransactionsPage() {
               <TabsList className="grid w-full max-w-2xl grid-cols-5 gap-1">
                 <TabsTrigger
                   value="income"
-                  className="text-xs data-[state=active]:bg-income/10 data-[state=active]:text-income data-[state=active]:border-income/30"
+                  className="text-xs data-[state=active]:bg-income/10 data-[state=active]:text-income data-[state=active]:border-income/30 data-[state=active]:shadow-none! shadow-none!"
                 >
                   Recebimentos
                 </TabsTrigger>
                 <TabsTrigger
                   value="fixed-expenses"
-                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30 data-[state=active]:shadow-none! shadow-none!"
                 >
                   Despesas fixas
                 </TabsTrigger>
                 <TabsTrigger
                   value="daily-expenses"
-                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30 data-[state=active]:shadow-none! shadow-none!"
                 >
                   Despesas variáveis
                 </TabsTrigger>
                 <TabsTrigger
                   value="personal"
-                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30 data-[state=active]:shadow-none! shadow-none!"
                 >
                   Pessoais
                 </TabsTrigger>
                 <TabsTrigger
                   value="taxes-fees"
-                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30"
+                  className="text-xs data-[state=active]:bg-expense/10 data-[state=active]:text-expense data-[state=active]:border-expense/30 data-[state=active]:shadow-none! shadow-none!"
                 >
                   Encargos/Taxas
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-
-            <div className="flex items-center gap-1">
-              <Select
-                value={statusFilter}
-                onValueChange={(value: "all" | "pending" | "completed" | "cancelled") => setStatusFilter(value)}
-              >
-                <SelectTrigger className="w-32 h-8 text-xs">
-                  <Filter className="h-3 w-3 mr-1" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="completed">Concluída</SelectItem>
-                  <SelectItem value="cancelled">Cancelada</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => setSelectedYear(Number.parseInt(value))}
-              >
-                <SelectTrigger className="w-20 h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableYears.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={selectedMonth.toString()}
-                onValueChange={(value) => setSelectedMonth(Number.parseInt(value))}
-              >
-                <SelectTrigger className="w-24 h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((month, index) => (
-                    <SelectItem key={index + 1} value={(index + 1).toString()}>
-                      {month.slice(0, 3)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <Card className="gap-3 py-4">
             <CardContent className="pt-6">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center gap-2 mb-4">
                 <h3 className="text-lg font-semibold">Transações</h3>
-                <div className="relative">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowColumnConfig(!showColumnConfig)}
-                    className="flex items-center gap-2"
+                <div className="flex items-center gap-1">
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value: "all" | "pending" | "completed" | "cancelled") => setStatusFilter(value)}
                   >
-                    <Settings className="h-4 w-4" />
-                    Configurar Colunas
-                  </Button>
+                    <SelectTrigger className="w-32 h-8 text-xs">
+                      <Filter className="h-3 w-3 mr-1" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="completed">Concluída</SelectItem>
+                      <SelectItem value="cancelled">Cancelada</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={selectedMonth.toString()}
+                    onValueChange={(value) => setSelectedMonth(Number.parseInt(value))}
+                  >
+                    <SelectTrigger className="w-24 h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthNames.map((month, index) => (
+                        <SelectItem key={index + 1} value={(index + 1).toString()}>
+                          {month.slice(0, 3)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={selectedYear.toString()}
+                    onValueChange={(value) => setSelectedYear(Number.parseInt(value))}
+                  >
+                    <SelectTrigger className="w-20 h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableYears.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="relative">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowColumnConfig(!showColumnConfig)}
+                      className="h-8 w-8 p-0 ml-1"
+                      aria-label="Configurar colunas"
+                      title="Configurar colunas"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
                   {showColumnConfig && (
                     <div className="absolute right-0 top-full mt-2 bg-white border rounded-lg shadow-lg p-4 z-10 min-w-48">
                       <h4 className="font-medium mb-3">Colunas Visíveis</h4>
@@ -1070,6 +1096,7 @@ export default function TransactionsPage() {
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
 
@@ -1078,6 +1105,22 @@ export default function TransactionsPage() {
                   <thead>
                     <tr className="border-b border">
                       <th className="w-8 py-3 px-2" aria-label="Expandir detalhes" />
+                      {visibleColumns.status && (
+                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
+                          <button
+                            onClick={() => handleSort("status")}
+                            className="flex items-center gap-1 hover:text-foreground"
+                          >
+                            Status
+                            {sortField === "status" &&
+                              (sortDirection === "asc" ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              ))}
+                          </button>
+                        </th>
+                      )}
                       {visibleColumns.id && (
                         <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
                           <button
@@ -1134,22 +1177,6 @@ export default function TransactionsPage() {
                           >
                             Categoria
                             {sortField === "categoryId" &&
-                              (sortDirection === "asc" ? (
-                                <ChevronUp className="h-4 w-4" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4" />
-                              ))}
-                          </button>
-                        </th>
-                      )}
-                      {visibleColumns.status && (
-                        <th className="text-left py-2 px-4 text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
-                          <button
-                            onClick={() => handleSort("status")}
-                            className="flex items-center gap-1 hover:text-foreground"
-                          >
-                            Status
-                            {sortField === "status" &&
                               (sortDirection === "asc" ? (
                                 <ChevronUp className="h-4 w-4" />
                               ) : (
@@ -1236,6 +1263,51 @@ export default function TransactionsPage() {
                                 />
                               </button>
                             </td>
+                            {visibleColumns.status && (
+                              <td className="py-3 px-4">
+                                {isEditing && editingField === "status" ? (
+                                  <div className="flex items-center gap-2">
+                                    <Select
+                                      value={typeof editingValue === "string" ? editingValue : undefined}
+                                      onValueChange={setEditingValue}
+                                    >
+                                      <SelectTrigger className="h-8 text-xs w-28">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="pending">Pendente</SelectItem>
+                                        <SelectItem value="completed">Concluída</SelectItem>
+                                        <SelectItem value="cancelled">Cancelada</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <Button size="sm" variant="ghost" onClick={saveInlineEdit} className="h-6 w-6 p-0">
+                                      <Check className="h-3 w-3 text-income" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
+                                      <X className="h-3 w-3 text-expense" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Switch
+                                    checked={transactionStatus === "completed"}
+                                    onCheckedChange={() => toggleTransactionStatus(transaction)}
+                                    disabled={transactionStatus === "cancelled"}
+                                    aria-label={
+                                      transactionStatus === "completed"
+                                        ? "Marcar como pendente"
+                                        : "Marcar como concluída"
+                                    }
+                                    title={
+                                      transactionStatus === "completed"
+                                        ? "Concluída — clique para marcar como pendente"
+                                        : transactionStatus === "pending"
+                                          ? "Pendente — clique para marcar como concluída"
+                                          : "Cancelada"
+                                    }
+                                  />
+                                )}
+                              </td>
+                            )}
                             {visibleColumns.id && (
                               <td className="py-3 px-4 text-muted-foreground text-xs font-mono">{transaction.id}</td>
                             )}
@@ -1334,7 +1406,7 @@ export default function TransactionsPage() {
                                   </div>
                                 ) : (
                                   <button
-                                    onClick={() => startEditing(transaction.id, "categoryId", transaction.categoryId)}
+                                    onClick={() => startEditing(transaction.id, "categoryId", transaction.categoryId ?? "")}
                                     className="flex items-center hover:bg-accent px-2 py-1 rounded"
                                   >
                                     <div className="w-8 h-8 bg-primary/15 rounded-full flex items-center justify-center mr-2">
@@ -1344,77 +1416,6 @@ export default function TransactionsPage() {
                                     </div>
                                     <span className="text-muted-foreground text-sm">{category?.name || "Categoria"}</span>
                                   </button>
-                                )}
-                              </td>
-                            )}
-
-                            {visibleColumns.status && (
-                              <td className="py-3 px-4">
-                                {isEditing && editingField === "status" ? (
-                                  <div className="flex items-center gap-2">
-                                    <Select
-                                      value={typeof editingValue === "string" ? editingValue : undefined}
-                                      onValueChange={setEditingValue}
-                                    >
-                                      <SelectTrigger className="h-8 text-xs w-28">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="pending">Pendente</SelectItem>
-                                        <SelectItem value="completed">Concluída</SelectItem>
-                                        <SelectItem value="cancelled">Cancelada</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <Button size="sm" variant="ghost" onClick={saveInlineEdit} className="h-6 w-6 p-0">
-                                      <Check className="h-3 w-3 text-income" />
-                                    </Button>
-                                    <Button size="sm" variant="ghost" onClick={cancelEditing} className="h-6 w-6 p-0">
-                                      <X className="h-3 w-3 text-expense" />
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      role="checkbox"
-                                      aria-checked={transactionStatus === "completed"}
-                                      aria-label={
-                                        transactionStatus === "completed"
-                                          ? "Marcar como pendente"
-                                          : "Marcar como concluída"
-                                      }
-                                      onClick={() => toggleTransactionStatus(transaction)}
-                                      disabled={transactionStatus === "cancelled"}
-                                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                                        transactionStatus === "completed"
-                                          ? "border-income bg-income text-white hover:bg-income/90 hover:border-income"
-                                          : transactionStatus === "pending"
-                                            ? "border bg-white hover:border-income hover:bg-income/10"
-                                            : "border bg-accent cursor-not-allowed"
-                                      }`}
-                                    >
-                                      {transactionStatus === "completed" && (
-                                        <Check className="h-3 w-3" strokeWidth={3} />
-                                      )}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => startEditing(transaction.id, "status", transactionStatus)}
-                                      className={`text-xs hover:underline ${
-                                        transactionStatus === "completed"
-                                          ? "text-income"
-                                          : transactionStatus === "pending"
-                                            ? "text-muted-foreground"
-                                            : "text-expense line-through"
-                                      }`}
-                                    >
-                                      {transactionStatus === "completed"
-                                        ? "Concluída"
-                                        : transactionStatus === "pending"
-                                          ? "Pendente"
-                                          : "Cancelada"}
-                                    </button>
-                                  </div>
                                 )}
                               </td>
                             )}
@@ -1580,6 +1581,11 @@ export default function TransactionsPage() {
         onSubmit={selectedTransaction ? handleUpdateTransaction : handleCreateTransaction}
         onDeleteRecurrence={handleDeleteRecurrence}
         transaction={selectedTransaction}
+      />
+
+      <TransferFormModal
+        open={isTransferModalOpen}
+        onOpenChange={setIsTransferModalOpen}
       />
 
       <RecurringDeleteModal
