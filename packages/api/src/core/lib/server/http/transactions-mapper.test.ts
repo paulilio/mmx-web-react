@@ -5,13 +5,14 @@ describe("transactions-mapper", () => {
   it("parseTransactionType e parseTransactionStatus aceitam valores validos", () => {
     expect(parseTransactionType("income")).toBe("INCOME")
     expect(parseTransactionType(" EXPENSE ")).toBe("EXPENSE")
+    expect(parseTransactionType("transfer")).toBe("TRANSFER")
     expect(parseTransactionStatus("completed")).toBe("COMPLETED")
     expect(parseTransactionStatus(" PENDING ")).toBe("PENDING")
     expect(parseTransactionStatus("CANCELLED")).toBe("CANCELLED")
   })
 
   it("parseTransactionType e parseTransactionStatus rejeitam valores invalidos", () => {
-    expect(() => parseTransactionType("transfer")).toThrow("Tipo da transacao invalido")
+    expect(() => parseTransactionType("draft")).toThrow("Tipo da transacao invalido")
     expect(() => parseTransactionStatus("archived")).toThrow("Status da transacao invalido")
   })
 

@@ -1,5 +1,6 @@
-export type DomainTransactionType = "INCOME" | "EXPENSE"
+export type DomainTransactionType = "INCOME" | "EXPENSE" | "TRANSFER"
 export type DomainTransactionStatus = "COMPLETED" | "PENDING" | "CANCELLED"
+export type DomainTransferRole = "DEBIT" | "CREDIT"
 
 import {
   ensureExpenseWithinBalance,
@@ -14,13 +15,17 @@ export interface TransactionEntityProps {
   description: string
   amount: number
   type: DomainTransactionType
-  categoryId: string
+  categoryId: string | null
   date: Date
   status: DomainTransactionStatus
   notes?: string | null
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId: string
+  transferGroupId?: string | null
+  transferRole?: DomainTransferRole | null
+  transferKind?: string | null
   recurrence?: unknown
 }
 
@@ -29,41 +34,50 @@ export interface CreateTransactionEntityInput {
   description: string
   amount: number
   type: DomainTransactionType
-  categoryId: string
+  categoryId?: string | null
   date: string
   status?: DomainTransactionStatus
   notes?: string | null
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId: string
+  transferGroupId?: string | null
+  transferRole?: DomainTransferRole | null
+  transferKind?: string | null
   recurrence?: unknown
+  /** When the target account is a credit card; bypasses balance validation. */
+  accountIsCreditCard?: boolean
 }
 
 export interface UpdateTransactionEntityInput {
   description?: string
   amount?: number
   type?: DomainTransactionType
-  categoryId?: string
+  categoryId?: string | null
   date?: string
   status?: DomainTransactionStatus
   notes?: string | null
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId?: string
   recurrence?: unknown
+  accountIsCreditCard?: boolean
 }
 
 export interface TransactionEntityUpdatePayload {
   description?: string
   amount?: number
   type?: DomainTransactionType
-  categoryId?: string
+  categoryId?: string | null
   date?: Date
   status?: DomainTransactionStatus
   notes?: string | null
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId?: string
   recurrence?: unknown
 }
 
@@ -78,25 +92,35 @@ export class TransactionEntity {
 
     validateRequiredFields({
       userId: input.userId,
-      categoryId: input.categoryId,
+      categoryId: input.categoryId ?? null,
       description: input.description,
+      type: input.type,
+      accountId: input.accountId,
     })
     validateAmount(input.amount)
     validateTransactionDate(parsedDate)
-    ensureExpenseWithinBalance(input.type, input.amount, currentBalance)
+
+    // Cartao de credito nao valida saldo (divida e' valida ate creditLimit, Phase 4)
+    if (!input.accountIsCreditCard && input.type === "EXPENSE") {
+      ensureExpenseWithinBalance(input.type, input.amount, currentBalance)
+    }
 
     return new TransactionEntity({
       userId: input.userId,
       description: input.description,
       amount: input.amount,
       type: input.type,
-      categoryId: input.categoryId,
+      categoryId: input.categoryId ?? null,
       date: parsedDate,
       status: input.status ?? "PENDING",
       notes: input.notes,
       contactId: input.contactId,
       areaId: input.areaId,
       categoryGroupId: input.categoryGroupId,
+      accountId: input.accountId,
+      transferGroupId: input.transferGroupId ?? null,
+      transferRole: input.transferRole ?? null,
+      transferKind: input.transferKind ?? null,
       recurrence: input.recurrence,
     })
   }
@@ -127,7 +151,9 @@ export class TransactionEntity {
 
     const nextType = input.type ?? this.props.type
     const nextAmount = input.amount ?? this.props.amount
-    ensureExpenseWithinBalance(nextType, nextAmount, currentBalance)
+    if (!input.accountIsCreditCard && nextType === "EXPENSE") {
+      ensureExpenseWithinBalance(nextType, nextAmount, currentBalance)
+    }
 
     return {
       description: input.description,
@@ -140,6 +166,7 @@ export class TransactionEntity {
       contactId: input.contactId,
       areaId: input.areaId,
       categoryGroupId: input.categoryGroupId,
+      accountId: input.accountId,
       recurrence: input.recurrence,
     }
   }

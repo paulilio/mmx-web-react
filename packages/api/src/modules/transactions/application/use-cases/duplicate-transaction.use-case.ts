@@ -45,7 +45,8 @@ export class DuplicateTransactionUseCase {
       notes: existing.notes ?? null,
       areaId: existing.areaId ?? null,
       categoryGroupId: existing.categoryGroupId ?? null,
-      // Importante: NÃO copiar templateId/seriesIndex/recurrence — duplicata é avulsa
+      accountId: existing.accountId,
+      // Importante: NÃO copiar templateId/seriesIndex/recurrence/transferGroupId — duplicata é avulsa
     })
   }
 }

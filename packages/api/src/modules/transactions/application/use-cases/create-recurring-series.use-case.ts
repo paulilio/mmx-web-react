@@ -33,6 +33,7 @@ export interface CreateRecurringSeriesInput {
     notes?: string | null
     areaId?: string | null
     categoryGroupId?: string | null
+    accountId: string
   }
 }
 
@@ -89,6 +90,7 @@ export class CreateRecurringSeriesUseCase {
       notes: input.base.notes ?? null,
       areaId: input.base.areaId ?? null,
       categoryGroupId: input.base.categoryGroupId ?? null,
+      accountId: input.base.accountId,
     }))
 
     return this.repo.createSeries({

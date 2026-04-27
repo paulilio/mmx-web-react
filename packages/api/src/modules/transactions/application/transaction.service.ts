@@ -29,6 +29,10 @@ function toEntityProps(record: TransactionRecord): TransactionEntityProps {
     contactId: record.contactId,
     areaId: record.areaId,
     categoryGroupId: record.categoryGroupId,
+    accountId: record.accountId,
+    transferGroupId: record.transferGroupId ?? null,
+    transferRole: record.transferRole ?? null,
+    transferKind: record.transferKind ?? null,
     recurrence: record.recurrence,
   }
 }
@@ -69,6 +73,10 @@ export class TransactionApplicationService {
       contactId: entity.value.contactId,
       areaId: entity.value.areaId,
       categoryGroupId: entity.value.categoryGroupId,
+      accountId: entity.value.accountId,
+      transferGroupId: entity.value.transferGroupId,
+      transferRole: entity.value.transferRole,
+      transferKind: entity.value.transferKind,
       recurrence: entity.value.recurrence,
     })
   }

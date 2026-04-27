@@ -1,4 +1,8 @@
-import type { DomainTransactionType, DomainTransactionStatus } from "@/modules/transactions/domain/transaction-entity"
+import type {
+  DomainTransactionType,
+  DomainTransactionStatus,
+  DomainTransferRole,
+} from "@/modules/transactions/domain/transaction-entity"
 
 interface TransactionTemplateLikeRecord {
   id: string
@@ -16,13 +20,17 @@ interface TransactionLikeRecord {
   description: string
   amount: number | string | { toNumber(): number }
   type: DomainTransactionType
-  categoryId: string
+  categoryId: string | null
   contactId?: string | null
   date: Date
   status: DomainTransactionStatus
   notes?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId: string
+  transferGroupId?: string | null
+  transferRole?: DomainTransferRole | null
+  transferKind?: string | null
   recurrence?: unknown
   templateId?: string | null
   seriesIndex?: number | null
@@ -42,6 +50,7 @@ export function parseTransactionType(value: unknown): DomainTransactionType | un
 
   if (normalized === "INCOME") return "INCOME"
   if (normalized === "EXPENSE") return "EXPENSE"
+  if (normalized === "TRANSFER") return "TRANSFER"
 
   throw new Error("Tipo da transacao invalido")
 }
@@ -60,8 +69,16 @@ export function parseTransactionStatus(value: unknown): DomainTransactionStatus 
   throw new Error("Status da transacao invalido")
 }
 
-function toClientType(value: DomainTransactionType): "income" | "expense" {
-  return value === "INCOME" ? "income" : "expense"
+function toClientType(value: DomainTransactionType): "income" | "expense" | "transfer" {
+  if (value === "INCOME") return "income"
+  if (value === "EXPENSE") return "expense"
+  return "transfer"
+}
+
+function toClientTransferRole(value: DomainTransferRole | null | undefined): "debit" | "credit" | null {
+  if (value === "DEBIT") return "debit"
+  if (value === "CREDIT") return "credit"
+  return null
 }
 
 function toClientStatus(value: DomainTransactionStatus): "completed" | "pending" | "cancelled" {
@@ -83,13 +100,17 @@ export function mapTransaction(record: TransactionLikeRecord) {
     description: record.description,
     amount: toNumber(record.amount),
     type: toClientType(record.type),
-    categoryId: record.categoryId,
+    categoryId: record.categoryId ?? null,
     contactId: record.contactId ?? null,
     date: record.date.toISOString(),
     status: toClientStatus(record.status),
     notes: record.notes ?? null,
     areaId: record.areaId ?? null,
     categoryGroupId: record.categoryGroupId ?? null,
+    accountId: record.accountId,
+    transferGroupId: record.transferGroupId ?? null,
+    transferRole: toClientTransferRole(record.transferRole),
+    transferKind: record.transferKind ?? null,
     recurrence: record.recurrence ?? null,
     templateId: record.templateId ?? null,
     seriesIndex: record.seriesIndex ?? null,

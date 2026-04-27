@@ -5,8 +5,10 @@ import type {
 
 interface RequiredTransactionFields {
   userId: string
-  categoryId: string
+  categoryId: string | null | undefined
   description: string
+  type: DomainTransactionType
+  accountId: string
 }
 
 const MAX_AMOUNT = 999999999999.99
@@ -49,7 +51,12 @@ export function validateRequiredFields(input: RequiredTransactionFields): void {
     throw validationError("Usuario da transacao e obrigatorio", "MISSING_USER")
   }
 
-  if (!input.categoryId?.trim()) {
+  if (!input.accountId?.trim()) {
+    throw validationError("Conta da transacao e obrigatoria", "MISSING_ACCOUNT")
+  }
+
+  // Categoria so e' obrigatoria para INCOME/EXPENSE; TRANSFER nao tem categoria.
+  if (input.type !== "TRANSFER" && !input.categoryId?.trim()) {
     throw validationError("Categoria da transacao e obrigatoria", "MISSING_CATEGORY")
   }
 

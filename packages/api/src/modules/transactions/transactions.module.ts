@@ -13,12 +13,18 @@ import { SkipNextOccurrenceUseCase } from "./application/use-cases/skip-next-occ
 import { DuplicateTransactionUseCase } from "./application/use-cases/duplicate-transaction.use-case"
 import { MarkAsExceptionUseCase } from "./application/use-cases/mark-as-exception.use-case"
 import { DeleteRecurringSeriesUseCase } from "./application/use-cases/delete-recurring-series.use-case"
+import { CreateTransferUseCase } from "./application/use-cases/create-transfer.use-case"
+import { AccountsModule } from "../accounts/accounts.module"
+import { ACCOUNT_REPOSITORY } from "../accounts/application/ports/account-repository.port"
+import { PrismaAccountRepository } from "../accounts/infrastructure/repositories/prisma-account.repository"
 
 @Module({
+  imports: [AccountsModule],
   controllers: [TransactionsController],
   providers: [
     { provide: TRANSACTION_REPOSITORY, useClass: PrismaTransactionRepository },
     { provide: RECURRING_TEMPLATE_REPOSITORY, useClass: PrismaRecurringTemplateRepository },
+    { provide: ACCOUNT_REPOSITORY, useClass: PrismaAccountRepository },
     TransactionApplicationService,
     RecurringTemplateApplicationService,
     CreateRecurringSeriesUseCase,
@@ -28,6 +34,7 @@ import { DeleteRecurringSeriesUseCase } from "./application/use-cases/delete-rec
     DuplicateTransactionUseCase,
     MarkAsExceptionUseCase,
     DeleteRecurringSeriesUseCase,
+    CreateTransferUseCase,
   ],
 })
 export class TransactionsModule {}

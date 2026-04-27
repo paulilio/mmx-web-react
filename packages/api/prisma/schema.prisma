@@ -17,6 +17,12 @@ enum PlanType {
 enum TransactionType {
   INCOME
   EXPENSE
+  TRANSFER
+}
+
+enum TransferRole {
+  DEBIT
+  CREDIT
 }
 
 enum TransactionStatus {
@@ -243,7 +249,7 @@ model Transaction {
   description             String                @default("")
   amount                  Decimal               @db.Decimal(14, 2)
   type                    TransactionType
-  categoryId              String
+  categoryId              String?
   contactId               String?
   date                    DateTime              @db.Date
   status                  TransactionStatus     @default(PENDING)
@@ -256,6 +262,10 @@ model Transaction {
   isException             Boolean               @default(false)
   areaId                  String?
   categoryGroupId         String?
+  accountId               String
+  transferGroupId         String?
+  transferRole            TransferRole?
+  transferKind            String?
   deletedAt               DateTime?
   importedFromOpenFinance Boolean               @default(false)
   createdAt               DateTime              @default(now())
@@ -268,6 +278,8 @@ model Transaction {
   @@index([userId, categoryId])
   @@index([userId, templateId, date])
   @@index([userId, skipped])
+  @@index([userId, accountId, date])
+  @@index([userId, transferGroupId])
 }
 
 model RecurringTemplate {

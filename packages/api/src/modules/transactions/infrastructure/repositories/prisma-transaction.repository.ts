@@ -59,6 +59,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       status: filters.status,
       type: filters.type,
       categoryId: filters.categoryId,
+      accountId: filters.accountId,
       date: {
         gte: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
         lte: filters.dateTo ? new Date(filters.dateTo) : undefined,

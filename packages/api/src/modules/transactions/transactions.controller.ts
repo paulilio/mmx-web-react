@@ -23,6 +23,7 @@ import { SkipNextOccurrenceUseCase } from "./application/use-cases/skip-next-occ
 import { DuplicateTransactionUseCase } from "./application/use-cases/duplicate-transaction.use-case"
 import { MarkAsExceptionUseCase } from "./application/use-cases/mark-as-exception.use-case"
 import { DeleteRecurringSeriesUseCase } from "./application/use-cases/delete-recurring-series.use-case"
+import { CreateTransferUseCase } from "./application/use-cases/create-transfer.use-case"
 import {
   mapTransaction,
   parseTransactionStatus,
@@ -48,6 +49,7 @@ export class TransactionsController {
     private readonly duplicate: DuplicateTransactionUseCase,
     private readonly markAsException: MarkAsExceptionUseCase,
     private readonly deleteRecurringSeries: DeleteRecurringSeriesUseCase,
+    private readonly createTransferUseCase: CreateTransferUseCase,
   ) {}
   @Get()
   async list(
@@ -57,6 +59,7 @@ export class TransactionsController {
     @Query("type") type?: string,
     @Query("status") status?: string,
     @Query("categoryId") categoryId?: string,
+    @Query("accountId") accountId?: string,
     @Query("dateFrom") dateFrom?: string,
     @Query("dateTo") dateTo?: string,
   ) {
@@ -69,6 +72,7 @@ export class TransactionsController {
         type: parseTransactionType(type ?? null),
         status: parseTransactionStatus(status ?? null),
         categoryId,
+        accountId,
         dateFrom,
         dateTo,
       },
@@ -100,16 +104,29 @@ export class TransactionsController {
       contactId?: string | null
       areaId?: string | null
       categoryGroupId?: string | null
+      accountId?: string
       recurrence?: unknown
       currentBalance?: number
     },
   ) {
-    if (!body.date || !body.type || !body.categoryId) {
-      throw Object.assign(new Error("Campos obrigatorios: date, type, categoryId"), { status: 400, code: "INVALID_INPUT" })
+    if (!body.date || !body.type) {
+      throw Object.assign(new Error("Campos obrigatorios: date, type"), { status: 400, code: "INVALID_INPUT" })
+    }
+
+    if (!body.accountId) {
+      throw Object.assign(new Error("accountId obrigatorio"), { status: 400, code: "MISSING_ACCOUNT" })
     }
 
     const parsedType = parseTransactionType(body.type)
     if (!parsedType) throw Object.assign(new Error("Tipo da transacao invalido"), { status: 400, code: "INVALID_INPUT" })
+
+    if (parsedType === "TRANSFER") {
+      throw Object.assign(new Error("Use POST /transactions/transfer para criar transferencias"), { status: 400, code: "USE_TRANSFER_ENDPOINT" })
+    }
+
+    if (!body.categoryId) {
+      throw Object.assign(new Error("categoryId obrigatorio para INCOME/EXPENSE"), { status: 400, code: "INVALID_INPUT" })
+    }
 
     const created = await this.transactionService.create(
       {
@@ -124,6 +141,7 @@ export class TransactionsController {
         contactId: body.contactId,
         areaId: body.areaId,
         categoryGroupId: body.categoryGroupId,
+        accountId: body.accountId,
         recurrence: body.recurrence,
       },
       body.currentBalance,
@@ -147,6 +165,7 @@ export class TransactionsController {
       contactId?: string | null
       areaId?: string | null
       categoryGroupId?: string | null
+      accountId?: string
       recurrence?: unknown
       currentBalance?: number
     },
@@ -165,6 +184,7 @@ export class TransactionsController {
         contactId: body.contactId,
         areaId: body.areaId,
         categoryGroupId: body.categoryGroupId,
+        accountId: body.accountId,
         recurrence: body.recurrence,
       },
       body.currentBalance,
@@ -176,6 +196,47 @@ export class TransactionsController {
   async remove(@AuthUser() userId: string, @Param("id") id: string) {
     const deleted = await this.transactionService.remove(id, userId)
     return mapTransaction(deleted)
+  }
+
+  @Post("transfer")
+  @HttpCode(HttpStatus.CREATED)
+  async createTransfer(
+    @AuthUser() userId: string,
+    @Body() body: {
+      fromAccountId?: string
+      toAccountId?: string
+      amount?: number
+      date?: string
+      description?: string
+      notes?: string | null
+      transferKind?: string | null
+      status?: "PENDING" | "COMPLETED"
+    },
+  ) {
+    if (!body.fromAccountId || !body.toAccountId || !body.date || body.amount == null) {
+      throw Object.assign(
+        new Error("Campos obrigatorios: fromAccountId, toAccountId, amount, date"),
+        { status: 400, code: "INVALID_INPUT" },
+      )
+    }
+
+    const result = await this.createTransferUseCase.execute({
+      userId,
+      fromAccountId: body.fromAccountId,
+      toAccountId: body.toAccountId,
+      amount: Number(body.amount),
+      date: body.date,
+      description: body.description ?? "",
+      notes: body.notes ?? null,
+      transferKind: body.transferKind ?? null,
+      status: body.status ?? "PENDING",
+    })
+
+    return {
+      transferGroupId: result.transferGroupId,
+      debit: mapTransaction(result.debit),
+      credit: mapTransaction(result.credit),
+    }
   }
 
   @Post("recurring")
@@ -205,6 +266,7 @@ export class TransactionsController {
         notes?: string | null
         areaId?: string | null
         categoryGroupId?: string | null
+        accountId?: string
       }
     },
   ) {
@@ -227,6 +289,12 @@ export class TransactionsController {
       throw Object.assign(new Error("base.type e base.categoryId são obrigatórios"), {
         status: 400,
         code: "INVALID_INPUT",
+      })
+    }
+    if (!b.accountId) {
+      throw Object.assign(new Error("base.accountId é obrigatório"), {
+        status: 400,
+        code: "MISSING_ACCOUNT",
       })
     }
 
@@ -302,6 +370,7 @@ export class TransactionsController {
         notes: b.notes ?? null,
         areaId: b.areaId ?? null,
         categoryGroupId: b.categoryGroupId ?? null,
+        accountId: b.accountId,
       },
     })
 

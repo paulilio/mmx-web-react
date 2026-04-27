@@ -1,6 +1,7 @@
 export type {
   DomainTransactionType,
   DomainTransactionStatus,
+  DomainTransferRole,
 } from "./transaction-entity"
 
 export interface TransactionRecord {
@@ -9,7 +10,7 @@ export interface TransactionRecord {
   description: string
   amount: number | string | import("@prisma/client").Prisma.Decimal
   type: import("./transaction-entity").DomainTransactionType
-  categoryId: string
+  categoryId: string | null
   contactId?: string | null
   date: Date
   status: import("./transaction-entity").DomainTransactionStatus
@@ -21,6 +22,10 @@ export interface TransactionRecord {
   isException?: boolean
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId: string
+  transferGroupId?: string | null
+  transferRole?: import("./transaction-entity").DomainTransferRole | null
+  transferKind?: string | null
   deletedAt?: Date | null
   createdAt: Date
   updatedAt: Date
@@ -31,13 +36,17 @@ export interface CreateTransactionRecordInput {
   description: string
   amount: number
   type: import("./transaction-entity").DomainTransactionType
-  categoryId: string
+  categoryId: string | null
   date: Date
   status: import("./transaction-entity").DomainTransactionStatus
   notes?: string | null
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId: string
+  transferGroupId?: string | null
+  transferRole?: import("./transaction-entity").DomainTransferRole | null
+  transferKind?: string | null
   recurrence?: unknown
 }
 
@@ -45,13 +54,14 @@ export interface UpdateTransactionRecordInput {
   description?: string
   amount?: number
   type?: import("./transaction-entity").DomainTransactionType
-  categoryId?: string
+  categoryId?: string | null
   date?: Date
   status?: import("./transaction-entity").DomainTransactionStatus
   notes?: string | null
   contactId?: string | null
   areaId?: string | null
   categoryGroupId?: string | null
+  accountId?: string
   recurrence?: unknown
 }
 
@@ -60,6 +70,7 @@ export interface TransactionFilters {
   status?: import("./transaction-entity").DomainTransactionStatus
   type?: import("./transaction-entity").DomainTransactionType
   categoryId?: string
+  accountId?: string
   dateFrom?: string
   dateTo?: string
 }
