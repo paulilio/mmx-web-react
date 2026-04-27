@@ -42,6 +42,14 @@ interface SeedIds {
   CONTACT_SABESP: string
   CONTACT_VIVO: string
   CONTACT_CARREFOUR: string
+  // Accounts
+  ACC_BB_CORRENTE: string
+  ACC_MP_CORRENTE: string
+  ACC_BB_INVEST: string
+  ACC_BB_CNPJ: string
+  ACC_BB_CC: string
+  ACC_NUBANK_CC: string
+  ACC_MP_CC: string
 }
 
 function makeIds(): SeedIds {
@@ -87,6 +95,13 @@ function makeIds(): SeedIds {
     CONTACT_SABESP: id("contact_sabesp"),
     CONTACT_VIVO: id("contact_vivo"),
     CONTACT_CARREFOUR: id("contact_carrefour"),
+    ACC_BB_CORRENTE: id("acc_bb_corrente"),
+    ACC_MP_CORRENTE: id("acc_mp_corrente"),
+    ACC_BB_INVEST: id("acc_bb_invest"),
+    ACC_BB_CNPJ: id("acc_bb_cnpj"),
+    ACC_BB_CC: id("acc_bb_cc"),
+    ACC_NUBANK_CC: id("acc_nubank_cc"),
+    ACC_MP_CC: id("acc_mp_cc"),
   }
 }
 
@@ -111,6 +126,32 @@ type SeedTransaction = {
   date: string
   status: "PENDING" | "COMPLETED" | "CANCELLED"
   notes: string | null
+  accountId: string
+}
+
+type SeedTxLite = Omit<SeedTransaction, "accountId">
+
+function pickAccountForCategory(categoryId: string, ID: SeedIds): string {
+  // Distribuicao por conta (realismo financeiro):
+  // - Salario / aluguel / contas fixas / IPTU debitam de BB Corrente
+  // - Freelance entra na MP Corrente (renda extra)
+  // - Mercado e restaurante caem no Nubank
+  // - Combustivel e Uber no MP Cartao
+  // - Saude (academia/farmacia) no BB Cartao
+  if (categoryId === ID.CAT_SALARY) return ID.ACC_BB_CORRENTE
+  if (categoryId === ID.CAT_FREELANCE) return ID.ACC_MP_CORRENTE
+  if (categoryId === ID.CAT_RENT) return ID.ACC_BB_CORRENTE
+  if (categoryId === ID.CAT_ELECTRIC) return ID.ACC_BB_CORRENTE
+  if (categoryId === ID.CAT_WATER) return ID.ACC_BB_CORRENTE
+  if (categoryId === ID.CAT_INTERNET) return ID.ACC_BB_CORRENTE
+  if (categoryId === ID.CAT_IPTU) return ID.ACC_BB_CORRENTE
+  if (categoryId === ID.CAT_GROCERIES) return ID.ACC_NUBANK_CC
+  if (categoryId === ID.CAT_RESTAURANT) return ID.ACC_NUBANK_CC
+  if (categoryId === ID.CAT_FUEL) return ID.ACC_MP_CC
+  if (categoryId === ID.CAT_UBER) return ID.ACC_MP_CC
+  if (categoryId === ID.CAT_GYM) return ID.ACC_BB_CC
+  if (categoryId === ID.CAT_PHARMACY) return ID.ACC_BB_CC
+  return ID.ACC_BB_CORRENTE
 }
 
 function buildMonth(offsetMonths: number, ID: SeedIds, txPrefix: string): SeedTransaction[] {
@@ -126,7 +167,7 @@ function buildMonth(offsetMonths: number, ID: SeedIds, txPrefix: string): SeedTr
 
   const txId = (label: string) => `${txPrefix}_${monthLabel}_${label}`
 
-  const txs: SeedTransaction[] = [
+  const txs: SeedTxLite[] = [
     {
       id: txId("salary"),
       description: "Salário mensal",
@@ -460,7 +501,7 @@ function buildMonth(offsetMonths: number, ID: SeedIds, txPrefix: string): SeedTr
     })
   }
 
-  return txs
+  return txs.map((t) => ({ ...t, accountId: pickAccountForCategory(t.categoryId, ID) }))
 }
 
 export function getDefaultSeed(): SeedData {
@@ -562,11 +603,124 @@ export function getDefaultSeed(): SeedData {
     { id: ID.CONTACT_CARREFOUR, name: "Carrefour", type: "SUPPLIER", status: "ACTIVE" },
   ]
 
+  // Data de saldo inicial: 6 meses atrás. Cobre todas as transações fictícias geradas (3 meses).
+  const openingDate = (() => {
+    const today = new Date()
+    const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 6, 1))
+    return d.toISOString().split("T")[0]!
+  })()
+
+  const accountId = (label: string) => `seed_${ID.AREA_INCOME.split("_")[1]}_acc_${label}`
+
+  const accounts = [
+    {
+      id: accountId("bb_corrente"),
+      name: "BB Corrente",
+      institutionName: "Banco do Brasil",
+      type: "CHECKING",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: 2450.0,
+      openingBalanceDate: openingDate,
+      icon: "Wallet",
+      color: "#FBBF24",
+      isBusiness: false,
+    },
+    {
+      id: accountId("mp_corrente"),
+      name: "Mercado Pago",
+      institutionName: "Mercado Pago",
+      type: "CHECKING",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: 580.0,
+      openingBalanceDate: openingDate,
+      icon: "Wallet",
+      color: "#06B6D4",
+      isBusiness: false,
+    },
+    {
+      id: accountId("bb_invest"),
+      name: "BB Investimento",
+      institutionName: "Banco do Brasil",
+      type: "INVESTMENT",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: 12300.0,
+      openingBalanceDate: openingDate,
+      icon: "TrendingUp",
+      color: "#10B981",
+      isBusiness: false,
+    },
+    {
+      id: accountId("bb_cnpj"),
+      name: "BB Empresa",
+      institutionName: "Banco do Brasil",
+      type: "BUSINESS",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: 4200.0,
+      openingBalanceDate: openingDate,
+      icon: "Building2",
+      color: "#6366F1",
+      isBusiness: true,
+    },
+    {
+      id: accountId("bb_cc"),
+      name: "Cartão BB",
+      institutionName: "Banco do Brasil",
+      type: "CREDIT_CARD",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: -850.0,
+      openingBalanceDate: openingDate,
+      icon: "CreditCard",
+      color: "#FBBF24",
+      isBusiness: false,
+      creditLimit: 5000.0,
+      closingDay: 5,
+      dueDay: 12,
+    },
+    {
+      id: accountId("nubank_cc"),
+      name: "Cartão Nubank",
+      institutionName: "Nubank",
+      type: "CREDIT_CARD",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: -1240.0,
+      openingBalanceDate: openingDate,
+      icon: "CreditCard",
+      color: "#8B5CF6",
+      isBusiness: false,
+      creditLimit: 8000.0,
+      closingDay: 18,
+      dueDay: 25,
+    },
+    {
+      id: accountId("mp_cc"),
+      name: "Cartão Mercado Pago",
+      institutionName: "Mercado Pago",
+      type: "CREDIT_CARD",
+      status: "ACTIVE",
+      currency: "BRL",
+      openingBalance: -380.0,
+      openingBalanceDate: openingDate,
+      icon: "CreditCard",
+      color: "#06B6D4",
+      isBusiness: false,
+      creditLimit: 3000.0,
+      closingDay: 10,
+      dueDay: 17,
+    },
+  ]
+
   return {
     mmx_areas: areas,
     mmx_category_groups: categoryGroups,
     mmx_categories: categories,
     mmx_transactions: transactions,
     mmx_contacts: contacts,
+    mmx_accounts: accounts,
   }
 }

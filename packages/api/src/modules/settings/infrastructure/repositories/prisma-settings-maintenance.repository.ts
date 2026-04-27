@@ -24,6 +24,7 @@ type SettingsDbTransactionClient = {
   category: SettingsDelegate
   transaction: SettingsDelegate
   contact: SettingsDelegate
+  account: SettingsDelegate
 }
 
 type SettingsDbClient = SettingsDbTransactionClient & {
@@ -36,6 +37,7 @@ const DEFAULT_TABLES: SeedTableKey[] = [
   "mmx_categories",
   "mmx_transactions",
   "mmx_contacts",
+  "mmx_accounts",
 ]
 
 function normalizeSeedTableKey(value: unknown): SeedTableKey {
@@ -48,8 +50,70 @@ function normalizeSeedTableKey(value: unknown): SeedTableKey {
   if (value === "mmx_categories") return "mmx_categories"
   if (value === "mmx_transactions") return "mmx_transactions"
   if (value === "mmx_contacts") return "mmx_contacts"
+  if (value === "mmx_accounts") return "mmx_accounts"
 
   throw new Error("Tabela invalida")
+}
+
+function normalizeAccountType(value: unknown):
+  | "CHECKING"
+  | "SAVINGS"
+  | "CREDIT_CARD"
+  | "INVESTMENT"
+  | "BUSINESS"
+  | "CASH"
+  | "OTHER" {
+  if (typeof value !== "string") {
+    throw new Error("Tipo da conta invalido")
+  }
+
+  const normalized = value.trim().toUpperCase().replace(/-/g, "_")
+
+  if (normalized === "CHECKING") return "CHECKING"
+  if (normalized === "SAVINGS") return "SAVINGS"
+  if (normalized === "CREDIT_CARD") return "CREDIT_CARD"
+  if (normalized === "INVESTMENT") return "INVESTMENT"
+  if (normalized === "BUSINESS") return "BUSINESS"
+  if (normalized === "CASH") return "CASH"
+  if (normalized === "OTHER") return "OTHER"
+
+  throw new Error("Tipo da conta invalido")
+}
+
+function normalizeAccountStatus(
+  value: unknown,
+): "ACTIVE" | "ARCHIVED" | "PENDING_REVIEW" {
+  if (typeof value !== "string") {
+    throw new Error("Status da conta invalido")
+  }
+
+  const normalized = value.trim().toUpperCase().replace(/-/g, "_")
+
+  if (normalized === "ACTIVE") return "ACTIVE"
+  if (normalized === "ARCHIVED") return "ARCHIVED"
+  if (normalized === "PENDING_REVIEW") return "PENDING_REVIEW"
+
+  throw new Error("Status da conta invalido")
+}
+
+function parseInteger(value: unknown): number | null {
+  if (value == null) return null
+  if (typeof value === "number" && Number.isInteger(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    if (Number.isInteger(parsed)) return parsed
+  }
+  return null
+}
+
+function parseAmountOrNull(value: unknown): number | null {
+  if (value == null) return null
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return null
 }
 
 function normalizeAreaType(value: unknown):
@@ -88,7 +152,7 @@ function normalizeCategoryType(value: unknown): "INCOME" | "EXPENSE" {
   throw new Error("Tipo da categoria invalido")
 }
 
-function normalizeTransactionType(value: unknown): "INCOME" | "EXPENSE" {
+function normalizeTransactionType(value: unknown): "INCOME" | "EXPENSE" | "TRANSFER" {
   if (typeof value !== "string") {
     throw new Error("Tipo da transacao invalido")
   }
@@ -97,8 +161,18 @@ function normalizeTransactionType(value: unknown): "INCOME" | "EXPENSE" {
 
   if (normalized === "INCOME") return "INCOME"
   if (normalized === "EXPENSE") return "EXPENSE"
+  if (normalized === "TRANSFER") return "TRANSFER"
 
   throw new Error("Tipo da transacao invalido")
+}
+
+function normalizeTransferRole(value: unknown): "DEBIT" | "CREDIT" | null {
+  if (value == null) return null
+  if (typeof value !== "string") return null
+  const normalized = value.trim().toUpperCase()
+  if (normalized === "DEBIT") return "DEBIT"
+  if (normalized === "CREDIT") return "CREDIT"
+  return null
 }
 
 function normalizeActiveInactiveStatus(
@@ -248,6 +322,13 @@ export class PrismaSettingsMaintenanceRepository
       })
     }
 
+    if (selectedTables.includes("mmx_accounts")) {
+      result.mmx_accounts = await this.db.account.findMany({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+      })
+    }
+
     return result
   }
 
@@ -260,6 +341,7 @@ export class PrismaSettingsMaintenanceRepository
       mmx_categories: 0,
       mmx_transactions: 0,
       mmx_contacts: 0,
+      mmx_accounts: 0,
     }
 
     await this.db.$transaction(async (tx) => {
@@ -281,6 +363,11 @@ export class PrismaSettingsMaintenanceRepository
       if (selectedTables.includes("mmx_contacts")) {
         const deleted = await tx.contact.deleteMany({ where: { userId } })
         cleared.mmx_contacts = deleted.count
+      }
+
+      if (selectedTables.includes("mmx_accounts")) {
+        const deleted = await tx.account.deleteMany({ where: { userId } })
+        cleared.mmx_accounts = deleted.count
       }
 
       if (selectedTables.includes("mmx_areas")) {
@@ -316,6 +403,9 @@ export class PrismaSettingsMaintenanceRepository
     const categories = (seedData.mmx_categories as unknown[]).filter(isRecord)
     const transactions = (seedData.mmx_transactions as unknown[]).filter(isRecord)
     const contacts = (seedData.mmx_contacts as unknown[]).filter(isRecord)
+    const accounts = Array.isArray(seedData.mmx_accounts)
+      ? (seedData.mmx_accounts as unknown[]).filter(isRecord)
+      : []
 
     const imported: Record<SeedTableKey, number> = {
       mmx_areas: 0,
@@ -323,6 +413,7 @@ export class PrismaSettingsMaintenanceRepository
       mmx_categories: 0,
       mmx_transactions: 0,
       mmx_contacts: 0,
+      mmx_accounts: 0,
     }
 
     await this.db.$transaction(async (tx) => {
@@ -330,6 +421,7 @@ export class PrismaSettingsMaintenanceRepository
       await tx.category.deleteMany({ where: { userId } })
       await tx.categoryGroup.deleteMany({ where: { userId } })
       await tx.contact.deleteMany({ where: { userId } })
+      await tx.account.deleteMany({ where: { userId } })
       await tx.area.deleteMany({ where: { userId } })
 
       if (areas.length > 0) {
@@ -401,7 +493,7 @@ export class PrismaSettingsMaintenanceRepository
             description: typeof item.description === "string" ? item.description : "",
             amount: parseAmount(item.amount),
             type: normalizeTransactionType(item.type),
-            categoryId: typeof item.categoryId === "string" ? item.categoryId : "",
+            categoryId: typeof item.categoryId === "string" ? item.categoryId : null,
             contactId: typeof item.contactId === "string" ? item.contactId : null,
             date: parseDate(item.date, "date"),
             status: normalizeTransactionStatus(item.status ?? "PENDING"),
@@ -413,6 +505,10 @@ export class PrismaSettingsMaintenanceRepository
             areaId: typeof item.areaId === "string" ? item.areaId : null,
             categoryGroupId:
               typeof item.categoryGroupId === "string" ? item.categoryGroupId : null,
+            accountId: typeof item.accountId === "string" ? item.accountId : "",
+            transferGroupId: typeof item.transferGroupId === "string" ? item.transferGroupId : null,
+            transferRole: normalizeTransferRole(item.transferRole),
+            transferKind: typeof item.transferKind === "string" ? item.transferKind : null,
             createdAt: parseOptionalDate(item.createdAt),
             updatedAt: parseOptionalDate(item.updatedAt),
           })),
@@ -438,6 +534,32 @@ export class PrismaSettingsMaintenanceRepository
           skipDuplicates: true,
         })
         imported.mmx_contacts = created.count
+      }
+
+      if (accounts.length > 0) {
+        const created = await tx.account.createMany({
+          data: accounts.map((item) => ({
+            id: typeof item.id === "string" ? item.id : undefined,
+            userId,
+            name: typeof item.name === "string" ? item.name : "",
+            institutionName: typeof item.institutionName === "string" ? item.institutionName : null,
+            type: normalizeAccountType(item.type),
+            status: normalizeAccountStatus(item.status ?? "ACTIVE"),
+            currency: typeof item.currency === "string" ? item.currency : "BRL",
+            openingBalance: parseAmountOrNull(item.openingBalance) ?? 0,
+            openingBalanceDate: parseDate(item.openingBalanceDate, "openingBalanceDate"),
+            color: typeof item.color === "string" ? item.color : null,
+            icon: typeof item.icon === "string" ? item.icon : null,
+            isBusiness: item.isBusiness === true,
+            creditLimit: parseAmountOrNull(item.creditLimit),
+            closingDay: parseInteger(item.closingDay),
+            dueDay: parseInteger(item.dueDay),
+            createdAt: parseOptionalDate(item.createdAt),
+            updatedAt: parseOptionalDate(item.updatedAt),
+          })),
+          skipDuplicates: true,
+        })
+        imported.mmx_accounts = created.count
       }
     })
 

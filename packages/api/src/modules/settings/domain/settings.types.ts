@@ -4,6 +4,7 @@ export type SeedTableKey =
   | "mmx_categories"
   | "mmx_transactions"
   | "mmx_contacts"
+  | "mmx_accounts"
 
 export type SeedData = Record<SeedTableKey, unknown[]>
 
