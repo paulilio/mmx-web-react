@@ -31,6 +31,71 @@ export const categoryGroupSchema = z.object({
   categoryIds: z.array(z.string()).optional(),
 })
 
+export const accountSchema = z
+  .object({
+    name: z.string().min(1, "Nome é obrigatório"),
+    institutionName: z.string().optional(),
+    type: z.enum(
+      ["checking", "savings", "credit-card", "investment", "business", "cash", "other"],
+      { required_error: "Tipo é obrigatório" },
+    ),
+    currency: z.string().regex(/^[A-Za-z]{3}$/, "Moeda deve ser ISO 3 letras (ex.: BRL)").optional(),
+    openingBalance: z.number().optional(),
+    openingBalanceDate: z.string().optional(),
+    color: z.string().optional(),
+    icon: z.string().optional(),
+    creditLimit: z.number().positive("Limite deve ser maior que zero").nullable().optional(),
+    closingDay: z.number().int().min(1).max(31).nullable().optional(),
+    dueDay: z.number().int().min(1).max(31).nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === "credit-card") {
+      if (data.creditLimit == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["creditLimit"],
+          message: "Cartão exige limite de crédito",
+        })
+      }
+      if (data.closingDay == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["closingDay"],
+          message: "Cartão exige dia de fechamento",
+        })
+      }
+      if (data.dueDay == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["dueDay"],
+          message: "Cartão exige dia de vencimento",
+        })
+      }
+    } else {
+      if (data.creditLimit != null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["creditLimit"],
+          message: "Limite só é permitido para cartão de crédito",
+        })
+      }
+      if (data.closingDay != null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["closingDay"],
+          message: "Dia de fechamento só é permitido para cartão de crédito",
+        })
+      }
+      if (data.dueDay != null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["dueDay"],
+          message: "Dia de vencimento só é permitido para cartão de crédito",
+        })
+      }
+    }
+  })
+
 export const areaSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   description: z.string().optional(),
@@ -136,7 +201,24 @@ export const transactionSchema = z.object({
   contactId: z.string().optional(),
   areaId: z.string().optional(),
   categoryGroupId: z.string().optional(),
+  accountId: z.string().min(1, "Conta é obrigatória"),
 })
+
+export const transferSchema = z
+  .object({
+    fromAccountId: z.string().min(1, "Conta de origem é obrigatória"),
+    toAccountId: z.string().min(1, "Conta de destino é obrigatória"),
+    amount: z.number().positive("Valor deve ser positivo"),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato da data deve ser YYYY-MM-DD"),
+    description: z.string().optional(),
+    notes: z.string().optional(),
+    transferKind: z.string().optional(),
+    status: z.enum(["pending", "completed"]).optional(),
+  })
+  .refine((data) => data.fromAccountId !== data.toAccountId, {
+    message: "Origem e destino devem ser contas diferentes",
+    path: ["toAccountId"],
+  })
 
 export const associationSchema = z.object({
   areaId: z.string().min(1, "Área é obrigatória"),
@@ -150,6 +232,7 @@ export type AreaFormData = z.infer<typeof areaSchema>
 export type BudgetFormData = z.infer<typeof budgetSchema>
 export type FundTransferFormData = z.infer<typeof fundTransferSchema>
 export type TransactionFormData = z.infer<typeof transactionSchema>
+export type TransferFormDataSchema = z.infer<typeof transferSchema>
 export type AssociationFormData = z.infer<typeof associationSchema>
 
 export const budgetGroupSchema = categoryGroupSchema

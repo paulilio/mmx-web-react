@@ -38,6 +38,7 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
     amount: 100,
     type: "expense",
     categoryId: "cat_1",
+    accountId: "acc_1",
     date: "2026-03-01",
     status: "pending",
     recurrence: baseRecurrence,

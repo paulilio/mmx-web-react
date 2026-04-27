@@ -5,6 +5,7 @@ import { api } from "@/lib/client/api"
 import type {
   Transaction,
   TransactionFormData,
+  TransferFormData,
   Category,
   CategoryGroup,
   RecurringTemplate,
@@ -13,6 +14,7 @@ import type {
 
 interface TransactionsParams {
   categoryId?: string
+  accountId?: string
   month?: string
   date_from?: string
   date_to?: string
@@ -76,6 +78,9 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
     if (!data.categoryId) {
       throw new Error("Selecione uma categoria válida antes de salvar.")
     }
+    if (!data.accountId) {
+      throw new Error("Selecione uma conta antes de salvar.")
+    }
     const hierarchy = await resolveAreaIdFromCategory(data.categoryId)
     if (!hierarchy) {
       throw new Error("Selecione uma categoria válida antes de salvar.")
@@ -107,6 +112,7 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
           notes: data.notes ?? null,
           areaId: hierarchy.areaId,
           categoryGroupId: hierarchy.categoryGroupId,
+          accountId: data.accountId,
         },
       })) as { template: RecurringTemplate; executions: Transaction[] }
 
@@ -279,6 +285,23 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
     return result
   }
 
+  const createTransfer = async (data: TransferFormData) => {
+    const payload = {
+      fromAccountId: data.fromAccountId,
+      toAccountId: data.toAccountId,
+      amount: data.amount,
+      date: data.date,
+      description: data.description ?? "",
+      notes: data.notes ?? null,
+      transferKind: data.transferKind ?? null,
+      status: (data.status === "completed" ? "COMPLETED" : "PENDING") as "PENDING" | "COMPLETED",
+    }
+    const result = await api.post("/transactions/transfer", payload)
+    mutate()
+    onDataChange?.()
+    return result
+  }
+
   const getSeries = async (templateId: string): Promise<RecurringSeriesView> => {
     return (await api.get(`/transactions/recurring/${templateId}`)) as RecurringSeriesView
   }
@@ -320,6 +343,7 @@ export function useTransactions(params: TransactionsParams = {}, onDataChange?: 
     toggleSeriesPause,
     duplicateTransaction,
     markAsException,
+    createTransfer,
     getSeries,
     getSpentByCategory,
     getTransactionsByMonth,

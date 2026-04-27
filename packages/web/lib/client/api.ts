@@ -1,5 +1,5 @@
 import { USE_API, API_BASE } from "../shared/config"
-import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage } from "../mock/storage"
+import { areasStorage, categoryGroupsStorage, categoriesStorage, transactionsStorage, contactsStorage, accountsStorage } from "../mock/storage"
 import { apiLogger } from "../shared/logger"
 
 class ApiError extends Error {
@@ -246,6 +246,18 @@ export async function getJSON<T>(endpoint: string): Promise<T> {
     if (canonicalEndpoint === "/contacts") {
       return contactsStorage.getAll() as T
     }
+    if (canonicalEndpoint === "/accounts" || canonicalEndpoint.startsWith("/accounts?")) {
+      return accountsStorage.getAll() as T
+    }
+    if (canonicalEndpoint.startsWith("/accounts/")) {
+      const parts = canonicalEndpoint.split("/").filter(Boolean)
+      const id = parts[1]!
+      if (parts[2] === "balance") {
+        const balance = await accountsStorage.getBalance(id)
+        return balance as T
+      }
+      return accountsStorage.getById(id) as T
+    }
     if (canonicalEndpoint.startsWith("/transactions")) {
       return transactionsStorage.getAll() as T
     }
@@ -453,8 +465,46 @@ export async function postJSON<T>(endpoint: string, data: unknown): Promise<T> {
     if (canonicalEndpoint === "/contacts") {
       return contactsStorage.create(payload as Parameters<typeof contactsStorage.create>[0]) as T
     }
+    if (canonicalEndpoint === "/accounts") {
+      return accountsStorage.create(payload as Parameters<typeof accountsStorage.create>[0]) as T
+    }
     if (canonicalEndpoint === "/transactions") {
       return transactionsStorage.create(payload as Parameters<typeof transactionsStorage.create>[0]) as T
+    }
+    if (canonicalEndpoint === "/transactions/transfer") {
+      const fromAccountId = payload.fromAccountId as string
+      const toAccountId = payload.toAccountId as string
+      const amount = Number(payload.amount ?? 0)
+      const date = String(payload.date)
+      const description = String(payload.description ?? "")
+      const status = (payload.status === "COMPLETED" ? "completed" : "pending") as "completed" | "pending"
+      const transferKind = (payload.transferKind as string | null | undefined) ?? null
+      const transferGroupId = `tx_${Math.random().toString(36).slice(2, 18)}`
+      const debit = await transactionsStorage.create({
+        description,
+        amount,
+        type: "transfer" as const,
+        categoryId: null,
+        date,
+        status,
+        accountId: fromAccountId,
+        transferGroupId,
+        transferRole: "debit",
+        transferKind,
+      } as unknown as Parameters<typeof transactionsStorage.create>[0])
+      const credit = await transactionsStorage.create({
+        description,
+        amount,
+        type: "transfer" as const,
+        categoryId: null,
+        date,
+        status,
+        accountId: toAccountId,
+        transferGroupId,
+        transferRole: "credit",
+        transferKind,
+      } as unknown as Parameters<typeof transactionsStorage.create>[0])
+      return { transferGroupId, debit, credit } as T
     }
 
     if (canonicalEndpoint === "/budget-allocations") {
@@ -583,6 +633,10 @@ export async function putJSON<T>(endpoint: string, data: unknown): Promise<T> {
       apiLogger.debug("Routing PUT to contacts storage")
       return contactsStorage.update(id, payload as Parameters<typeof contactsStorage.update>[1]) as T
     }
+    if (canonicalEndpoint.includes("/accounts/")) {
+      apiLogger.debug("Routing PUT to accounts storage")
+      return accountsStorage.update(id, payload as Parameters<typeof accountsStorage.update>[1]) as T
+    }
     if (canonicalEndpoint.includes("/transactions/")) {
       apiLogger.debug("Routing PUT to transactions storage")
       return transactionsStorage.update(id, payload as Parameters<typeof transactionsStorage.update>[1]) as T
@@ -702,6 +756,10 @@ export async function deleteJSON<T>(endpoint: string): Promise<T> {
     }
     if (canonicalEndpoint.includes("/contacts/")) {
       contactsStorage.delete(id)
+      return {} as T
+    }
+    if (canonicalEndpoint.includes("/accounts/")) {
+      await accountsStorage.archive(id)
       return {} as T
     }
     if (canonicalEndpoint.includes("/transactions/")) {

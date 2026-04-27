@@ -1,4 +1,4 @@
-import type { Category, Transaction, Contact, Area, CategoryGroup } from "../shared/types"
+import type { Category, Transaction, Contact, Area, CategoryGroup, Account } from "../shared/types"
 import { storageLogger } from "../shared/logger"
 import { transactionPersistence } from "./persistence-service"
 import { migrationService, UNIFIED_STORAGE_KEYS } from "./migration-service"
@@ -23,6 +23,7 @@ const DATA_FILES = {
   categories: "/lib/mock/data/categories.json",
   transactions: "/lib/mock/data/transactions.json",
   contacts: "/lib/mock/data/contacts.json",
+  accounts: "/lib/mock/data/accounts.json",
 } as const
 
 function getCurrentUserId(): string | null {
@@ -225,6 +226,7 @@ export function bulkLoadData(data: Record<string, unknown[]>): void {
     mmx_categories: DATA_FILES.categories,
     mmx_transactions: DATA_FILES.transactions,
     mmx_contacts: DATA_FILES.contacts,
+    mmx_accounts: DATA_FILES.accounts,
   }
 
   Object.entries(data).forEach(([key, value]) => {
@@ -535,6 +537,97 @@ export const transactionsStorage = {
 
     storageLogger.info(`Explicitly generating recurring transactions for ${id}`)
     await processRecurringTransactions(transaction)
+  },
+}
+
+// Accounts storage
+export const accountsStorage = {
+  getAll: async (): Promise<Account[]> => loadFromFile<Account>(DATA_FILES.accounts),
+
+  getById: async (id: string): Promise<Account | null> => {
+    const accounts = await loadFromFile<Account>(DATA_FILES.accounts)
+    return accounts.find((a) => a.id === id) || null
+  },
+
+  getBalance: async (id: string): Promise<{
+    accountId: string
+    currency: string
+    openingBalance: number
+    movement: number
+    currentBalance: number
+  } | null> => {
+    const accounts = await loadFromFile<Account>(DATA_FILES.accounts)
+    const account = accounts.find((a) => a.id === id)
+    if (!account) return null
+
+    const transactions = await loadFromFile<Transaction>(DATA_FILES.transactions)
+    let movement = 0
+    for (const t of transactions) {
+      if (t.accountId !== id || t.status !== "completed") continue
+      if (t.type === "income") movement += Number(t.amount)
+      else if (t.type === "expense") movement -= Number(t.amount)
+      else if (t.type === "transfer" && t.transferRole === "credit") movement += Number(t.amount)
+      else if (t.type === "transfer" && t.transferRole === "debit") movement -= Number(t.amount)
+    }
+
+    const opening = Number(account.openingBalance ?? 0)
+    return {
+      accountId: id,
+      currency: account.currency,
+      openingBalance: opening,
+      movement,
+      currentBalance: opening + movement,
+    }
+  },
+
+  create: async (data: Omit<Account, "id">): Promise<Account> => {
+    const accounts = await loadFromFile<Account>(DATA_FILES.accounts)
+    const currentUserId = getCurrentUserId()
+
+    if (!currentUserId) {
+      throw new Error("User not authenticated")
+    }
+
+    const newAccount: Account = {
+      ...data,
+      id: generateId(),
+      userId: currentUserId,
+      createdAt: data.createdAt ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Account
+
+    accounts.push(newAccount)
+    await saveToCache(DATA_FILES.accounts, accounts)
+    return newAccount
+  },
+
+  update: async (id: string, data: Partial<Account>): Promise<Account> => {
+    const accounts = await loadFromFile<Account>(DATA_FILES.accounts)
+    const index = accounts.findIndex((a) => a.id === id)
+    if (index === -1) throw new Error("Account not found")
+
+    const current = accounts[index]
+    if (!current) throw new Error("Account not found")
+
+    accounts[index] = { ...current, ...data, updatedAt: new Date().toISOString() } as Account
+    await saveToCache(DATA_FILES.accounts, accounts)
+    return accounts[index] as Account
+  },
+
+  archive: async (id: string): Promise<Account | null> => {
+    const accounts = await loadFromFile<Account>(DATA_FILES.accounts)
+    const index = accounts.findIndex((a) => a.id === id)
+    if (index === -1) return null
+    const current = accounts[index]
+    if (!current) return null
+    accounts[index] = {
+      ...current,
+      status: "archived",
+      archivedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Account
+    await saveToCache(DATA_FILES.accounts, accounts)
+    return accounts[index] as Account
   },
 }
 

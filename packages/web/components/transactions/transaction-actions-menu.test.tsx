@@ -40,6 +40,7 @@ function makeTx(overrides: Partial<Transaction> = {}): Transaction {
     amount: 100,
     type: "expense",
     categoryId: "cat_1",
+    accountId: "acc_1",
     date: "2026-08-01",
     status: "pending",
     createdAt: "2026-08-01T00:00:00.000Z",

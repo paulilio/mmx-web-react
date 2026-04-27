@@ -90,6 +90,7 @@ function makeTx(overrides: Partial<Transaction> = {}): Transaction {
     contactId: "contact_1",
     areaId: "area_1",
     categoryGroupId: "cg_1",
+    accountId: "acc_1",
     date: today.toISOString().split("T")[0]!,
     status: "pending",
     skipped: false,

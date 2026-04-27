@@ -85,6 +85,63 @@ export interface AreaFormData {
   status: Area["status"]
 }
 
+export type AccountType =
+  | "checking"
+  | "savings"
+  | "credit-card"
+  | "investment"
+  | "business"
+  | "cash"
+  | "other"
+
+export type AccountStatus = "active" | "archived" | "pending-review"
+
+export interface Account {
+  id: string
+  userId: string
+  name: string
+  institutionName?: string | null
+  type: AccountType
+  status: AccountStatus
+  currency: string
+  openingBalance: number
+  openingBalanceDate: string
+  color?: string | null
+  icon?: string | null
+  isBusiness: boolean
+  creditLimit?: number | null
+  closingDay?: number | null
+  dueDay?: number | null
+  bankConnectionId?: string | null
+  externalId?: string | null
+  archivedAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AccountFormData {
+  name: string
+  institutionName?: string
+  type: AccountType
+  status?: AccountStatus
+  currency?: string
+  openingBalance?: number
+  openingBalanceDate?: string
+  color?: string
+  icon?: string
+  creditLimit?: number | null
+  closingDay?: number | null
+  dueDay?: number | null
+}
+
+export interface AccountBalance {
+  accountId: string
+  currency: string
+  openingBalance: number
+  movement: number
+  currentBalance: number
+}
+
 export interface Budget {
   id: string
   categoryGroupId: string
@@ -168,12 +225,14 @@ export interface CategoryWithSpent extends Category {
   categoryGroupId?: string
 }
 
+export type TransferRole = "debit" | "credit"
+
 export interface Transaction {
   id: string
   description?: string
   amount: number
-  type: "income" | "expense"
-  categoryId: string
+  type: "income" | "expense" | "transfer"
+  categoryId: string | null
   contactId?: string
   date: string
   status: "completed" | "pending" | "cancelled"
@@ -186,6 +245,10 @@ export interface Transaction {
   isException?: boolean
   areaId?: string
   categoryGroupId?: string
+  accountId: string
+  transferGroupId?: string | null
+  transferRole?: TransferRole | null
+  transferKind?: string | null
   parentId?: string
   generatedFrom?: string
   createdAt: string
@@ -243,6 +306,18 @@ export interface TransactionFormData {
   recurrence?: TransactionRecurrence
   areaId?: string
   categoryGroupId?: string
+  accountId: string
+}
+
+export interface TransferFormData {
+  fromAccountId: string
+  toAccountId: string
+  amount: number
+  date: string
+  description?: string
+  notes?: string
+  transferKind?: string
+  status?: "completed" | "pending"
 }
 
 export interface TransactionRecurrence {
