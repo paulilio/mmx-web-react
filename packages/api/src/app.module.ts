@@ -9,6 +9,7 @@ import { CategoriesModule } from "./modules/categories/categories.module"
 import { CategoryGroupsModule } from "./modules/category-groups/category-groups.module"
 import { ContactsModule } from "./modules/contacts/contacts.module"
 import { AreasModule } from "./modules/areas/areas.module"
+import { AccountsModule } from "./modules/accounts/accounts.module"
 import { BudgetModule } from "./modules/budget/budget.module"
 import { BudgetAllocationsModule } from "./modules/budget-allocations/budget-allocations.module"
 import { ReportsModule } from "./modules/reports/reports.module"
@@ -25,6 +26,7 @@ import { OpenFinanceModule } from "./modules/open-finance/open-finance.module"
     CategoryGroupsModule,
     ContactsModule,
     AreasModule,
+    AccountsModule,
     BudgetModule,
     BudgetAllocationsModule,
     ReportsModule,

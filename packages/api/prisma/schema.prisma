@@ -94,6 +94,22 @@ enum DayOfWeekEnum {
   SATURDAY
 }
 
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  INVESTMENT
+  BUSINESS
+  CASH
+  OTHER
+}
+
+enum AccountStatus {
+  ACTIVE
+  ARCHIVED
+  PENDING_REVIEW
+}
+
 model User {
   id                    String              @id @default(cuid())
   email                 String              @unique
@@ -123,6 +139,7 @@ model User {
   oauthAccounts         OAuthAccount[]
   bankConnections       BankConnection[]
   recurringTemplates    RecurringTemplate[]
+  accounts              Account[]
 
   @@index([email])
 }
@@ -363,6 +380,35 @@ model Area {
 
   @@index([userId, status])
   @@index([userId, type])
+}
+
+model Account {
+  id                 String        @id @default(cuid())
+  userId             String
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  institutionName    String?
+  type               AccountType
+  status             AccountStatus @default(ACTIVE)
+  currency           String        @default("BRL")
+  openingBalance     Decimal       @default(0) @db.Decimal(14, 2)
+  openingBalanceDate DateTime      @db.Date
+  color              String?
+  icon               String?
+  isBusiness         Boolean       @default(false)
+  creditLimit        Decimal?      @db.Decimal(14, 2)
+  closingDay         Int?
+  dueDay             Int?
+  bankConnectionId   String?
+  externalId         String?
+  archivedAt         DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId, status])
+  @@index([userId, type])
+  @@index([bankConnectionId])
 }
 
 // ---- Open Finance ----
